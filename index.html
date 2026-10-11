@@ -1,0 +1,1422 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dinacharya • A Daily Promise</title>
+<meta name="theme-color" content="#232150">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;1,400&family=Nunito+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f3ec; --card:#fffefa; --ink:#2a2740; --muted:#73708a;
+  --accent:#3d4a8a; --accent-2:#232150; --soft:#e6e3f2; --mint:#eceaf7;
+  --line:#dcd8ea; --gold:#c9ae77; --warn:#8a5a2e; --rest-bg:#eceaf2;
+  --turquoise:#4a7a8a; --indigo:#6a4a8a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15.5px/1.6 "Nunito Sans",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:"Fraunces",Georgia,serif;font-weight:500;letter-spacing:-.015em;margin:0 0 6px;color:var(--accent-2)}
+button,input,select,textarea{font-family:inherit}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px}
+
+/* ===== Header / nest nav ===== */
+header{background:linear-gradient(150deg,#1c1a3d 0%,#232150 55%,#2f2d66 100%);padding:0 0 0;color:#fdf9ee;position:sticky;top:0;z-index:30;box-shadow:0 6px 24px #1c1a3d2e}
+.hdr-inner{padding:18px 0 0}
+.hdr-trim{height:9px;background-image:linear-gradient(135deg,var(--gold) 25%,transparent 25.5%),linear-gradient(225deg,var(--gold) 25%,transparent 25.5%);background-position:0 0,7px 0;background-size:14px 9px;opacity:.55}
+.affirm-strip{text-align:center;font-family:"Fraunces",serif;font-style:italic;font-size:14px;color:var(--accent-2);background:var(--mint);border:1px solid var(--line);border-radius:14px;padding:11px 16px;margin-bottom:14px}
+.lotus-divider{display:flex;align-items:center;justify-content:center;gap:10px;margin:4px 0 16px;color:var(--gold)}
+.lotus-divider::before,.lotus-divider::after{content:"";flex:1;height:1px;background:var(--line)}
+.lotus-divider span{font-size:13px;letter-spacing:.06em}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brand{display:flex;align-items:center;gap:9px}
+.brand .leaf{font-size:20px}
+.brand b{font-family:"Fraunces",serif;font-weight:500;font-size:19px;letter-spacing:-.01em}
+.brand span{display:block;font-size:11px;color:#d8d4ec;letter-spacing:.04em}
+.datepill{font-size:12px;background:#ffffff1c;border:1px solid #ffffff30;padding:5px 11px;border-radius:99px;color:#fdf9ee;white-space:nowrap}
+.nestnav{display:flex;gap:6px;margin-top:18px;overflow-x:auto;padding-bottom:0;scrollbar-width:none}
+.nestnav::-webkit-scrollbar{display:none}
+.nestbtn{flex:0 0 auto;display:flex;align-items:center;gap:7px;background:transparent;border:0;color:#d8d4ec;padding:10px 16px;border-radius:14px 14px 0 0;font-size:13.5px;font-weight:700;cursor:pointer;white-space:nowrap;position:relative;top:1px}
+.nestbtn .ic{font-size:15px}
+.nestbtn.on{background:var(--bg);color:var(--accent-2)}
+.nestbtn.soon{opacity:.55;cursor:default}
+.nestbtn .tag{font-size:9px;font-weight:800;background:#ffffff20;border-radius:99px;padding:1px 6px;margin-left:2px}
+.nestbtn.on .tag{background:var(--mint);color:var(--accent)}
+main{padding:22px 0 60px}
+
+/* ===== shared card ===== */
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px 19px;box-shadow:0 3px 16px #23215010}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+.span12{grid-column:span 12}.span6{grid-column:span 6}.span4{grid-column:span 4}
+@media(max-width:720px){.span6,.span4{grid-column:span 12}}
+.small{font-size:12.5px;color:var(--muted)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{border:0;background:var(--accent);color:#fff;padding:9px 14px;border-radius:11px;cursor:pointer;font-weight:700;font-size:13.5px}
+.btn.secondary{background:var(--mint);color:var(--accent-2)}
+.btn.ghost{background:transparent;color:var(--accent-2);text-decoration:underline;padding:4px 2px;font-weight:600}
+.chip{border:1px solid var(--line);background:#fff;padding:6px 12px;border-radius:99px;font-size:12.5px;cursor:pointer;color:var(--accent-2)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* ===== Dashboard ===== */
+.hero{position:relative;overflow:hidden;border-radius:24px;padding:30px 28px;color:#fdf9ee;background:radial-gradient(ellipse at 110% -10%,#c9ae7745 0%,transparent 55%),linear-gradient(150deg,#232150,#15132e 75%)}
+.hero .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#e8c98a;font-weight:700}
+.hero h1{color:#fdf9ee;font-size:clamp(26px,4vw,34px);margin:8px 0 6px}
+.hero p{color:#ecdcc0;max-width:48ch;margin:0}
+.hero .mandala{position:absolute;right:-30px;top:-30px;width:180px;height:180px;opacity:.22;pointer-events:none;z-index:0}
+.hero .buddha-mark{position:absolute;left:-18px;bottom:-14px;width:140px;height:160px;opacity:.22;pointer-events:none;z-index:0}
+.hero .hero-text{position:relative;z-index:1}
+.statrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;position:relative}
+.stat{background:#ffffff12;border:1px solid #ffffff22;border-radius:14px;padding:10px 14px;min-width:92px}
+.stat b{display:block;font-family:"Fraunces",serif;font-size:22px;font-weight:500;color:var(--gold)}
+.stat span{font-size:10.5px;color:#e8c98a}
+.quotecard{background:linear-gradient(135deg,#eceaf7,#fffefa);border:1px solid var(--line);border-radius:18px;padding:18px 20px;position:relative}
+.quotecard p{font-family:"Fraunces",serif;font-style:italic;font-size:18px;line-height:1.5;margin:0 0 6px;color:var(--accent-2)}
+.quotecard span{font-size:12px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+.knot{width:14px;height:14px;flex:0 0 auto;opacity:.75}
+.calcard .caltop{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.calcard .caltop .nm{font-family:"Fraunces",serif;font-size:18px}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.calgrid .wd{font-size:10px;text-align:center;color:var(--muted);padding-bottom:3px}
+.calgrid .cell{aspect-ratio:1;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;background:#f4f7ee;color:var(--muted);border:1px solid transparent}
+.calgrid .cell.empty{background:transparent}
+.calgrid .cell.l1{background:var(--soft);color:var(--accent)}
+.calgrid .cell.l2{background:#cfc9ec;color:#2f2d66}
+.calgrid .cell.l3{background:var(--accent);color:#fff}
+.calgrid .cell.today{outline:2px solid var(--gold);outline-offset:1px}
+
+/* ===== Today nest ===== */
+.todaytabs{display:inline-flex;gap:3px;background:var(--mint);padding:4px;border-radius:12px;margin-bottom:16px}
+.todaytabs button{border:0;background:transparent;padding:8px 14px;border-radius:9px;font-size:13px;font-weight:700;color:var(--accent-2);cursor:pointer}
+.todaytabs button.on{background:#fff;box-shadow:0 1px 4px #23215014}
+
+/* strip */
+.strip-scroll{position:relative;display:flex;gap:16px;overflow-x:auto;padding:18px 6px 14px;scrollbar-width:thin}
+.strip-scroll::before{content:"";position:absolute;left:6px;right:6px;top:38px;height:2px;background:var(--line);z-index:0}
+.bead{flex:0 0 auto;width:54px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;position:relative;z-index:1}
+.bead .circ{width:40px;height:40px;border-radius:50%;background:#fff;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:17px;transition:transform .12s}
+.bead:active .circ{transform:scale(.92)}
+.bead.done .circ{background:var(--accent);border-color:var(--accent);filter:grayscale(.15) brightness(1.6)}
+.bead.now .circ{border-color:var(--gold);box-shadow:0 0 0 3px #c9ae7733}
+.bead .t{font-size:9.5px;color:var(--muted);font-weight:700;white-space:nowrap}
+
+/* timeline */
+.timeline{position:relative;margin-top:4px}
+.tblock{display:flex;gap:12px;padding:10px 0;border-left:2px solid var(--line);margin-left:7px;padding-left:16px;position:relative}
+.tblock:last-child{border-left-color:transparent}
+.tblock::before{content:"";position:absolute;left:-7px;top:14px;width:12px;height:12px;border-radius:50%;background:#fff;border:2px solid var(--line)}
+.tblock.done::before{background:var(--accent);border-color:var(--accent)}
+.tblock.now::before{background:var(--gold);border-color:var(--gold)}
+.tblock.anchor .bar{border-left:3px solid var(--warn)}
+.tbody{flex:1;background:#fff;border:1px solid var(--line);border-radius:14px;padding:11px 13px;cursor:pointer}
+.tblock.done .tbody{background:var(--mint);border-color:var(--gold)}
+.tblock.now .tbody{border-color:var(--gold)}
+.tbody .thead{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.tbody .time{font-size:11.5px;color:var(--muted);font-weight:700;white-space:nowrap}
+.tbody .nm{font-weight:700;font-size:14.5px;margin:3px 0 0}
+.tbody .nm.doneline{text-decoration:line-through;color:var(--muted)}
+.tbody .meta{font-size:11.5px;color:var(--muted);margin-top:3px}
+.tbody .dur{font-size:10.5px;background:var(--mint);color:var(--accent-2);padding:2px 8px;border-radius:99px;white-space:nowrap}
+.checkdot{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex:0 0 auto;align-self:center;cursor:pointer;background:#fff}
+.checkdot.on{background:var(--accent);border-color:var(--accent);position:relative}
+.checkdot.on::after{content:"✓";color:#fff;font-size:12px;position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+
+/* editor sheet */
+.sheet-overlay{position:fixed;inset:0;background:#15132e55;display:flex;align-items:flex-end;justify-content:center;z-index:100}
+@media(min-width:620px){.sheet-overlay{align-items:center}}
+.sheet{background:#fffef9;width:100%;max-width:440px;border-radius:22px 22px 0 0;padding:20px 20px 26px;box-shadow:0 -10px 40px #00000022}
+@media(min-width:620px){.sheet{border-radius:22px}}
+.sheet h3{margin-bottom:14px}
+.sheet label{display:block;font-size:12px;color:var(--muted);margin:12px 0 5px;font-weight:700}
+.sheet input[type=text],.sheet input[type=time]{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:#fff;font-size:14px}
+.stepper{display:flex;align-items:center;gap:10px;margin-top:4px}
+.stepper button{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:17px;cursor:pointer;color:var(--accent-2)}
+.stepper .durval{font-family:"Fraunces",serif;font-size:19px;min-width:74px;text-align:center}
+.sheet .sheetactions{display:flex;gap:8px;margin-top:20px}
+.anchornote{font-size:11.5px;color:var(--warn);background:#fbf1e6;border-radius:10px;padding:8px 10px;margin-top:12px}
+.cascade-alert{font-size:12px;background:#fbf1e6;border:1px solid #ecd3ae;color:#8a5e32;border-radius:12px;padding:9px 12px;margin:10px 0}
+
+/* checkin */
+.checkin-grid{display:flex;flex-wrap:wrap;gap:8px}
+.checkin-field{flex:1;min-width:140px}
+.checkin-field .lbl{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:6px}
+
+/* brain dump */
+.bd-input{display:flex;gap:8px}
+.bd-input input{flex:1;border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:#fff}
+.bd-list{margin-top:12px;display:flex;flex-direction:column;gap:7px}
+.bd-item{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 12px}
+.bd-item.done span{text-decoration:line-through;color:var(--muted)}
+.bd-item input[type=checkbox]{width:17px;height:17px;accent-color:var(--accent)}
+.bd-item button{margin-left:auto;background:none;border:0;color:var(--muted);cursor:pointer;font-size:14px}
+
+/* ===== Arogya ===== */
+.mealgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(max-width:600px){.mealgrid{grid-template-columns:1fr}}
+.mealcard{border:1px solid var(--line);border-radius:16px;padding:14px 15px;background:#fff}
+.mealcard.done{background:var(--mint);border-color:var(--gold)}
+.mealcard .mtitle{display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:13.5px;color:var(--accent-2)}
+.mealcard textarea,.mealcard input[type=text]{width:100%;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-top:8px;background:#fcfdf9;font-size:13.5px;font-family:inherit}
+.mealcard .mactions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+
+.counterbox{display:flex;align-items:center;gap:14px;margin-top:8px}
+.counterbox .cval{font-family:"Fraunces",serif;font-size:26px;min-width:76px;text-align:center}
+.progtrack{height:8px;border-radius:99px;background:var(--mint);overflow:hidden;margin-top:10px}
+.progtrack i{display:block;height:100%;background:var(--accent);border-radius:99px}
+
+.pantry-list,.shop-list{display:flex;flex-direction:column;gap:7px;margin-top:10px}
+.pantry-item,.shop-item{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 12px}
+.pantry-item.low{border-color:#ecd3ae;background:#fbf1e6}
+.pantry-item .pname{flex:1;font-weight:700;font-size:13.5px}
+.pantry-item .pqty{font-size:12px;color:var(--muted);min-width:76px;text-align:center}
+.qtybtn{width:26px;height:26px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:14px;color:var(--accent-2)}
+.lowtag{font-size:10px;font-weight:800;color:var(--warn);background:#fbf1e6;padding:2px 7px;border-radius:99px}
+.shop-item span{flex:1}
+.shop-item.done span{text-decoration:line-through;color:var(--muted)}
+.addrow{display:flex;gap:7px;margin-top:12px;flex-wrap:wrap}
+.addrow input{border:1px solid var(--line);border-radius:10px;padding:8px 11px;background:#fff;font-size:13px}
+.addrow input.nm{flex:1;min-width:120px}
+.addrow input.qty{width:70px}
+
+.recipe-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(max-width:600px){.recipe-grid{grid-template-columns:1fr}}
+.recipe-card{border:1px solid var(--line);border-radius:16px;padding:14px 15px;background:#fff}
+.recipe-card h4{margin-bottom:3px}
+.recipe-card .rtags{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0}
+.recipe-card .rtag{font-size:10px;background:var(--mint);color:var(--accent-2);padding:2px 8px;border-radius:99px;font-weight:700}
+.recipe-card ul{margin:6px 0 10px;padding-left:18px;font-size:12.5px;color:var(--muted)}
+
+.weight-row{display:flex;gap:10px;align-items:flex-end;margin-top:8px;flex-wrap:wrap}
+.weight-row input[type=number]{width:100px;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:14px}
+.weight-stats{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+.wstat{background:var(--mint);border-radius:12px;padding:8px 14px;min-width:92px}
+.wstat b{display:block;font-family:"Fraunces",serif;font-size:19px;color:var(--accent-2)}
+.wstat span{font-size:10.5px;color:var(--muted)}
+.weight-log{display:flex;flex-direction:column;gap:5px;margin-top:10px;max-height:150px;overflow-y:auto}
+.weight-log .wl{display:flex;justify-content:space-between;font-size:12.5px;border-bottom:1px solid var(--line);padding:5px 2px;color:var(--muted)}
+
+/* ===== Business ===== */
+.phase-head{display:flex;align-items:baseline;gap:9px;margin:18px 0 10px}
+.phase-head:first-child{margin-top:0}
+.phase-head .pn{font-family:"Fraunces",serif;font-size:16px;color:var(--accent-2)}
+.phase-head .pw{font-size:11px;color:var(--muted)}
+.plan-item{display:flex;align-items:flex-start;gap:10px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:7px}
+.plan-item.done{background:var(--mint);border-color:var(--gold)}
+.plan-item .pd{width:22px;height:22px;flex:0 0 auto;margin-top:1px}
+.plan-item .ptxt b{display:block;font-size:13.5px}
+.plan-item .ptxt span{font-size:11.5px;color:var(--muted)}
+.plan-item.done .ptxt b{text-decoration:line-through;color:var(--muted)}
+
+.stagebar{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 14px}
+.stagechip{font-size:11px;padding:4px 10px;border-radius:99px;border:1px solid var(--line);background:#fff;cursor:pointer;color:var(--accent-2)}
+.stagechip.on{color:#fff;border-color:transparent}
+.lead-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:9px}
+.lead-card .lhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.lead-card .lname{font-weight:700;font-size:14px}
+.lead-card .lval{font-size:12px;color:var(--muted)}
+.lead-card .lnote{font-size:12px;color:var(--muted);margin-top:5px}
+.lead-card .lrow{display:flex;justify-content:space-between;align-items:center;margin-top:9px;gap:8px}
+
+.income-item{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 12px;margin-bottom:7px}
+.income-item .iname{flex:1;font-size:13.5px;font-weight:700}
+.income-item .idate{font-size:11px;color:var(--muted)}
+.income-item .iamt{font-family:"Fraunces",serif;font-size:15px;color:var(--turquoise)}
+.income-stats{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+
+.pomo-ring{width:190px;height:190px;border-radius:50%;background:conic-gradient(var(--accent) calc(var(--p,0)*1%),var(--mint) 0);display:flex;align-items:center;justify-content:center;margin:10px auto}
+.pomo-ring .inner{width:160px;height:160px;border-radius:50%;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.pomo-ring .inner b{font-family:"Fraunces",serif;font-size:34px;color:var(--accent-2)}
+.pomo-ring .inner span{font-size:11px;color:var(--muted);text-transform:capitalize}
+.pomo-actions{display:flex;gap:8px;justify-content:center;margin-top:16px}
+
+/* ===== Journal ===== */
+.sankalp-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.sankalp-day{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:var(--muted);cursor:pointer}
+.sankalp-day.done{background:var(--accent);border-color:var(--accent);color:#fff}
+.sankalp-day.today{box-shadow:0 0 0 3px #d9b54a44}
+.sankalp-set{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.sankalp-set input{flex:1;min-width:180px;border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:#fff;font-size:13.5px}
+
+.gratitude-row{display:flex;gap:8px;align-items:center;margin-bottom:7px}
+.gratitude-row span{width:18px;color:var(--gold);font-family:"Fraunces",serif}
+.gratitude-row input{flex:1;border:1px solid var(--line);border-radius:10px;padding:8px 11px;background:#fff;font-size:13px}
+
+.book-item{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:9px}
+.book-item .bhead{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.book-item .btitle{font-weight:700;font-size:14px}
+.book-item .bauthor{font-size:12px;color:var(--muted)}
+.book-item .brow{display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:8px}
+
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:600px){.summary-grid{grid-template-columns:repeat(2,1fr)}}
+.sumtile{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 15px;text-align:center}
+.sumtile b{display:block;font-family:"Fraunces",serif;font-size:24px;color:var(--accent-2)}
+.sumtile span{font-size:11px;color:var(--muted)}
+
+/* soon placeholder */
+.soon-card{text-align:center;padding:50px 20px}
+.soon-card .ic{font-size:30px}
+.soon-card h2{margin-top:10px}
+
+@media(max-width:480px){.wrap{padding:0 12px}.hero{padding:24px 18px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hdr-inner">
+  <div class="wrap hdr-top">
+    <div class="brand"><span class="leaf">🪷</span><div><b>A Daily Promise</b><span id="todayPill">—</span></div></div>
+    <div class="datepill" id="datePill">Day 1</div>
+  </div>
+  <div class="wrap nestnav" id="nestNav"></div>
+  </div>
+  <div class="hdr-trim"></div>
+</header>
+<main class="wrap" id="app"></main>
+
+<script>
+/* ============================= DATA MODEL ============================= */
+const START_DATE = "2026-10-12"; // Dinacharya tracking begins here
+const STORAGE_KEY = "dinacharya_v1";
+
+const DEFAULT_TEMPLATE = [
+  {id:"t1",  time:"08:00", title:"Wake up",                              dur:5,   cat:"rest",   icon:"🌅", anchor:true},
+  {id:"t2",  time:"08:05", title:"Brush, washroom, coffee, read links",  dur:55,  cat:"rest",   icon:"☕", anchor:false},
+  {id:"t3",  time:"09:00", title:"Exercise",                             dur:40,  cat:"move",   icon:"🚶", anchor:true},
+  {id:"t4",  time:"09:40", title:"Bath, pooja, self rituals",            dur:35,  cat:"rest",   icon:"🛁", anchor:true},
+  {id:"t5",  time:"10:15", title:"Meditation + intention",               dur:10,  cat:"mind",   icon:"🧘", anchor:false},
+  {id:"t6",  time:"10:25", title:"Breakfast + plan top 3",               dur:30,  cat:"food",   icon:"🍳", anchor:true},
+  {id:"t7",  time:"10:55", title:"Job applications (7)",                 dur:120, cat:"job",    icon:"💼", anchor:true, desc:"~15–20 min each, focus block, phone away"},
+  {id:"t8",  time:"12:55", title:"Break",                                dur:15,  cat:"rest",   icon:"🌿", anchor:false, desc:"water, stretch"},
+  {id:"t9",  time:"13:10", title:"Skill-building block",                 dur:75,  cat:"skill",  icon:"📘", anchor:false, desc:"whatever you're learning right now"},
+  {id:"t10", time:"14:25", title:"Cook lunch + clean kitchen",           dur:45,  cat:"food",   icon:"🍲", anchor:true},
+  {id:"t11", time:"15:10", title:"Lunch + rest",                         dur:45,  cat:"food",   icon:"🍽️", anchor:true},
+  {id:"t12", time:"15:55", title:"Business focus block",                 dur:90,  cat:"business",icon:"🚀", anchor:false, desc:"outreach / site / pipeline"},
+  {id:"t13", time:"17:25", title:"House chore",                         dur:40,  cat:"home",   icon:"🧹", anchor:false},
+  {id:"t14", time:"18:05", title:"Snack + coffee",                      dur:15,  cat:"food",   icon:"🍵", anchor:false},
+  {id:"t15", time:"18:20", title:"Job follow-ups",                      dur:30,  cat:"job",    icon:"✉️", anchor:false, desc:"recruiters, LinkedIn, 1 networking message"},
+  {id:"t16", time:"18:50", title:"Go outside",                          dur:40,  cat:"move",   icon:"🌳", anchor:false, desc:"walk, errands, people"},
+  {id:"t17", time:"19:30", title:"Cook dinner + clean kitchen",         dur:45,  cat:"food",   icon:"🍲", anchor:true},
+  {id:"t18", time:"20:15", title:"Dinner",                              dur:45,  cat:"food",   icon:"🍽️", anchor:true},
+  {id:"t19", time:"21:00", title:"Skill practice block",                dur:30,  cat:"skill",  icon:"📝", anchor:false, desc:"drills / practice questions / exercises"},
+  {id:"t20", time:"21:30", title:"Revise today's learning",             dur:15,  cat:"skill",  icon:"🔁", anchor:false},
+  {id:"t21", time:"21:45", title:"Family time",                         dur:30,  cat:"rest",   icon:"👨‍👩‍👧", anchor:false},
+  {id:"t22", time:"22:15", title:"Read",                                dur:15,  cat:"mind",   icon:"📖", anchor:false},
+  {id:"t23", time:"22:30", title:"Journal + gratitude, screens off",    dur:30,  cat:"mind",   icon:"🙏", anchor:true},
+  {id:"t24", time:"23:00", title:"Sleep",                               dur:0,   cat:"rest",   icon:"🌙", anchor:true}
+];
+
+const CAT_COLOR = {
+  rest:"#73708a", move:"#4a7a8a", food:"#b4875a", job:"#3d4a8a",
+  business:"#6a4a8a", home:"#8a6a4a", skill:"#8a4a6a", mind:"#c9ae77"
+};
+
+const QUOTES = [
+  ["You have a right to your work, but not to its fruits.","Bhagavad Gita 2.47"],
+  ["What a person firmly resolves, they will achieve, if they hold to it.","Thirukkural 666"],
+  ["Lift yourself up by your own effort and never let yourself sink.","Bhagavad Gita 6.5"],
+  ["Even when fate does not help, effort pays its wages for the work done.","Thirukkural 619"],
+  ["Yoga is skill in action.","Bhagavad Gita 2.50"],
+  ["Never say \"this is too hard\". Effort gives you the strength to do it.","Thirukkural 611"],
+  ["Wherever the restless mind wanders, gently bring it back.","Bhagavad Gita 6.26"],
+  ["Wait like the heron while it is time to wait, and strike like it when the moment comes.","Thirukkural 490"],
+  ["Each morning we are born again. What we do today matters most.","Buddhist saying"],
+  ["If you want others to be happy, practice compassion. If you want to be happy, practice compassion.","Dalai Lama"],
+  ["Patience and tolerance are developed by facing hardship, not by avoiding it.","Dalai Lama"],
+  ["With our thoughts, we make our world.","The Dhammapada"],
+  ["Peace comes from within. Do not seek it without.","The Dhammapada"],
+  ["A disciplined mind brings happiness.","The Dhammapada"],
+  ["Just as a candle cannot burn without fire, a person cannot live without a spiritual life.","Buddha"],
+  ["Slow down. Calm down. Don't worry. Don't hurry. Trust the process.","Alexandra Stoddard"]
+];
+const AFFIRMATIONS = [
+  "Show up gently. One step is enough for today.",
+  "Progress, not perfection — the streak is a companion, not a judge.",
+  "Breathe. Begin. The day will meet you halfway.",
+  "You don't need to feel ready to begin — begin, and readiness follows.",
+  "What you repeat, you become. Choose today's repetition with care.",
+  "Rest is part of the practice, not a break from it.",
+  "Small, steady effort outlasts big, scattered bursts."
+];
+
+let state = loadState();
+function loadState(){
+  const defaults = { days:{}, brainDump:[], checkins:{}, meals:{}, water:{}, move:{}, pantry:[], pantrySeeded:false, shopping:[], weight:[],
+    bizPlanDone:{}, pipeline:[], income:[], pomodoro:{},
+    sankalp:{text:"", startDay:1, done:{}}, journal:{}, reading:[] };
+  try{ const raw = localStorage.getItem(STORAGE_KEY); if(raw) return Object.assign({}, defaults, JSON.parse(raw)); }catch(e){}
+  return defaults;
+}
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); render(); }
+function saveQuiet(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+/* ---- date helpers ---- */
+function fmtLocal(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function dayNumberFor(iso){
+  const a = new Date(START_DATE+"T00:00:00"), b = new Date(iso+"T00:00:00");
+  return Math.round((b-a)/86400000)+1;
+}
+function dateForDay(n){
+  const d = new Date(START_DATE+"T00:00:00"); d.setDate(d.getDate()+(n-1)); return fmtLocal(d);
+}
+function todayISO(){ return fmtLocal(new Date()); }
+function todayDayNum(){ return dayNumberFor(todayISO()); }
+let selectedDay = Math.max(1, todayDayNum());
+function niceDate(iso, opts){ return new Date(iso+"T00:00:00").toLocaleDateString(undefined, opts||{weekday:"long",day:"numeric",month:"long"}); }
+function toMin(hhmm){ const [h,m]=hhmm.split(":").map(Number); return h*60+m; }
+function toHHMM(min){ min=((min%1440)+1440)%1440; return String(Math.floor(min/60)).padStart(2,"0")+":"+String(min%60).padStart(2,"0"); }
+function fmt12(hhmm){ const m=toMin(hhmm); let h=Math.floor(m/60), mm=m%60; const ap=h<12?"am":"pm"; h=h%12||12; return h+(mm?":"+String(mm).padStart(2,"0"):"")+" "+ap; }
+
+/* ---- per-day block list ---- */
+function dayKey(n){ return "d"+n; }
+function getDayBlocks(n){
+  state.days = state.days || {};
+  if(!state.days[dayKey(n)]){
+    state.days[dayKey(n)] = DEFAULT_TEMPLATE.map(b=>({...b, done:false}));
+  }
+  return state.days[dayKey(n)];
+}
+function setDayBlocks(n, list){ state.days[dayKey(n)] = list; }
+
+/* ---- cascade edit logic ---- */
+const DAY_END_TARGET = 23*60; // 11:00pm sleep target
+function applyBlockEdit(n, id, patch){
+  const list = getDayBlocks(n).map(b=>({...b}));
+  const idx = list.findIndex(b=>b.id===id);
+  if(idx<0) return {list, overflow:0};
+  Object.assign(list[idx], patch);
+  // recompute forward chain from idx+1 based on idx's new end time
+  let cursor = toMin(list[idx].time) + list[idx].dur;
+  for(let i=idx+1;i<list.length;i++){
+    list[i].time = toHHMM(cursor);
+    cursor += list[i].dur;
+  }
+  let overflow = Math.max(0, cursor - DAY_END_TARGET);
+  if(overflow>0){
+    // squeeze flexible (non-anchor) blocks after idx first
+    let remaining = overflow;
+    const flexIdxs = [];
+    for(let i=idx+1;i<list.length;i++) if(!list[i].anchor && list[i].dur>10) flexIdxs.push(i);
+    const totalFlex = flexIdxs.reduce((s,i)=>s+(list[i].dur-10),0);
+    if(totalFlex>0){
+      flexIdxs.forEach(i=>{
+        const share = (list[i].dur-10)/totalFlex;
+        const cut = Math.min(remaining*share, list[i].dur-10);
+        list[i].dur = Math.max(10, Math.round(list[i].dur - cut));
+      });
+      // recompute times again after trimming
+      let c2 = toMin(list[idx].time) + list[idx].dur;
+      for(let i=idx+1;i<list.length;i++){ list[i].time = toHHMM(c2); c2 += list[i].dur; }
+      overflow = Math.max(0, c2 - DAY_END_TARGET);
+    }
+  }
+  setDayBlocks(n, list);
+  return {list, overflow};
+}
+
+/* ---- streak / activity ---- */
+function dayActivity(n){
+  const list = state.days && state.days[dayKey(n)];
+  if(!list) return {frac:0, level:0, done:0, total:0};
+  const done = list.filter(b=>b.done).length;
+  const total = list.length;
+  const frac = total? done/total : 0;
+  return {frac, done, total, level: frac>=0.8?3:frac>=0.5?2:done>0?1:0};
+}
+function streakCount(){
+  let n = todayDayNum(), streak=0;
+  if(dayActivity(n).level===0) n--;
+  while(n>=1 && dayActivity(n).level>0 && streak<3650){ streak++; n--; }
+  return streak;
+}
+
+/* ============================= NAV ============================= */
+const NESTS = [
+  {k:"dashboard", label:"Dashboard", icon:"🏔️"},
+  {k:"today",     label:"Today",     icon:"🙏"},
+  {k:"arogya",    label:"Arogya",    icon:"🌱"},
+  {k:"business",  label:"Business",  icon:"🧭"},
+  {k:"journal",   label:"Journal",   icon:"📿"}
+];
+let currentNest = "dashboard";
+let todayTab = "strip"; // strip | timeline | checkin | braindump
+let openSheetId = null;
+let cascadeMsg = "";
+
+function renderNav(){
+  document.getElementById("nestNav").innerHTML = NESTS.map(ns=>
+    `<button class="nestbtn ${currentNest===ns.k?'on':''} ${ns.soon?'soon':''}" onclick="${ns.soon?'':'goNest(\''+ns.k+'\')'}">
+      <span class="ic">${ns.icon}</span>${ns.label}${ns.soon?'<span class="tag">soon</span>':''}
+    </button>`).join("");
+  document.getElementById("datePill").textContent = "Day " + selectedDay + (selectedDay===todayDayNum()?" · Today":"");
+  document.getElementById("todayPill").textContent = niceDate(dateForDay(selectedDay), {weekday:"long", day:"numeric", month:"short"});
+}
+function goNest(k){ currentNest=k; render(); }
+
+/* ============================= DASHBOARD ============================= */
+function petalPath(cx,cy,angleDeg,r1,r2,rm,spreadDeg){
+  const a=angleDeg*Math.PI/180, da=spreadDeg*Math.PI/180;
+  const p1=[cx+r1*Math.cos(a), cy+r1*Math.sin(a)];
+  const tip=[cx+r2*Math.cos(a), cy+r2*Math.sin(a)];
+  const left=[cx+rm*Math.cos(a-da), cy+rm*Math.sin(a-da)];
+  const right=[cx+rm*Math.cos(a+da), cy+rm*Math.sin(a+da)];
+  const f=n=>n.toFixed(1);
+  return `M${f(p1[0])},${f(p1[1])} Q${f(left[0])},${f(left[1])} ${f(tip[0])},${f(tip[1])} Q${f(right[0])},${f(right[1])} ${f(p1[0])},${f(p1[1])} Z`;
+}
+const MANDALA_SVG = `<svg class="mandala" viewBox="0 0 100 100" aria-hidden="true">
+  <g fill="none" stroke="#c9ae77" stroke-width="1">
+    <circle cx="50" cy="50" r="48"/>
+    ${Array.from({length:8}).map((_,i)=>`<path d="${petalPath(50,50,i*45,14,46,30,13)}"/>`).join("")}
+    ${Array.from({length:8}).map((_,i)=>`<path d="${petalPath(50,50,i*45+22.5,8,26,18,11)}"/>`).join("")}
+    <circle cx="50" cy="50" r="6"/>
+    <circle cx="50" cy="50" r="2" fill="#c9ae77" stroke="none"/>
+  </g>
+</svg>`;
+const KNOT_SVG = `<svg class="knot" viewBox="0 0 24 24" aria-hidden="true">
+  <g fill="none" stroke="#c9ae77" stroke-width="1.6" stroke-linecap="round">
+    <path d="M6 12c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6"/>
+    <path d="M18 12c0 3.3-2.7 6-6 6s-6-2.7-6-6 2.7-6 6-6"/>
+    <path d="M6 12c0 3.3 2.7 6 6 6M18 12c0-3.3-2.7-6-6-6" stroke-dasharray="1 2.4"/>
+  </g>
+</svg>`;
+const BUDDHA_SVG = `<svg class="buddha-mark" viewBox="0 0 100 130" aria-hidden="true">
+  <g fill="none" stroke="#c9ae77" stroke-width="1.3">
+    <circle cx="50" cy="13" r="3"/>
+    <path d="M44 19c1.5 4 11 4 12 0"/>
+    ${Array.from({length:7}).map((_,i)=>{const y=70-i*7.5; const w=2+i*1.3; return `<line x1="${(50-w).toFixed(1)}" y1="${y.toFixed(1)}" x2="${(50+w).toFixed(1)}" y2="${y.toFixed(1)}"/>`;}).join("")}
+    <path d="M50 22 L50 70"/>
+    <rect x="42" y="70" width="16" height="11"/>
+    <line x1="44" y1="75.5" x2="56" y2="75.5"/>
+    <path d="M32 81c0-15 8-26 18-26s18 11 18 26"/>
+    <rect x="30" y="81" width="40" height="9"/>
+    <rect x="22" y="90" width="56" height="10"/>
+  </g>
+</svg>`;
+
+function renderDashboard(){
+  const streak = streakCount();
+  const act = dayActivity(todayDayNum());
+  const q = QUOTES[(todayDayNum()-1+QUOTES.length*99)%QUOTES.length];
+  return `
+  <div class="grid">
+    <div class="span12 hero">
+      ${MANDALA_SVG}
+      ${BUDDHA_SVG}
+      <div class="hero-text">
+      <div class="eyebrow">A fresh start, every day</div>
+      <h1>Grow at your own pace.</h1>
+      <p>A little care. A little courage. One promise at a time.</p>
+      <div class="statrow">
+        <div class="stat"><b>${streak}</b><span>day streak</span></div>
+        <div class="stat"><b>${act.done}/${act.total||0}</b><span>today's promises kept</span></div>
+        <div class="stat"><b>${monthActiveCount()}</b><span>active days this month</span></div>
+      </div>
+      </div>
+    </div>
+    <div class="span12 lotus-divider"><span>🪷</span></div>
+    <div class="span6 card quotecard">
+      <p>"${q[0]}"</p>
+      <span>${KNOT_SVG} — ${q[1]}</span>
+    </div>
+    <div class="span6 card">
+      <h3>🪔 Jump in</h3>
+      <p class="small">Your day's timetable, check-in and quick capture live in Today.</p>
+      <button class="btn" onclick="goNest('today')">Open Today →</button>
+    </div>
+    <div class="span12 card calcard">
+      ${renderMonthCalendar()}
+    </div>
+  </div>`;
+}
+let calMonthOffset = 0;
+function renderMonthCalendar(){
+  const base = new Date(dateForDay(selectedDay)+"T00:00:00");
+  base.setMonth(base.getMonth()+calMonthOffset);
+  const y=base.getFullYear(), m=base.getMonth();
+  const first = new Date(y,m,1), lead=(first.getDay()+6)%7, dim=new Date(y,m+1,0).getDate();
+  const todayIso = todayISO(), selIso = dateForDay(selectedDay);
+  let cells = "";
+  for(let i=0;i<lead;i++) cells += `<div class="cell empty"></div>`;
+  for(let d=1; d<=dim; d++){
+    const iso = y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
+    if(iso < START_DATE){ cells += `<div class="cell empty">${d}</div>`; continue; }
+    const n = dayNumberFor(iso);
+    const act = dayActivity(n);
+    cells += `<div class="cell l${act.level} ${iso===todayIso?'today':''}" title="${iso}" onclick="selectDayFromCal(${n})">${d}</div>`;
+  }
+  return `
+  <div class="caltop">
+    <button class="btn secondary" onclick="calMonthOffset--;render()">‹</button>
+    <span class="nm">${base.toLocaleDateString(undefined,{month:"long",year:"numeric"})}</span>
+    <button class="btn secondary" onclick="calMonthOffset++;render()">›</button>
+  </div>
+  <div class="calgrid">
+    ${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(w=>`<div class="wd">${w}</div>`).join("")}
+    ${cells}
+  </div>
+  <p class="small" style="margin-top:10px">Tap any day to open it in Today.</p>`;
+}
+function monthActiveCount(){
+  const base = new Date(dateForDay(selectedDay)+"T00:00:00"); base.setMonth(base.getMonth()+calMonthOffset);
+  const y=base.getFullYear(), m=base.getMonth(), dim=new Date(y,m+1,0).getDate();
+  let c=0;
+  for(let d=1; d<=dim; d++){
+    const iso = y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
+    if(iso<START_DATE) continue;
+    if(dayActivity(dayNumberFor(iso)).level>0) c++;
+  }
+  return c;
+}
+function selectDayFromCal(n){ selectedDay=n; currentNest="today"; todayTab="timeline"; render(); }
+
+/* ============================= TODAY NEST ============================= */
+function changeDay(delta){ selectedDay = Math.max(1, selectedDay+delta); openSheetId=null; render(); }
+function goToday(){ selectedDay = todayDayNum(); render(); }
+
+function renderToday(){
+  const list = getDayBlocks(selectedDay);
+  const nowMin = (dateForDay(selectedDay)===todayISO()) ? (new Date().getHours()*60+new Date().getMinutes()) : -1;
+  let nowId = null;
+  if(nowMin>=0) list.forEach(b=>{ if(toMin(b.time)<=nowMin) nowId=b.id; });
+
+  const tabs = [["strip","〰️ Overview"],["timeline","🗓 Full day"],["checkin","🫶 Check-in"],["braindump","🧠 Brain dump"]];
+
+  let body = "";
+  if(todayTab==="strip") body = renderStrip(list, nowId);
+  else if(todayTab==="timeline") body = renderTimeline(list, nowId);
+  else if(todayTab==="checkin") body = renderCheckin();
+  else if(todayTab==="braindump") body = renderBrainDump();
+
+  const affirmation = AFFIRMATIONS[(todayDayNum()-1+AFFIRMATIONS.length*99)%AFFIRMATIONS.length];
+  return `
+  <div class="affirm-strip">☸️ ${affirmation}</div>
+  <div class="card span12" style="margin-bottom:14px">
+    <div class="row" style="justify-content:space-between">
+      <div class="row" style="gap:6px">
+        <button class="btn secondary" onclick="changeDay(-1)" ${selectedDay<=1?"disabled":""}>← Prev</button>
+        <b style="font-family:'Fraunces',serif;font-size:16px">${niceDate(dateForDay(selectedDay))}</b>
+        <button class="btn secondary" onclick="changeDay(1)">Next →</button>
+      </div>
+      ${selectedDay!==todayDayNum()?`<button class="btn ghost" onclick="goToday()">Back to today</button>`:""}
+    </div>
+  </div>
+  <div class="todaytabs">
+    ${tabs.map(([k,l])=>`<button class="${todayTab===k?'on':''}" onclick="todayTab='${k}';render()">${l}</button>`).join("")}
+  </div>
+  ${cascadeMsg? `<div class="cascade-alert">⏳ ${cascadeMsg}</div>` : ""}
+  ${body}
+  ${openSheetId? renderEditSheet(list.find(b=>b.id===openSheetId)) : ""}
+  `;
+}
+
+function renderStrip(list, nowId){
+  return `<div class="card" style="margin-bottom:12px">
+    <h3 style="margin-bottom:2px">〰️ A glance at the day</h3>
+    <p class="small">Beads on a thread — one for each part of the day. Tap one to jump to it below.</p>
+  </div>
+  <div class="strip-scroll">
+    ${list.map(b=>`
+      <div class="bead ${b.done?'done':''} ${b.id===nowId?'now':''}" onclick="jumpToBlock('${b.id}')" title="${b.title.replace(/"/g,'&quot;')}">
+        <div class="circ">${b.icon||"•"}</div>
+        <div class="t">${fmt12(b.time)}</div>
+      </div>`).join("")}
+  </div>
+  <p class="small">For the full picture — titles, durations, notes — switch to Full day.</p>`;
+}
+function jumpToBlock(id){ todayTab="timeline"; render(); setTimeout(()=>{ const el=document.getElementById("blk_"+id); if(el) el.scrollIntoView({behavior:"smooth",block:"center"}); },30); }
+
+function renderTimeline(list, nowId){
+  return `<div class="timeline">
+    ${list.map(b=>`
+      <div class="tblock ${b.done?'done':''} ${b.id===nowId?'now':''} ${b.anchor?'anchor':''}" id="blk_${b.id}">
+        <span class="checkdot ${b.done?'on':''}" onclick="event.stopPropagation();toggleDone('${b.id}')"></span>
+        <div class="tbody bar" style="border-left:3px solid ${CAT_COLOR[b.cat]||'var(--line)'}" onclick="openSheetId='${b.id}';render()">
+          <div class="thead">
+            <span class="time">${fmt12(b.time)}${b.dur?(' – '+fmt12(toHHMM(toMin(b.time)+b.dur))):''}</span>
+            ${b.dur? `<span class="dur">${b.dur} min</span>` : ""}
+          </div>
+          <div class="nm ${b.done?'doneline':''}">${b.icon||""} ${b.title}</div>
+          ${b.desc? `<div class="meta">${b.desc}</div>` : ""}
+        </div>
+      </div>`).join("")}
+  </div>`;
+}
+function toggleDone(id){
+  const list = getDayBlocks(selectedDay);
+  const b = list.find(x=>x.id===id); if(!b) return;
+  b.done = !b.done;
+  save();
+}
+
+/* ---- edit sheet with +5/-5 steppers ---- */
+let sheetDraft = null;
+function openSheetFor(id){ openSheetId=id; sheetDraft=null; render(); }
+function renderEditSheet(block){
+  if(!block) return "";
+  const draft = sheetDraft || {title:block.title, time:block.time, dur:block.dur};
+  sheetDraft = draft;
+  return `
+  <div class="sheet-overlay" onclick="if(event.target===this){openSheetId=null;render();}">
+    <div class="sheet">
+      <h3>${block.icon||""} Edit block</h3>
+      <label>Title</label>
+      <input type="text" value="${draft.title.replace(/"/g,'&quot;')}" oninput="sheetDraft.title=this.value">
+      <label>Start time</label>
+      <input type="time" value="${draft.time}" onchange="sheetDraft.time=this.value">
+      <label>Duration</label>
+      <div class="stepper">
+        <button onclick="stepDur(-5)">−5</button>
+        <span class="durval">${draft.dur} min</span>
+        <button onclick="stepDur(5)">+5</button>
+      </div>
+      ${block.anchor? `<div class="anchornote">⚓ This is an anchor block (bath, meals, job block, sleep). It won't shrink below a sensible minimum when the day gets squeezed.</div>` : ""}
+      <div class="sheetactions">
+        <button class="btn" onclick="confirmEdit('${block.id}')">Save</button>
+        <button class="btn secondary" onclick="openSheetId=null;sheetDraft=null;render()">Cancel</button>
+      </div>
+    </div>
+  </div>`;
+}
+function stepDur(delta){
+  sheetDraft.dur = Math.max(5, sheetDraft.dur + delta);
+  // live-update the number in place without a full re-render (keeps sheet open smoothly)
+  const el = document.querySelector(".sheet .durval");
+  if(el) el.textContent = sheetDraft.dur + " min";
+}
+function confirmEdit(id){
+  const {list, overflow} = applyBlockEdit(selectedDay, id, {title:sheetDraft.title, time:sheetDraft.time, dur:sheetDraft.dur});
+  cascadeMsg = overflow>0 ? `Today's a bit full — even after trimming flexible blocks, your day runs about ${overflow} min past 11:00pm.` : "";
+  openSheetId = null; sheetDraft = null;
+  save();
+}
+
+/* ---- check-in ---- */
+function getCheckin(n){
+  state.checkins = state.checkins || {};
+  return state.checkins[dayKey(n)] = state.checkins[dayKey(n)] || {};
+}
+function setCheckin(field, val){
+  const c = getCheckin(selectedDay);
+  c[field] = c[field]===val ? "" : val;
+  save();
+}
+function checkinChips(field, label, options){
+  const c = getCheckin(selectedDay);
+  return `<div class="checkin-field">
+    <div class="lbl">${label}</div>
+    <div class="row">${options.map(o=>`<button class="chip ${c[field]===o?'on':''}" onclick="setCheckin('${field}','${o}')">${o}</button>`).join("")}</div>
+  </div>`;
+}
+function renderCheckin(){
+  const c = getCheckin(selectedDay);
+  return `<div class="card">
+    <h3>🫶 How's today, really?</h3>
+    <p class="small">Quick and honest. This feeds your streak, not a test score.</p>
+    <div class="checkin-grid" style="margin-top:10px">
+      ${checkinChips("energy","Energy",["High","Good","Moderate","Low","Very low"])}
+      ${checkinChips("mood","Mood",["Great","Good","Neutral","Low","Anxious"])}
+      ${checkinChips("gut","Gut",["Great","Good","Okay","Bloated","Uncomfortable"])}
+    </div>
+    <label class="small" style="display:block;margin-top:16px;font-weight:700">A line for today</label>
+    <textarea style="width:100%;border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:6px;min-height:80px" placeholder="What actually happened today?" oninput="c.note=this.value" onblur="saveNote(this.value)">${c.note||""}</textarea>
+  </div>`;
+}
+function saveNote(v){ getCheckin(selectedDay).note = v; saveQuiet(); }
+
+/* ---- brain dump ---- */
+function addBrainDump(){
+  const el = document.getElementById("bdInput");
+  const v = (el.value||"").trim();
+  if(!v) return;
+  state.brainDump = state.brainDump || [];
+  state.brainDump.unshift({text:v, day:selectedDay, done:false, ts:Date.now()});
+  el.value = "";
+  save();
+}
+function toggleBd(i){ state.brainDump[i].done = !state.brainDump[i].done; save(); }
+function deleteBd(i){ state.brainDump.splice(i,1); save(); }
+function renderBrainDump(){
+  const items = (state.brainDump||[]);
+  return `<div class="card">
+    <h3>🧠 Brain dump</h3>
+    <p class="small">Catch it here before it becomes a worry. Clear it out whenever you like.</p>
+    <div class="bd-input" style="margin-top:10px">
+      <input type="text" id="bdInput" placeholder="Call the dentist, business idea, worry about rent…" onkeydown="if(event.key==='Enter')addBrainDump()">
+      <button class="btn" onclick="addBrainDump()">Add</button>
+    </div>
+    <div class="bd-list">
+      ${items.length? items.map((it,i)=>`
+        <div class="bd-item ${it.done?'done':''}">
+          <input type="checkbox" ${it.done?"checked":""} onchange="toggleBd(${i})">
+          <span>${it.text}</span>
+          <button onclick="deleteBd(${i})">✕</button>
+        </div>`).join("") : `<p class="small">Nothing captured yet.</p>`}
+    </div>
+  </div>`;
+}
+
+/* ============================= AROGYA NEST ============================= */
+let arogyaTab = "meals"; // meals | watermove | pantry | recipes | weight
+
+const RECIPES = [
+  {id:"r1", name:"Moong dal khichdi", icon:"🍲", tags:["lunch","dinner"], time:25,
+    ingredients:["Moong dal","Rice","Turmeric","Cumin","Ghee","Vegetables of choice"]},
+  {id:"r2", name:"Vegetable poha", icon:"🍚", tags:["breakfast"], time:15,
+    ingredients:["Poha (flattened rice)","Onion","Peanuts","Mustard seeds","Curry leaves","Lemon"]},
+  {id:"r3", name:"Curd rice with tempering", icon:"🥣", tags:["lunch","dinner"], time:15,
+    ingredients:["Cooked rice","Curd / yogurt","Mustard seeds","Curry leaves","Ginger"]},
+  {id:"r4", name:"Masala oats", icon:"🥣", tags:["breakfast","snack"], time:10,
+    ingredients:["Rolled oats","Mixed vegetables","Turmeric","Cumin","Salt"]},
+  {id:"r5", name:"Sprouts & peanut salad", icon:"🥗", tags:["snack","lunch"], time:10,
+    ingredients:["Mixed sprouts","Peanuts","Onion","Tomato","Lemon","Coriander"]},
+  {id:"r6", name:"Vegetable soup", icon:"🍵", tags:["dinner","snack"], time:20,
+    ingredients:["Mixed vegetables","Garlic","Pepper","Salt","Coriander"]},
+  {id:"r7", name:"Paneer / tofu stir-fry", icon:"🍛", tags:["lunch","dinner"], time:20,
+    ingredients:["Paneer or tofu","Bell peppers","Onion","Soy sauce or masala","Oil"]},
+  {id:"r8", name:"Banana + nuts bowl", icon:"🍌", tags:["breakfast","snack"], time:5,
+    ingredients:["Banana","Almonds / walnuts","Honey (optional)"]}
+];
+
+const PANTRY_SEED = [
+  {name:"Rice", unit:"kg", qty:3, low:2},
+  {name:"Moong dal", unit:"kg", qty:1, low:1},
+  {name:"Onion", unit:"kg", qty:1, low:1},
+  {name:"Tomato", unit:"kg", qty:1, low:1},
+  {name:"Milk", unit:"L", qty:1, low:1},
+  {name:"Curd / yogurt", unit:"cup", qty:2, low:1},
+  {name:"Cooking oil", unit:"L", qty:1, low:1},
+  {name:"Eggs", unit:"pcs", qty:6, low:4},
+  {name:"Vegetables (mixed)", unit:"kg", qty:1, low:1},
+  {name:"Peanuts", unit:"g", qty:200, low:100}
+];
+function ensurePantrySeed(){
+  if(!state.pantrySeeded){
+    state.pantry = PANTRY_SEED.map((p,i)=>({id:"p"+i, ...p}));
+    state.pantrySeeded = true;
+    saveQuiet();
+  }
+}
+
+function renderArogya(){
+  ensurePantrySeed();
+  const tabs = [["meals","🍽 Meals"],["watermove","💧 Water & move"],["pantry","🧺 Pantry & shopping"],["recipes","📖 Recipes"],["weight","⚖️ Weight"]];
+  let body = "";
+  if(arogyaTab==="meals") body = renderMeals();
+  else if(arogyaTab==="watermove") body = renderWaterMove();
+  else if(arogyaTab==="pantry") body = renderPantryShopping();
+  else if(arogyaTab==="recipes") body = renderRecipes();
+  else if(arogyaTab==="weight") body = renderWeight();
+  return `
+  <div class="todaytabs">
+    ${tabs.map(([k,l])=>`<button class="${arogyaTab===k?'on':''}" onclick="arogyaTab='${k}';render()">${l}</button>`).join("")}
+  </div>
+  ${body}`;
+}
+
+/* ---- meals ---- */
+function getMeals(n){
+  state.meals = state.meals || {};
+  return state.meals[dayKey(n)] = state.meals[dayKey(n)] || {breakfast:{text:"",done:false},lunch:{text:"",done:false},dinner:{text:"",done:false},snack:{text:"",done:false}};
+}
+function setMealText(meal, val){ getMeals(selectedDay)[meal].text = val; saveQuiet(); }
+function toggleMealDone(meal){ const m=getMeals(selectedDay)[meal]; m.done=!m.done; save(); }
+function useRecipeForMeal(id, meal){
+  const r = RECIPES.find(x=>x.id===id); if(!r) return;
+  getMeals(selectedDay)[meal].text = r.icon+" "+r.name;
+  save();
+}
+function mealCard(meal, label, icon){
+  const m = getMeals(selectedDay)[meal];
+  const suggestions = RECIPES.filter(r=>r.tags.includes(meal)).slice(0,3);
+  return `<div class="mealcard ${m.done?'done':''}">
+    <div class="mtitle"><span>${icon} ${label}</span>
+      <span class="checkdot ${m.done?'on':''}" onclick="toggleMealDone('${meal}')" style="width:20px;height:20px"></span>
+    </div>
+    <textarea rows="2" placeholder="What are you having?" oninput="setMealText('${meal}',this.value)">${m.text}</textarea>
+    <div class="mactions">
+      ${suggestions.map(r=>`<button class="chip" onclick="useRecipeForMeal('${r.id}','${meal}')">${r.icon} ${r.name}</button>`).join("")}
+    </div>
+  </div>`;
+}
+function renderMeals(){
+  return `<div class="card" style="margin-bottom:14px">
+    <h3>🍽 Today's meals</h3>
+    <p class="small">Jot down the plan, tick it off once eaten, or tap a suggestion to fill it in.</p>
+  </div>
+  <div class="mealgrid">
+    ${mealCard("breakfast","Breakfast","🍳")}
+    ${mealCard("lunch","Lunch","🍲")}
+    ${mealCard("snack","Snack","🍵")}
+    ${mealCard("dinner","Dinner","🍽️")}
+  </div>`;
+}
+
+/* ---- water & movement ---- */
+function getWater(n){ state.water=state.water||{}; return state.water[dayKey(n)] = state.water[dayKey(n)] || {glasses:0, target:8}; }
+function getMove(n){ state.move=state.move||{}; return state.move[dayKey(n)] = state.move[dayKey(n)] || {minutes:0, target:30}; }
+function adjustWater(delta){ const w=getWater(selectedDay); w.glasses=Math.max(0,w.glasses+delta); save(); }
+function adjustMove(delta){ const m=getMove(selectedDay); m.minutes=Math.max(0,m.minutes+delta); save(); }
+function renderWaterMove(){
+  const w = getWater(selectedDay), m = getMove(selectedDay);
+  const wp = Math.min(100, Math.round(w.glasses/w.target*100));
+  const mp = Math.min(100, Math.round(m.minutes/m.target*100));
+  return `<div class="grid">
+    <div class="span6 card">
+      <h3>💧 Water</h3>
+      <p class="small">Aim for ${w.target} glasses today.</p>
+      <div class="counterbox">
+        <button class="btn secondary" onclick="adjustWater(-1)">−</button>
+        <span class="cval">${w.glasses}</span>
+        <button class="btn secondary" onclick="adjustWater(1)">+</button>
+        <span class="small">of ${w.target} glasses</span>
+      </div>
+      <div class="progtrack"><i style="width:${wp}%"></i></div>
+    </div>
+    <div class="span6 card">
+      <h3>🚶 Movement</h3>
+      <p class="small">Any walking, exercise or stretching — aim for ${m.target} min.</p>
+      <div class="counterbox">
+        <button class="btn secondary" onclick="adjustMove(-5)">−5</button>
+        <span class="cval">${m.minutes}m</span>
+        <button class="btn secondary" onclick="adjustMove(5)">+5</button>
+      </div>
+      <div class="progtrack"><i style="width:${mp}%"></i></div>
+    </div>
+  </div>`;
+}
+
+/* ---- pantry & shopping ---- */
+function adjustPantryQty(id, delta){
+  const it = state.pantry.find(p=>p.id===id); if(!it) return;
+  it.qty = Math.max(0, +(it.qty+delta).toFixed(2));
+  save();
+}
+function addPantryItem(){
+  const nm = document.getElementById("pName"), qt = document.getElementById("pQty"), un = document.getElementById("pUnit");
+  const name = (nm.value||"").trim(); if(!name) return;
+  state.pantry.push({id:"p"+Date.now(), name, qty:+qt.value||1, unit:(un.value||"").trim()||"pcs", low:1});
+  nm.value=""; qt.value=""; un.value="";
+  save();
+}
+function addLowToShopping(){
+  const low = state.pantry.filter(p=>p.qty<=p.low);
+  state.shopping = state.shopping || [];
+  low.forEach(p=>{ if(!state.shopping.find(s=>s.name.toLowerCase()===p.name.toLowerCase() && !s.done)) state.shopping.push({id:"s"+Date.now()+Math.random().toString(36).slice(2,6), name:p.name, done:false, fromPantry:p.id}); });
+  save();
+}
+function addShoppingItem(){
+  const el = document.getElementById("shopInput");
+  const v = (el.value||"").trim(); if(!v) return;
+  state.shopping = state.shopping || [];
+  state.shopping.push({id:"s"+Date.now(), name:v, done:false});
+  el.value=""; save();
+}
+function toggleShoppingDone(id){
+  const it = state.shopping.find(s=>s.id===id); if(!it) return;
+  it.done = !it.done;
+  if(it.done && it.fromPantry){ const p = state.pantry.find(x=>x.id===it.fromPantry); if(p) p.qty = p.low*2 || p.qty+1; }
+  save();
+}
+function deleteShoppingItem(id){ state.shopping = state.shopping.filter(s=>s.id!==id); save(); }
+function clearBoughtShopping(){ state.shopping = state.shopping.filter(s=>!s.done); save(); }
+function renderPantryShopping(){
+  const pantry = state.pantry||[];
+  const shop = state.shopping||[];
+  return `<div class="grid">
+    <div class="span6 card">
+      <h3>🧺 Pantry</h3>
+      <p class="small">Keep stock roughly up to date — low items can be pushed to shopping in one tap.</p>
+      <div class="pantry-list">
+        ${pantry.map(p=>`
+          <div class="pantry-item ${p.qty<=p.low?'low':''}">
+            <span class="pname">${p.name}</span>
+            ${p.qty<=p.low? `<span class="lowtag">low</span>` : ""}
+            <button class="qtybtn" onclick="adjustPantryQty('${p.id}',-1)">−</button>
+            <span class="pqty">${p.qty} ${p.unit}</span>
+            <button class="qtybtn" onclick="adjustPantryQty('${p.id}',1)">+</button>
+          </div>`).join("")}
+      </div>
+      <div class="addrow">
+        <input class="nm" id="pName" type="text" placeholder="Item name">
+        <input class="qty" id="pQty" type="number" placeholder="Qty">
+        <input class="qty" id="pUnit" type="text" placeholder="Unit">
+        <button class="btn secondary" onclick="addPantryItem()">Add</button>
+      </div>
+      <button class="btn ghost" style="margin-top:10px" onclick="addLowToShopping()">↳ Push low items to shopping list</button>
+    </div>
+    <div class="span6 card">
+      <h3>🛒 Shopping list</h3>
+      <div class="addrow" style="margin-top:0">
+        <input class="nm" id="shopInput" type="text" placeholder="Add an item…" onkeydown="if(event.key==='Enter')addShoppingItem()">
+        <button class="btn" onclick="addShoppingItem()">Add</button>
+      </div>
+      <div class="shop-list">
+        ${shop.length? shop.map(s=>`
+          <div class="shop-item ${s.done?'done':''}">
+            <input type="checkbox" ${s.done?"checked":""} onchange="toggleShoppingDone('${s.id}')">
+            <span>${s.name}</span>
+            <button onclick="deleteShoppingItem('${s.id}')" style="background:none;border:0;color:var(--muted);cursor:pointer">✕</button>
+          </div>`).join("") : `<p class="small">Nothing on the list.</p>`}
+      </div>
+      ${shop.some(s=>s.done)? `<button class="btn ghost" style="margin-top:10px" onclick="clearBoughtShopping()">Clear bought items</button>` : ""}
+    </div>
+  </div>`;
+}
+
+/* ---- recipes ---- */
+function renderRecipes(){
+  return `<div class="card" style="margin-bottom:14px">
+    <h3>📖 Recipe ideas</h3>
+    <p class="small">Simple, pantry-friendly ideas. Use the chips in Meals to drop one straight into today's plan.</p>
+  </div>
+  <div class="recipe-grid">
+    ${RECIPES.map(r=>`
+      <div class="recipe-card">
+        <h4>${r.icon} ${r.name}</h4>
+        <div class="rtags">${r.tags.map(t=>`<span class="rtag">${t}</span>`).join("")} <span class="rtag">${r.time} min</span></div>
+        <ul>${r.ingredients.map(i=>`<li>${i}</li>`).join("")}</ul>
+      </div>`).join("")}
+  </div>`;
+}
+
+/* ---- weight trend ---- */
+function logWeight(){
+  const el = document.getElementById("weightInput");
+  const kg = parseFloat(el.value);
+  if(!kg || kg<=0) return;
+  const iso = dateForDay(selectedDay);
+  state.weight = state.weight || [];
+  const existing = state.weight.find(w=>w.date===iso);
+  if(existing) existing.kg = kg; else state.weight.push({date:iso, kg});
+  state.weight.sort((a,b)=>a.date.localeCompare(b.date));
+  el.value = "";
+  save();
+}
+function deleteWeight(date){ state.weight = state.weight.filter(w=>w.date!==date); save(); }
+function renderWeightSVG(entries){
+  if(entries.length<2) return `<p class="small">Log at least two days to see your trend line.</p>`;
+  const w=560,h=140,pad=24;
+  const kgs = entries.map(e=>e.kg);
+  const min=Math.min(...kgs)-0.5, max=Math.max(...kgs)+0.5;
+  const pts = entries.map((e,i)=>{
+    const x = pad + (i/(entries.length-1))*(w-pad*2);
+    const y = h-pad - ((e.kg-min)/(max-min||1))*(h-pad*2);
+    return x+","+y;
+  }).join(" ");
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:140px;margin-top:10px">
+    <polyline points="${pts}" fill="none" stroke="#3d4a8a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    ${entries.map((e,i)=>{ const x=pad+(i/(entries.length-1))*(w-pad*2); const y=h-pad-((e.kg-min)/(max-min||1))*(h-pad*2); return `<circle cx="${x}" cy="${y}" r="3.5" fill="#c9ae77"/>`; }).join("")}
+  </svg>`;
+}
+function renderWeight(){
+  const entries = state.weight||[];
+  const first = entries[0], last = entries[entries.length-1];
+  const change = (first && last && entries.length>1) ? (last.kg-first.kg) : 0;
+  return `<div class="grid">
+    <div class="span12 card">
+      <h3>⚖️ Weight trend</h3>
+      <p class="small">A gentle log, not a judgment. Weekly glances matter more than daily swings.</p>
+      <div class="weight-row">
+        <div><label class="small" style="font-weight:700;display:block;margin-bottom:5px">Log for ${niceDate(dateForDay(selectedDay),{day:"numeric",month:"short"})}</label>
+        <input type="number" step="0.1" id="weightInput" placeholder="kg"></div>
+        <button class="btn" onclick="logWeight()">Save</button>
+      </div>
+      <div class="weight-stats">
+        <div class="wstat"><b>${last? last.kg+" kg" : "—"}</b><span>latest</span></div>
+        <div class="wstat"><b>${entries.length>1? (change>0?"+":"")+change.toFixed(1)+" kg" : "—"}</b><span>since first log</span></div>
+        <div class="wstat"><b>${entries.length}</b><span>entries logged</span></div>
+      </div>
+      ${renderWeightSVG(entries)}
+      <div class="weight-log">
+        ${entries.slice().reverse().map(e=>`<div class="wl"><span>${niceDate(e.date,{day:"numeric",month:"short"})}</span><span>${e.kg} kg <button onclick="deleteWeight('${e.date}')" style="background:none;border:0;color:var(--muted);cursor:pointer;margin-left:6px">✕</button></span></div>`).join("")}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================= BUSINESS NEST ============================= */
+let businessTab = "plan"; // plan | pipeline | income | pomodoro
+
+const BUSINESS_PLAN = [
+  {phase:"Week 1 · Validate", items:[
+    "Write down the one problem you're solving, in one sentence",
+    "List 10 people who have this problem and could pay for a fix",
+    "Message 5 of them and just ask about the problem, not your idea",
+    "Note the exact words people use to describe the pain",
+    "Sketch the smallest version of a fix you could offer this week",
+    "Price it — even a rough number forces real thinking",
+    "Decide the one channel you'll use to reach buyers first"
+  ]},
+  {phase:"Week 2 · Build", items:[
+    "Build the thinnest possible version of the offer",
+    "Write the one page that explains what it is and who it's for",
+    "Set up a simple way for someone to say yes (form, DM, call)",
+    "Get one real person to try it, even roughly",
+    "Fix the biggest point of confusion they hit",
+    "Prepare a short outreach message you're not embarrassed to send",
+    "Line up your first 10 outreach targets for next week"
+  ]},
+  {phase:"Week 3 · Launch", items:[
+    "Send the first 10 outreach messages",
+    "Post about what you're building in one public place",
+    "Follow up with everyone who didn't reply after 2 days",
+    "Get your first real conversation booked",
+    "Take the first piece of honest feedback and act on it",
+    "Ask one happy contact for an introduction",
+    "Review the week: what got replies, what didn't"
+  ]},
+  {phase:"Week 4 · Grow", items:[
+    "Double down on the channel that worked best",
+    "Turn your best result into a short case study or proof point",
+    "Reach out to 10 new people using what you learned",
+    "Tidy up pricing based on real conversations",
+    "Set next month's one big goal",
+    "Thank everyone who helped, even with a no",
+    "Write down what you'd do differently starting day 1"
+  ]}
+];
+function toggleBizPlan(day){
+  state.bizPlanDone = state.bizPlanDone || {};
+  state.bizPlanDone[day] = !state.bizPlanDone[day];
+  save();
+}
+function bizPlanProgress(){
+  const total = BUSINESS_PLAN.reduce((s,p)=>s+p.items.length,0);
+  const done = Object.values(state.bizPlanDone||{}).filter(Boolean).length;
+  return {done, total};
+}
+function renderPlan(){
+  const prog = bizPlanProgress();
+  let day = 0;
+  const phases = BUSINESS_PLAN.map(p=>{
+    const rows = p.items.map(txt=>{
+      day++;
+      const d = day;
+      const isDone = !!(state.bizPlanDone||{})[d];
+      return `<div class="plan-item ${isDone?'done':''}">
+        <span class="checkdot pd ${isDone?'on':''}" onclick="toggleBizPlan(${d})"></span>
+        <div class="ptxt"><b>${txt}</b><span>Day ${d}</span></div>
+      </div>`;
+    }).join("");
+    return `<div class="phase-head"><span class="pn">${p.phase}</span></div>${rows}`;
+  }).join("");
+  return `<div class="card" style="margin-bottom:14px">
+    <h3>🧭 30-day business plan</h3>
+    <p class="small">Work through this at your own pace — tick off each step as you go. ${prog.done}/${prog.total} done.</p>
+    <div class="progtrack"><i style="width:${Math.round(prog.done/prog.total*100)}%"></i></div>
+  </div>
+  <div class="card">${phases}</div>`;
+}
+
+/* ---- pipeline ---- */
+const LEAD_STAGES = ["New","Contacted","Proposal","Won","Lost"];
+const STAGE_COLOR = {New:"#4a6a8a", Contacted:"#d4af5a", Proposal:"#9a7aae", Won:"#5a9d8d", Lost:"#9c8268"};
+function addLead(){
+  const nm = document.getElementById("leadName"), val = document.getElementById("leadVal");
+  const name = (nm.value||"").trim(); if(!name) return;
+  state.pipeline = state.pipeline || [];
+  state.pipeline.unshift({id:"l"+Date.now(), name, stage:"New", value:val.value||"", note:"", date:todayISO()});
+  nm.value=""; val.value="";
+  save();
+}
+function setLeadStage(id, stage){ const l=state.pipeline.find(x=>x.id===id); if(l){ l.stage=stage; save(); } }
+function setLeadNote(id, val){ const l=state.pipeline.find(x=>x.id===id); if(l){ l.note=val; saveQuiet(); } }
+function deleteLead(id){ state.pipeline = state.pipeline.filter(l=>l.id!==id); save(); }
+let pipelineFilter = "All";
+function renderPipeline(){
+  const leads = (state.pipeline||[]).filter(l=>pipelineFilter==="All"||l.stage===pipelineFilter);
+  const counts = LEAD_STAGES.map(s=>({s, n:(state.pipeline||[]).filter(l=>l.stage===s).length}));
+  return `<div class="card" style="margin-bottom:14px">
+    <h3>📇 Pipeline</h3>
+    <p class="small">Track every lead from first contact to won (or lost) — a small, honest list beats a fancy CRM.</p>
+    <div class="addrow">
+      <input class="nm" id="leadName" type="text" placeholder="Lead or company name">
+      <input class="qty" id="leadVal" type="text" placeholder="Value">
+      <button class="btn" onclick="addLead()">Add lead</button>
+    </div>
+    <div class="stagebar" style="margin-top:14px">
+      <button class="stagechip ${pipelineFilter==='All'?'on':''}" style="${pipelineFilter==='All'?'background:'+'var(--accent-2)':''}" onclick="pipelineFilter='All';render()">All (${(state.pipeline||[]).length})</button>
+      ${counts.map(c=>`<button class="stagechip ${pipelineFilter===c.s?'on':''}" style="${pipelineFilter===c.s?'background:'+STAGE_COLOR[c.s]:''}" onclick="pipelineFilter='${c.s}';render()">${c.s} (${c.n})</button>`).join("")}
+    </div>
+  </div>
+  ${leads.length? leads.map(l=>`
+    <div class="lead-card">
+      <div class="lhead"><span class="lname">${l.name}</span>${l.value?`<span class="lval">${l.value}</span>`:""}</div>
+      <input type="text" placeholder="Note…" value="${(l.note||"").replace(/"/g,'&quot;')}" oninput="setLeadNote('${l.id}',this.value)" style="width:100%;border:1px solid var(--line);border-radius:9px;padding:6px 9px;margin-top:7px;font-size:12.5px;background:#fcfdf9">
+      <div class="lrow">
+        <div class="row" style="gap:5px">
+          ${LEAD_STAGES.map(s=>`<button class="stagechip ${l.stage===s?'on':''}" style="${l.stage===s?'background:'+STAGE_COLOR[s]:''}" onclick="setLeadStage('${l.id}','${s}')">${s}</button>`).join("")}
+        </div>
+        <button onclick="deleteLead('${l.id}')" style="background:none;border:0;color:var(--muted);cursor:pointer">✕</button>
+      </div>
+    </div>`).join("") : `<p class="small">No leads in this view yet.</p>`}`;
+}
+
+/* ---- income ---- */
+function addIncome(){
+  const src = document.getElementById("incSrc"), amt = document.getElementById("incAmt");
+  const a = parseFloat(amt.value); if(!a) return;
+  state.income = state.income || [];
+  state.income.unshift({id:"i"+Date.now(), source:(src.value||"").trim()||"Income", amount:a, date:todayISO()});
+  src.value=""; amt.value="";
+  save();
+}
+function deleteIncome(id){ state.income = state.income.filter(i=>i.id!==id); save(); }
+function renderIncome(){
+  const items = state.income||[];
+  const total = items.reduce((s,i)=>s+i.amount,0);
+  const thisMonth = items.filter(i=>i.date.slice(0,7)===todayISO().slice(0,7)).reduce((s,i)=>s+i.amount,0);
+  return `<div class="card" style="margin-bottom:14px">
+    <h3>💰 Income log</h3>
+    <p class="small">Every bit counts, and watching it add up keeps the effort honest.</p>
+    <div class="addrow">
+      <input class="nm" id="incSrc" type="text" placeholder="Source (client, sale, gig…)">
+      <input class="qty" id="incAmt" type="number" placeholder="Amount">
+      <button class="btn" onclick="addIncome()">Add</button>
+    </div>
+    <div class="income-stats">
+      <div class="wstat"><b>${thisMonth.toFixed(0)}</b><span>this month</span></div>
+      <div class="wstat"><b>${total.toFixed(0)}</b><span>all time</span></div>
+      <div class="wstat"><b>${items.length}</b><span>entries</span></div>
+    </div>
+  </div>
+  ${items.length? items.map(i=>`
+    <div class="income-item">
+      <div style="flex:1"><span class="iname">${i.source}</span><br><span class="idate">${niceDate(i.date,{day:"numeric",month:"short"})}</span></div>
+      <span class="iamt">+${i.amount}</span>
+      <button onclick="deleteIncome('${i.id}')" style="background:none;border:0;color:var(--muted);cursor:pointer">✕</button>
+    </div>`).join("") : `<p class="small">Nothing logged yet.</p>`}`;
+}
+
+/* ---- pomodoro ---- */
+let pomo = { mode:"focus", secondsLeft:25*60, total:25*60, running:false, timer:null };
+function pomoSessions(n){ state.pomodoro = state.pomodoro || {}; return state.pomodoro[dayKey(n)] = state.pomodoro[dayKey(n)] || {sessions:0}; }
+function pomoTick(){
+  if(pomo.secondsLeft<=0){
+    if(pomo.mode==="focus"){ pomoSessions(selectedDay).sessions++; saveQuiet(); pomo.mode="break"; pomo.total=5*60; pomo.secondsLeft=5*60; }
+    else { pomo.mode="focus"; pomo.total=25*60; pomo.secondsLeft=25*60; }
+  } else {
+    pomo.secondsLeft--;
+  }
+  renderPomoRing();
+}
+function pomoStart(){ if(pomo.running) return; pomo.running=true; pomo.timer=setInterval(pomoTick,1000); renderPomoRing(); }
+function pomoPause(){ pomo.running=false; clearInterval(pomo.timer); renderPomoRing(); }
+function pomoReset(){ pomo.running=false; clearInterval(pomo.timer); pomo.mode="focus"; pomo.total=25*60; pomo.secondsLeft=25*60; renderPomoRing(); }
+function renderPomoRing(){
+  const el = document.getElementById("pomoRingWrap");
+  if(!el) return;
+  const pct = Math.round((1-pomo.secondsLeft/pomo.total)*100);
+  const mm = String(Math.floor(pomo.secondsLeft/60)).padStart(2,"0");
+  const ss = String(pomo.secondsLeft%60).padStart(2,"0");
+  el.querySelector(".pomo-ring").style.setProperty("--p", pct);
+  el.querySelector(".inner b").textContent = mm+":"+ss;
+  el.querySelector(".inner span").textContent = pomo.mode;
+  const startBtn = document.getElementById("pomoStartBtn");
+  if(startBtn) startBtn.textContent = pomo.running? "Pause" : (pomo.secondsLeft===pomo.total? "Start" : "Resume");
+}
+function pomoToggle(){ pomo.running? pomoPause() : pomoStart(); }
+function renderPomodoro(){
+  const s = pomoSessions(selectedDay);
+  const pct = Math.round((1-pomo.secondsLeft/pomo.total)*100);
+  const mm = String(Math.floor(pomo.secondsLeft/60)).padStart(2,"0");
+  const ss = String(pomo.secondsLeft%60).padStart(2,"0");
+  const btnLabel = pomo.running? "Pause" : (pomo.secondsLeft===pomo.total? "Start" : "Resume");
+  return `<div class="card">
+    <h3>⏳ Focus timer</h3>
+    <p class="small">25 minutes of focus, 5 to breathe. ${s.sessions} focus session${s.sessions===1?"":"s"} today.</p>
+    <div id="pomoRingWrap">
+      <div class="pomo-ring" style="--p:${pct}"><div class="inner"><b>${mm}:${ss}</b><span>${pomo.mode}</span></div></div>
+      <div class="pomo-actions">
+        <button class="btn" id="pomoStartBtn" onclick="pomoToggle()">${btnLabel}</button>
+        <button class="btn secondary" onclick="pomoReset()">Reset</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderBusiness(){
+  const tabs = [["plan","🧭 30-day plan"],["pipeline","📇 Pipeline"],["income","💰 Income"],["pomodoro","⏳ Focus timer"]];
+  let body = "";
+  if(businessTab==="plan") body = renderPlan();
+  else if(businessTab==="pipeline") body = renderPipeline();
+  else if(businessTab==="income") body = renderIncome();
+  else if(businessTab==="pomodoro") body = renderPomodoro();
+  return `
+  <div class="todaytabs">
+    ${tabs.map(([k,l])=>`<button class="${businessTab===k?'on':''}" onclick="businessTab='${k}';render()">${l}</button>`).join("")}
+  </div>
+  ${body}`;
+}
+
+/* ============================= JOURNAL NEST ============================= */
+let journalTab = "sankalp"; // sankalp | journal | reading | summary
+
+/* ---- sankalp (40-day vow tracker) ---- */
+function setSankalpText(){
+  const el = document.getElementById("sankalpText");
+  state.sankalp = state.sankalp || {text:"", startDay:selectedDay, done:{}};
+  state.sankalp.text = el.value.trim();
+  save();
+}
+function restartSankalp(){
+  if(!confirm("Start a fresh 40-day Sankalp from today? This clears your current progress.")) return;
+  state.sankalp.startDay = selectedDay;
+  state.sankalp.done = {};
+  save();
+}
+function toggleSankalpDay(d){
+  state.sankalp.done = state.sankalp.done || {};
+  state.sankalp.done[d] = !state.sankalp.done[d];
+  save();
+}
+function renderSankalp(){
+  const s = state.sankalp || {text:"", startDay:selectedDay, done:{}};
+  const todayRel = todayDayNum() - s.startDay + 1;
+  const doneCount = Object.values(s.done||{}).filter(Boolean).length;
+  const cells = Array.from({length:40}).map((_,i)=>{
+    const d = i+1;
+    const isDone = !!(s.done||{})[d];
+    const isToday = d===todayRel;
+    return `<div class="sankalp-day ${isDone?'done':''} ${isToday?'today':''}" onclick="toggleSankalpDay(${d})" title="Day ${d}">${d}</div>`;
+  }).join("");
+  return `<div class="card" style="margin-bottom:14px">
+    <h3>☸️ Sankalp — 40-day vow</h3>
+    <p class="small">One resolution, held steadily for 40 days. Set it once, then just show up.</p>
+    <div class="sankalp-set">
+      <input type="text" id="sankalpText" placeholder="e.g. Meditate every morning without skipping" value="${(s.text||"").replace(/"/g,'&quot;')}" onblur="setSankalpText()">
+      <button class="btn secondary" onclick="restartSankalp()">Start fresh 40</button>
+    </div>
+    ${s.text? `<p style="margin-top:12px;font-family:'Fraunces',serif;font-style:italic;color:var(--accent-2)">"${s.text}"</p>` : ""}
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <b style="font-family:'Fraunces',serif;font-size:15px">${doneCount}/40 days kept</b>
+      <span class="small">Today is day ${Math.max(1,Math.min(40,todayRel))} of 40</span>
+    </div>
+    <div class="sankalp-grid">${cells}</div>
+  </div>`;
+}
+
+/* ---- journal & gratitude ---- */
+function getJournal(n){ state.journal=state.journal||{}; return state.journal[dayKey(n)] = state.journal[dayKey(n)] || {entry:"", g1:"",g2:"",g3:""}; }
+function saveJournalField(field, val){ getJournal(selectedDay)[field] = val; saveQuiet(); }
+function renderJournalEntry(){
+  const j = getJournal(selectedDay);
+  return `<div class="card">
+    <h3>📓 Journal & gratitude</h3>
+    <p class="small">A few honest lines for ${niceDate(dateForDay(selectedDay),{day:"numeric",month:"short"})}.</p>
+    <label class="small" style="display:block;margin-top:14px;font-weight:700">Today's entry</label>
+    <textarea style="width:100%;border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:6px;min-height:110px;background:#fff;font-family:inherit" placeholder="What happened, what you felt, what you noticed…" oninput="saveJournalField('entry',this.value)">${j.entry}</textarea>
+    <label class="small" style="display:block;margin-top:16px;font-weight:700">Three things you're grateful for</label>
+    <div style="margin-top:8px">
+      <div class="gratitude-row"><span>1</span><input type="text" value="${(j.g1||"").replace(/"/g,'&quot;')}" oninput="saveJournalField('g1',this.value)"></div>
+      <div class="gratitude-row"><span>2</span><input type="text" value="${(j.g2||"").replace(/"/g,'&quot;')}" oninput="saveJournalField('g2',this.value)"></div>
+      <div class="gratitude-row"><span>3</span><input type="text" value="${(j.g3||"").replace(/"/g,'&quot;')}" oninput="saveJournalField('g3',this.value)"></div>
+    </div>
+  </div>`;
+}
+
+/* ---- reading list ---- */
+const READ_STATUSES = ["To read","Reading","Done"];
+const READ_COLOR = {"To read":"#9c8268","Reading":"#6fa8c0","Done":"#8b7fc0"};
+function addBook(){
+  const t = document.getElementById("bookTitle"), a = document.getElementById("bookAuthor");
+  const title = (t.value||"").trim(); if(!title) return;
+  state.reading = state.reading || [];
+  state.reading.unshift({id:"b"+Date.now(), title, author:(a.value||"").trim(), status:"To read", notes:""});
+  t.value=""; a.value="";
+  save();
+}
+function setBookStatus(id, status){ const b=state.reading.find(x=>x.id===id); if(b){ b.status=status; save(); } }
+function setBookNotes(id, v){ const b=state.reading.find(x=>x.id===id); if(b){ b.notes=v; saveQuiet(); } }
+function deleteBook(id){ state.reading = state.reading.filter(b=>b.id!==id); save(); }
+function renderReading(){
+  const books = state.reading||[];
+  return `<div class="card" style="margin-bottom:14px">
+    <h3>📚 Reading list</h3>
+    <p class="small">Books and articles worth coming back to.</p>
+    <div class="addrow">
+      <input class="nm" id="bookTitle" type="text" placeholder="Title">
+      <input class="nm" id="bookAuthor" type="text" placeholder="Author (optional)">
+      <button class="btn" onclick="addBook()">Add</button>
+    </div>
+  </div>
+  ${books.length? books.map(b=>`
+    <div class="book-item">
+      <div class="bhead"><span class="btitle">${b.title}</span></div>
+      ${b.author? `<span class="bauthor">${b.author}</span>` : ""}
+      <input type="text" placeholder="Notes, quotes, takeaways…" value="${(b.notes||"").replace(/"/g,'&quot;')}" oninput="setBookNotes('${b.id}',this.value)" style="width:100%;border:1px solid var(--line);border-radius:9px;padding:6px 9px;margin-top:8px;font-size:12.5px;background:#fcfdf9">
+      <div class="brow">
+        <div class="row" style="gap:5px">
+          ${READ_STATUSES.map(s=>`<button class="stagechip ${b.status===s?'on':''}" style="${b.status===s?'background:'+READ_COLOR[s]:''}" onclick="setBookStatus('${b.id}','${s}')">${s}</button>`).join("")}
+        </div>
+        <button onclick="deleteBook('${b.id}')" style="background:none;border:0;color:var(--muted);cursor:pointer">✕</button>
+      </div>
+    </div>`).join("") : `<p class="small">Nothing on the list yet.</p>`}`;
+}
+
+/* ---- summary / consistency ---- */
+function renderJournalSummary(){
+  const streak = streakCount();
+  const sankalpDone = Object.values((state.sankalp||{}).done||{}).filter(Boolean).length;
+  const bizProg = bizPlanProgress();
+  const journalDays = Object.values(state.journal||{}).filter(j=>j.entry&&j.entry.trim()).length;
+  const incomeTotal = (state.income||[]).reduce((s,i)=>s+i.amount,0);
+  const booksRead = (state.reading||[]).filter(b=>b.status==="Done").length;
+  let last7 = 0;
+  for(let i=0;i<7;i++){ const n = todayDayNum()-i; if(n>=1 && dayActivity(n).level>0) last7++; }
+  return `<div class="card" style="margin-bottom:14px">
+    <h3>🪷 Summary & consistency</h3>
+    <p class="small">A quiet look at how the pieces are adding up.</p>
+  </div>
+  <div class="summary-grid">
+    <div class="sumtile"><b>${streak}</b><span>day streak</span></div>
+    <div class="sumtile"><b>${last7}/7</b><span>active last 7 days</span></div>
+    <div class="sumtile"><b>${sankalpDone}/40</b><span>sankalp days kept</span></div>
+    <div class="sumtile"><b>${bizProg.done}/${bizProg.total}</b><span>business plan steps</span></div>
+    <div class="sumtile"><b>${journalDays}</b><span>journal entries</span></div>
+    <div class="sumtile"><b>${booksRead}</b><span>books finished</span></div>
+    <div class="sumtile"><b>${incomeTotal.toFixed(0)}</b><span>income logged</span></div>
+    <div class="sumtile"><b>${(state.pipeline||[]).filter(l=>l.stage==="Won").length}</b><span>leads won</span></div>
+    <div class="sumtile"><b>${monthActiveCount()}</b><span>active days this month</span></div>
+  </div>`;
+}
+
+function renderJournal(){
+  const tabs = [["sankalp","🔥 Sankalp"],["journal","📓 Journal"],["reading","📚 Reading"],["summary","🪷 Summary"]];
+  let body = "";
+  if(journalTab==="sankalp") body = renderSankalp();
+  else if(journalTab==="journal") body = renderJournalEntry();
+  else if(journalTab==="reading") body = renderReading();
+  else if(journalTab==="summary") body = renderJournalSummary();
+  return `
+  <div class="todaytabs">
+    ${tabs.map(([k,l])=>`<button class="${journalTab===k?'on':''}" onclick="journalTab='${k}';render()">${l}</button>`).join("")}
+  </div>
+  ${body}`;
+}
+
+/* ============================= SOON PLACEHOLDER ============================= */
+function renderSoon(name, icon){
+  return `<div class="card soon-card">
+    <div class="ic">${icon}</div>
+    <h2>${name} is next</h2>
+    <p class="small">Building this nest right after you review Today. It'll follow the same calm style.</p>
+    <button class="btn secondary" onclick="goNest('today')" style="margin-top:12px">← Back to Today</button>
+  </div>`;
+}
+
+/* ============================= RENDER ROOT ============================= */
+function render(){
+  renderNav();
+  const app = document.getElementById("app");
+  if(currentNest==="dashboard") app.innerHTML = renderDashboard();
+  else if(currentNest==="today") app.innerHTML = renderToday();
+  else if(currentNest==="arogya") app.innerHTML = renderArogya();
+  else if(currentNest==="business") app.innerHTML = renderBusiness();
+  else if(currentNest==="journal") app.innerHTML = renderJournal();
+}
+render();
+</script>
+</body>
+</html>
