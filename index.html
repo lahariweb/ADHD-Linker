@@ -727,7 +727,7 @@ function renderTipCard(icon, label, text){
 
 /* profileId is resolved before the first state load, so each tracker's local cache (and the
    lock screen / passcode) stays correctly scoped to that profile, not shared across them. */
-function sanitizeProfileId(s){ return (s||"guest").toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"") || "guest"; }
+function sanitizeProfileId(s){ return (s||"guest").trim().replace(/[^a-zA-Z0-9]+/g,"_").replace(/^_+|_+$/g,"") || "guest"; }
 let profileIdWasRemembered = !!localStorage.getItem("dinacharya_profileId");
 let profileId = localStorage.getItem("dinacharya_profileId") || "guest";
 function storageKey(){ return STORAGE_KEY+"_"+profileId; }
