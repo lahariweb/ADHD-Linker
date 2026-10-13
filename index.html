@@ -1350,9 +1350,12 @@ function applyBlockEdit(n, id, patch){
   const idx = list.findIndex(b=>b.id===id);
   if(idx<0) return {list, overflow:0};
   Object.assign(list[idx], patch);
-  // recompute forward chain from idx+1 based on idx's new end time (skipped blocks cost 0 time)
-  let cursor = toMin(list[idx].time) + effDur(list[idx]);
-  for(let i=idx+1;i<list.length;i++){
+  // Reorder by the edited start time first, so moving a block earlier/later also moves it in the timetable sequence.
+  list.sort((a,b)=>toMin(a.time)-toMin(b.time));
+  const movedIdx = list.findIndex(b=>b.id===id);
+  // Recompute the following chain from the moved block's new position.
+  let cursor = toMin(list[movedIdx].time) + effDur(list[movedIdx]);
+  for(let i=movedIdx+1;i<list.length;i++){
     list[i].time = toHHMM(cursor);
     cursor += effDur(list[i]);
   }
@@ -1772,7 +1775,7 @@ function saveParallelEditor(id){const a=(state.parallelActivities||[]).find(x=>x
 function deleteTimetableBlock(id){if(!confirm('Delete this timetable item from this day only?'))return;setDayBlocks(selectedDay,getDayBlocks(selectedDay).filter(b=>b.id!==id));openSheetId=null;sheetDraft=null;save();}
 function toggleParallelDone(id){const a=(state.parallelActivities||[]).find(x=>x.id===id);if(!a)return;a.done=!a.done;if(a.brainDumpId){const task=(state.brainDump||[]).find(x=>x.id===a.brainDumpId);if(task)task.done=a.done;}save();}
 function calendarDrop(ev,iso){ev.preventDefault();let info=calendarDragInfo;try{const raw=ev.dataTransfer.getData('text/plain');if(raw){const i=raw.indexOf(':');info={kind:raw.slice(0,i),id:raw.slice(i+1)};}}catch(e){}if(!info)return;const minute=calendarGridMinute(ev),time=toHHMM(minute);if(info.kind==='parallel'){const a=(state.parallelActivities||[]).find(x=>x.id===info.id);if(a){a.time=time;save();}}else if(info.kind==='block'){const list=getDayBlocks(selectedDay);const idx=list.findIndex(x=>x.id===info.id);if(idx>=0){const delta=toMin(time)-toMin(list[idx].time);for(let i=idx;i<list.length;i++){const start=toMin(list[i].time);list[i].time=toHHMM(Math.max(0,Math.min(1439,start+delta)));}save();}}calendarDragInfo=null;}
-document.addEventListener('dragend',function(){const d=window.__calendarDragged;window.__calendarDragged=null;if(!d)return;setTimeout(()=>{if(!calendarDragInfo)return;const grid=document.getElementById('appleDayGrid');const r=grid?.getBoundingClientRect();const x=window.__lastDragX,y=window.__lastDragY;if(r&&x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom)return;if(d.kind==='parallel'){deleteParallelActivity(d.id);}else{if(confirm('Remove this timetable item from this day?'))deleteTimetableBlock(d.id);}calendarDragInfo=null;},0);});
+document.addEventListener('dragend',function(){const d=window.__calendarDragged;window.__calendarDragged=null;if(!d)return;setTimeout(()=>{if(!calendarDragInfo)return;const grid=document.getElementById('appleDayGrid');const r=grid?.getBoundingClientRect();const x=window.__lastDragX,y=window.__lastDragY;if(r&&x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom)return;if(d.kind==='parallel'){deleteParallelActivity(d.id);}else if(d.kind==='block'){if(confirm('Remove this timetable item from this day?'))deleteTimetableBlock(d.id);}calendarDragInfo=null;},0);});
 document.addEventListener('dragover',function(e){window.__lastDragX=e.clientX;window.__lastDragY=e.clientY;});
 function updateAppleDayClock(){
   const line = document.getElementById('appleNowLine');
@@ -1788,9 +1791,9 @@ function updateAppleDayClock(){
 setInterval(updateAppleDayClock, 15000);
 
 function renderTimeline(list, nowId){
-  return `<div class="timeline">
+  return `<div class="timeline" ondragover="event.preventDefault()">
     ${list.map(b=>`
-      <div class="tblock ${b.done?'done':''} ${b.id===nowId?'now':''} ${b.anchor?'anchor':''} ${b.skipped?'skipped':''}" id="blk_${b.id}">
+      <div class="tblock ${b.done?'done':''} ${b.id===nowId?'now':''} ${b.anchor?'anchor':''} ${b.skipped?'skipped':''}" id="blk_${b.id}" draggable="true" ondragstart="calendarDragStart(event,'timelineblock','${b.id}')" ondrop="dropTimelineBlock(event,'${b.id}')" ondragover="event.preventDefault()" title="Drag onto another item to move">
         <span class="checkdot ${b.done?'on':''}" onclick="event.stopPropagation();toggleDone('${b.id}')"></span>
         <div class="tbody bar" style="border-left:3px solid ${(b.priority&&BD_COLOR[b.priority])||CAT_COLOR[b.cat]||'var(--line)'}" onclick="openSheetId='${b.id}';sheetDraft=null;render()">
           <div class="thead">
@@ -1804,6 +1807,22 @@ function renderTimeline(list, nowId){
         ${b.skipped? `<button class="btn ghost" style="font-size:11px;align-self:center" onclick="event.stopPropagation();unskipBlock('${b.id}')">Restore</button>` : ""}
       </div>`).join("")}
   </div>`;
+}
+
+function dropTimelineBlock(ev,targetId){
+  ev.preventDefault(); ev.stopPropagation();
+  let info=calendarDragInfo;
+  try{const raw=ev.dataTransfer.getData('text/plain');if(raw){const i=raw.indexOf(':');info={kind:raw.slice(0,i),id:raw.slice(i+1)};}}catch(e){}
+  if(!info || info.kind!=='timelineblock' || info.id===targetId)return;
+  const list=getDayBlocks(selectedDay).map(b=>({...b}));
+  const moving=list.find(b=>b.id===info.id), target=list.find(b=>b.id===targetId);
+  if(!moving||!target)return;
+  const duration=effDur(moving); moving.time=target.time;
+  list.sort((a,b)=>toMin(a.time)-toMin(b.time));
+  const idx=list.findIndex(b=>b.id===moving.id);
+  let cursor=toMin(list[idx].time)+duration;
+  for(let i=idx+1;i<list.length;i++){list[i].time=toHHMM(cursor);cursor+=effDur(list[i]);}
+  setDayBlocks(selectedDay,list);calendarDragInfo=null;save();
 }
 
 /* ---- done / skip-inference logic ---- */
