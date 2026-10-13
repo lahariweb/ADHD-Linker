@@ -2183,16 +2183,20 @@ function renderBrainDump(scope="business"){
       <button class="chip ${bdFilter==='All'?'on':''}" onclick="bdFilter='All';render()">All (${all.length})</button>
       ${BD_PRIORITIES.map(([id])=>`<button class="pchip ${bdFilter===id?'on':''}" style="--pc:${BD_COLOR[id]}" onclick="bdFilter='${id}';render()"><span class="dot"></span>${id} (${all.filter(x=>x.priority===id).length})</button>`).join("")}
     </div>
-    <div class="bd-list" style="margin-top:12px">
-      ${items.length? items.map(it=>`
-        <div class="bd-item ${it.done?'done':''}" style="border-left:4px solid ${BD_COLOR[it.priority]||'var(--line)'}">
-          <input type="checkbox" ${it.done?"checked":""} onchange="toggleBd('${it.id}')">
-          <div style="flex:1">
-            <span>${it.text}</span>
-            <div class="bdtype-tag">${typeLabel(it.type)}</div>
-          </div>
-          <button onclick="deleteBd('${it.id}')">✕</button>
-        </div>`).join("") : `<p class="small">Nothing here for this filter.</p>`}
+    <div class="bd-list" style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px">
+      ${items.length? BD_TYPES.map(([typeId,typeName])=>{
+        const priorityOrder = {red:0,yellow:1,green:2,grey:3};
+        const group = items.filter(it=>(it.type||"todo")===typeId).sort((a,b)=>(priorityOrder[a.priority]??4)-(priorityOrder[b.priority]??4)||(a.ts||0)-(b.ts||0));
+        if(!group.length) return "";
+        return `<section class="bd-type-card" style="border:1px solid var(--line);border-radius:12px;padding:10px;min-width:0">
+          <h4 style="margin:0 0 9px;font-size:14px">${typeName}<span class="small" style="font-weight:400;margin-left:6px">${group.length}</span></h4>
+          ${group.map(it=>`<div class="bd-item ${it.done?'done':''}" style="border-left:4px solid ${BD_COLOR[it.priority]||'var(--line)'};margin:6px 0;padding:7px">
+            <input type="checkbox" ${it.done?"checked":""} onchange="toggleBd('${it.id}')">
+            <div style="flex:1;min-width:0"><span>${it.text}</span><div class="bdtype-tag" style="color:${BD_COLOR[it.priority]||'var(--muted)'}">${(BD_PRIORITIES.find(t=>t[0]===it.priority)||[,it.priority||'grey'])[1]}</div></div>
+            <button onclick="deleteBd('${it.id}')">✕</button>
+          </div>`).join("")}
+        </section>`;
+      }).join("") : `<p class="small">Nothing here for this filter.</p>`}
     </div>
   </div>`;
 }
