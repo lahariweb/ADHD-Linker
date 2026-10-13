@@ -2086,7 +2086,7 @@ const BD_TYPES = [["call","Call"],["email","Mail"],["todo","To Do"],["learn","Le
 const BD_PRIORITIES = [["red","Most important"],["yellow","Important"],["green","When free"],["grey","Someday"]];
 const BD_TYPE_COLOR = {call:"#477c9b",email:"#7864a5",todo:"#3f7a52",learn:"#b4875a",lookup:"#6a7c8a"};
 const BD_COLOR = {red:"#b4552b", yellow:"#caa23c", green:"#3f7a52", grey:"#9c8268"};
-let bdDraftType = "todo", bdDraftPriority = "yellow", bdFilter = "All";
+let bdDraftType = "todo", bdDraftPriority = "yellow", bdFilter = "All", bdDraftText = "", bdOptionsOpen = false;
 function addBrainDump(){
   const el = document.getElementById("bdInput");
   const v = (el.value||"").trim();
@@ -2094,6 +2094,8 @@ function addBrainDump(){
   state.brainDump = state.brainDump || [];
   state.brainDump.unshift({id:"bd"+Date.now(), text:v, type:bdDraftType, priority:bdDraftPriority, day:selectedDay, done:false, ts:Date.now(), scope:currentNest==="today"?"today":"business"});
   el.value = "";
+  bdDraftText = "";
+  bdOptionsOpen = false;
   save();
 }
 function toggleBd(id){ const it=state.brainDump.find(x=>x.id===id); if(it){ it.done=!it.done; if(it.calendarActivityId){const a=(state.parallelActivities||[]).find(x=>x.id===it.calendarActivityId);if(a)a.done=it.done;} save(); } }
@@ -2129,12 +2131,26 @@ function pullThoughtVaultTasks(){
   }
   save();toast(pending.length+" remaining task(s) pulled into this day");
 }
-function setBdType(t){ bdDraftType = t; render(); }
-function setBdPriority(p){ bdDraftPriority = p; render(); }
+function setBdType(t){
+  const el = document.getElementById("bdInput");
+  if(el) bdDraftText = el.value;
+  bdDraftType = t; bdOptionsOpen = true; render();
+  const next = document.getElementById("bdInput");
+  if(next){ next.focus(); next.setSelectionRange(next.value.length,next.value.length); }
+}
+function setBdPriority(p){
+  const el = document.getElementById("bdInput");
+  if(el) bdDraftText = el.value;
+  bdDraftPriority = p; bdOptionsOpen = true; render();
+  const next = document.getElementById("bdInput");
+  if(next){ next.focus(); next.setSelectionRange(next.value.length,next.value.length); }
+}
 function bdOnInput(){
   const el = document.getElementById("bdInput");
   const panel = document.getElementById("bdOptions");
-  if(el && panel) panel.style.display = (el.value && el.value.trim()) ? "" : "none";
+  bdDraftText = el ? el.value : "";
+  bdOptionsOpen = !!(bdDraftText && bdDraftText.trim());
+  if(panel) panel.style.display = bdOptionsOpen ? "" : "none";
 }
 function renderBrainDump(scope="business"){
   const selectedISO = dateForDay(selectedDay);
@@ -2152,10 +2168,10 @@ function renderBrainDump(scope="business"){
     <p class="small">${scope==="today"?"Today’s personal tasks and reminders.":"Business activities, notes and ideas."}</p>
     ${scope==="today" && previousPending ? `<div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn secondary" onclick="pullThoughtVaultTasks()">Pull remaining from previous days (${previousPending})</button></div>` : ""}
     <div class="bd-input" style="margin-top:10px">
-      <input type="text" id="bdInput" placeholder="${scope==="today"?"Call someone, pick up groceries…":"Business idea, client follow-up…"}" oninput="bdOnInput()" onkeydown="if(event.key==='Enter')addBrainDump()">
+      <input type="text" id="bdInput" value="${String(bdDraftText).replace(/&/g,"&amp;").replace(/\"/g,"&quot;").replace(/</g,"&lt;")}" placeholder="${scope==="today"?"Call someone, pick up groceries…":"Business idea, client follow-up…"}" oninput="bdOnInput()" onkeydown="if(event.key==='Enter')addBrainDump()">
       <button class="btn" onclick="addBrainDump()">Add</button>
     </div>
-    <div id="bdOptions" style="display:none">
+    <div id="bdOptions" style="display:${bdOptionsOpen ? "" : "none"}">
       <div class="row" style="margin-top:9px;gap:6px">
         ${BD_TYPES.map(([id,l])=>`<button class="chip ${bdDraftType===id?'on':''}" onclick="setBdType('${id}')">${l}</button>`).join("")}
       </div>
