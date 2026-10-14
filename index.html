@@ -213,7 +213,7 @@ main{padding:22px 0 60px}
 .apple-day-scroll{height:auto;overflow:visible;position:relative;scrollbar-width:auto;border-bottom:1px solid var(--line)}
 .apple-day-grid{position:relative;min-width:210px;height:1440px;margin-left:48px;background:repeating-linear-gradient(to bottom,transparent 0,transparent 59px,var(--line) 59px,var(--line) 60px)}
 .apple-hour-label{position:absolute;left:-48px;top:-7px;width:40px;text-align:right;padding-right:6px;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
-.apple-event{position:absolute;left:4px;right:5px;min-height:27px;box-sizing:border-box;border-left:3px solid var(--accent);border-radius:5px;padding:4px 6px;background:#e9ebfa;color:#2f3267;overflow:hidden;cursor:grab;font-size:10px;line-height:1.25;z-index:2;touch-action:pan-y}
+.apple-event{position:absolute;left:4px;right:5px;min-height:27px;box-sizing:border-box;border-left:3px solid var(--accent);border-radius:5px;padding:4px 6px;background:#e9ebfa;color:#2f3267;overflow:hidden;cursor:grab;font-size:10px;line-height:1.25;z-index:2;touch-action:none}
 .apple-event:active{cursor:grabbing}
 .apple-day-grid{cursor:crosshair}
 .calendar-composer{position:fixed;inset:0;background:#17152c66;z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
@@ -631,7 +631,9 @@ function renderTipCard(icon, label, text){
 
 /* profileId is resolved before the first state load, so each tracker's local cache (and the
    lock screen / passcode) stays correctly scoped to that profile, not shared across them. */
-function sanitizeProfileId(s){ return (s||"guest").toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"") || "guest"; }
+/* Case-sensitive on purpose: "lahari" and "Lahari" are different profiles. This only strips
+   characters that aren't safe in a Firebase key / localStorage key, it never folds case. */
+function sanitizeProfileId(s){ return (s||"guest").replace(/[^a-zA-Z0-9]+/g,"_").replace(/^_+|_+$/g,"") || "guest"; }
 let profileIdWasRemembered = !!localStorage.getItem("dinacharya_profileId");
 let profileId = localStorage.getItem("dinacharya_profileId") || "guest";
 function storageKey(){ return STORAGE_KEY+"_"+profileId; }
@@ -715,7 +717,7 @@ async function registerNewProfileDC(id){
   }catch(e){ /* offline — profile still gets created locally; it'll register next time it saves while online */ }
 }
 async function requirePasscodeToDeleteDC(id){
-  if(id===GUEST_ID){ alert("The Guest profile is shared and can't be deleted."); return false; }
+  if(id.toLowerCase()===GUEST_ID){ alert("The Guest profile is shared and can't be deleted."); return false; }
   const meta = await fetchProfileMetaDC(id);
   if(meta && meta.passcodeHash){
     for(let tries=0; tries<3; tries++){
@@ -739,7 +741,14 @@ async function deleteProfileDC(id, opts){
   const ok = await requirePasscodeToDeleteDC(id);
   if(!ok) return false;
   const isSelf = (id===profileId);
-  if(isSelf && stateRef){ try{ stateRef.off(); }catch(e){} }
+  if(isSelf){
+    // A pending debounced autosave (pushToFirebase's 400ms syncTimer) can still be queued from
+    // something edited moments ago. If it fires after we remove the node but before reload —
+    // entirely possible while these awaits are in flight — it silently writes the whole profile
+    // right back, making the deletion look like it never happened. Kill it first.
+    clearTimeout(syncTimer);
+    if(stateRef){ try{ stateRef.off(); }catch(e){} }
+  }
   try{
     ensureFirebaseInit();
     await firebase.database().ref("adhdPlannerState/"+id).remove();
@@ -869,6 +878,9 @@ async function showProfilePicker(opts){
   renderFooter();
 
   let allProfiles = [];
+  // Profile names are case-sensitive by design — "lahari" and "Lahari" are two distinct
+  // profiles with their own data, not the same one. Each raw key gets its own row, opens its
+  // own data, and deletes independently of any other-cased name.
   function buildRow(id,isGuest){
     const row = document.createElement("div");
     row.className = "pp-row-dc"+(isGuest?" pp-guest-dc":"");
@@ -944,7 +956,7 @@ async function showProfilePicker(opts){
     const raw = ov.querySelector("#ppNewNameDC").value;
     const id = sanitizeProfileId(raw);
     if(!id){ alert("Enter a name for your new profile."); return; }
-    if(id===GUEST_ID){ alert("\"guest\" is reserved for the shared Guest profile. Pick another name."); return; }
+    if(id.toLowerCase()===GUEST_ID){ alert("\"guest\" is reserved for the shared Guest profile (in any capitalization). Pick another name."); return; }
     if(allProfiles.includes(id)){ alert("That profile already exists — pick it from the list instead, or choose a different name."); return; }
     await registerNewProfileDC(id); // writes a profile-meta node so it shows up in the list on any device, even before the first save
     confirmProfile(id);
@@ -952,14 +964,17 @@ async function showProfilePicker(opts){
   ov.querySelector("#ppNewNameDC").addEventListener("keydown", e=>{ if(e.key==="Enter") ov.querySelector("#ppCreateBtnDC").click(); });
 
   fetchExistingProfilesDC().then(list=>{
-    allProfiles = list.filter(n=>n!==GUEST_ID).sort((a,b)=>a.localeCompare(b));
+    allProfiles = list.filter(n=>n.toLowerCase()!==GUEST_ID).sort((a,b)=>a.localeCompare(b));
     renderList();
   }).catch(()=>{ allProfiles = []; renderList(); });
 }
 function hideProfilePicker(){ const el=document.getElementById("profileOverlay"); if(el) el.remove(); }
 function confirmProfile(id){
-  const clean = sanitizeProfileId(id);
-  profileId = clean || profileId;
+  // No sanitizing here: `id` is either an exact existing key picked from the list (its case
+  // must be preserved so "Lahari" and "lahari" stay two distinct profiles) or a value the
+  // caller already sanitized when creating/switching to a new name.
+  const clean = (id && String(id).trim()) || profileId;
+  profileId = clean;
   try{ localStorage.setItem("dinacharya_profileId", profileId); }catch(e){}
   if(stateRef){ location.reload(); return; } // already listening on a different profile — clean reload avoids a stale, still-attached listener
   profileIdWasRemembered = true;
@@ -1636,27 +1651,79 @@ function renderAppleDayCalendar(list, dayNum){
     const top=e.start,height=Math.max(28,e.end-e.start),width=100/Math.max(1,e.lanes),left=e.lane*width;
     const safeTitle=String(e.title).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
     const action=e.kind==='block'?`openSheetId='${e.id}';render()`:`toggleParallelDone('${e.id}')`;
-    return `<div class="apple-event ${e.done?'done':''} ${e.kind==='parallel'?'apple-parallel-event':''}" draggable="true" ondragstart="calendarDragStart(event,'${e.kind}','${e.id}')" style="top:${top}px;height:${height}px;left:calc(${left}% + 3px);width:calc(${width}% - 6px);right:auto;border-left-color:${e.color}" onclick="event.stopPropagation();${action}" title="Drag to move; click to ${e.kind==='block'?'edit':'complete'}"><span class="apple-event-time">${fmt12(e.time)} – ${fmt12(toHHMM(e.end))}</span><strong>${e.icon} ${safeTitle}</strong>${e.kind==='parallel'?'<span class="apple-event-tag">Extra</span>':''}</div>`;
+    return `<div class="apple-event ${e.done?'done':''} ${e.kind==='parallel'?'apple-parallel-event':''}" onpointerdown="calendarEventPointerDown(event,'${e.kind}','${e.id}')" style="top:${top}px;height:${height}px;left:calc(${left}% + 3px);width:calc(${width}% - 6px);right:auto;border-left-color:${e.color}" onclick="event.stopPropagation();if(!calendarJustDragged){${action}}" title="Drag to move; click to ${e.kind==='block'?'edit':'complete'}"><span class="apple-event-time">${fmt12(e.time)} – ${fmt12(toHHMM(e.end))}</span><strong>${e.icon} ${safeTitle}</strong>${e.kind==='parallel'?'<span class="apple-event-tag">Extra</span>':''}</div>`;
   }).join('');
   const allDay = extras.filter(a=>a.allDay);
   return `<section class="card apple-day-card">
     <div class="apple-day-head"><h3>${isToday?'Today':'Day view'}</h3><span class="apple-live-clock" id="appleLiveClock">${isToday?new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):'All-day view'}</span></div>
     <div class="apple-allday"><div class="apple-allday-label">All-day</div><div class="apple-allday-content">${allDay.length?allDay.map(a=>`<span class="apple-allday-chip">${String(a.title).replace(/</g,'&lt;')}</span>`).join(''):'<span class="small">No all-day events</span>'}</div></div>
-    <div class="apple-day-scroll" id="appleDayScroll"><div class="apple-day-grid" id="appleDayGrid" onclick="calendarGridClick(event,'${iso}')" ondragover="event.preventDefault()" ondrop="calendarDrop(event,'${iso}')">${hourRows}${events}${isToday?'<div class="apple-now-line" id="appleNowLine"><span class="apple-now-label" id="appleNowLabel">NOW</span></div>':''}</div></div>
+    <div class="apple-day-scroll" id="appleDayScroll"><div class="apple-day-grid" id="appleDayGrid" data-iso="${iso}" onclick="calendarGridClick(event,'${iso}')">${hourRows}${events}${isToday?'<div class="apple-now-line" id="appleNowLine"><span class="apple-now-label" id="appleNowLabel">NOW</span></div>':''}</div></div>
     <p class="apple-calendar-note">Click an empty time to add an activity with start and end times. Drag events to reschedule. Calendar tasks are also added to Brain dump; completion stays in sync.</p>
     <div class="calendar-composer" id="calendarComposer" onclick="if(event.target===this)closeCalendarComposer()"><div class="calendar-composer-card"><h3 style="margin:0">＋ Add activity</h3><label for="calendarTaskTitle">Activity</label><input id="calendarTaskTitle" maxlength="100" placeholder="Read, call someone…"><label for="calendarTaskStart">Start time</label><input id="calendarTaskStart" type="time" value="10:15"><label for="calendarTaskEnd">End time</label><input id="calendarTaskEnd" type="time" value="10:45"><div class="calendar-composer-actions"><button class="btn secondary" onclick="closeCalendarComposer()">Cancel</button><button class="btn" onclick="saveCalendarComposer('${iso}')">Add activity</button></div></div></div>
   </section>`;
 }
-let calendarDragInfo=null;
-function calendarDragStart(ev,kind,id){calendarDragInfo={kind,id};try{ev.dataTransfer.setData('text/plain',kind+':'+id);ev.dataTransfer.effectAllowed='move';}catch(e){}}
+/* ---- dragging events on the day calendar, via Pointer Events ----
+   This used to be native HTML5 drag-and-drop (draggable="true" + dragstart/dragover/drop).
+   That API only recognizes mouse gestures — iOS Safari and virtually every mobile browser
+   never fire those events for a touch drag, so on a phone dragging simply did nothing.
+   Pointer Events fire the same way for mouse, touch and pen, so this replaces it entirely. */
+let calendarDrag = null;        // {kind, id, el, grid, moved, startX, startY, lastMinute}
+let calendarJustDragged = false; // true for a brief moment right after a real drag, so the
+                                  // release doesn't also register as a tap on the event or grid
+function calendarEventPointerDown(ev, kind, id){
+  if(ev.pointerType==='mouse' && ev.button!==0) return;
+  const grid = document.getElementById('appleDayGrid');
+  const el = ev.currentTarget;
+  if(!grid || !el) return;
+  calendarDrag = {kind, id, el, grid, moved:false, startX:ev.clientX, startY:ev.clientY, lastMinute:null};
+  try{ el.setPointerCapture(ev.pointerId); }catch(e){}
+}
+function calendarPointerMove(ev){
+  const d = calendarDrag;
+  if(!d) return;
+  if(!d.moved && Math.hypot(ev.clientX-d.startX, ev.clientY-d.startY) < 6) return; // ignore jitter from a plain tap
+  d.moved = true;
+  ev.preventDefault();
+  const r = d.grid.getBoundingClientRect();
+  const minute = Math.max(0, Math.min(1425, Math.round(((ev.clientY-r.top)/r.height*1440)/15)*15));
+  d.lastMinute = minute;
+  d.el.style.top = minute+'px';
+}
+function calendarPointerUp(ev){
+  const d = calendarDrag;
+  if(!d) return;
+  calendarDrag = null;
+  try{ d.el.releasePointerCapture(ev.pointerId); }catch(e){}
+  if(!d.moved) return; // a plain tap — the element's own onclick (edit / mark done) handles it
+  calendarJustDragged = true;
+  setTimeout(()=>{ calendarJustDragged = false; }, 60);
+  if(d.lastMinute!=null) applyCalendarMove(d.kind, d.id, d.lastMinute);
+}
+document.addEventListener('pointermove', calendarPointerMove, {passive:false});
+document.addEventListener('pointerup', calendarPointerUp);
+document.addEventListener('pointercancel', ()=>{ calendarDrag=null; });
+function applyCalendarMove(kind, id, minute){
+  const time = toHHMM(minute);
+  if(kind==='parallel'){
+    const a=(state.parallelActivities||[]).find(x=>x.id===id);
+    if(a){ a.time=time; save(); }
+  } else if(kind==='block'){
+    const list=getDayBlocks(selectedDay);
+    const idx=list.findIndex(x=>x.id===id);
+    if(idx>=0){
+      const delta=toMin(time)-toMin(list[idx].time);
+      for(let i=idx;i<list.length;i++){ const start=toMin(list[i].time); list[i].time=toHHMM(Math.max(0,Math.min(1439,start+delta))); }
+      save();
+    }
+  }
+}
 function calendarGridMinute(ev){const grid=ev.currentTarget.closest?ev.currentTarget.closest('#appleDayGrid'):document.getElementById('appleDayGrid');const r=grid.getBoundingClientRect();return Math.max(0,Math.min(1425,Math.round(((ev.clientY-r.top)/r.height*1440)/15)*15));}
-function calendarGridClick(ev,iso){if(ev.target.closest('.apple-event')||ev.target.closest('.apple-hour-label')){if(ev.target.closest('.apple-hour-label')){const m=calendarGridMinute(ev);openCalendarComposer(iso,m);}return;}openCalendarComposer(iso,calendarGridMinute(ev));}
+function calendarGridClick(ev,iso){if(calendarJustDragged)return;if(ev.target.closest('.apple-event')||ev.target.closest('.apple-hour-label')){if(ev.target.closest('.apple-hour-label')){const m=calendarGridMinute(ev);openCalendarComposer(iso,m);}return;}openCalendarComposer(iso,calendarGridMinute(ev));}
 function openCalendarComposer(iso,minute){const modal=document.getElementById('calendarComposer');if(!modal)return;const start=Math.max(0,Math.min(1425,Math.round(minute/15)*15));document.getElementById('calendarTaskTitle').value='';document.getElementById('calendarTaskStart').value=toHHMM(start);document.getElementById('calendarTaskEnd').value=toHHMM(Math.min(1440,start+30));modal.dataset.date=iso;modal.classList.add('open');document.getElementById('calendarTaskTitle').focus();}
 function closeCalendarComposer(){const m=document.getElementById('calendarComposer');if(m)m.classList.remove('open');}
 function saveCalendarComposer(iso){const title=(document.getElementById('calendarTaskTitle')?.value||'').trim();const time=document.getElementById('calendarTaskStart')?.value||'10:15';const end=document.getElementById('calendarTaskEnd')?.value||'';if(!title){document.getElementById('calendarTaskTitle').focus();return;}let dur=toMin(end)-toMin(time);if(dur<=0){alert('End time must be later than start time.');return;}dur=Math.max(15,Math.min(720,dur));state.parallelActivities=state.parallelActivities||[];state.brainDump=state.brainDump||[];const id='pa'+Date.now(),bdid='bd'+Date.now()+'x';state.brainDump.unshift({id:bdid,text:title,type:'todo',priority:'yellow',day:selectedDay,done:false,ts:Date.now(),calendarDate:iso,calendarActivityId:id});state.parallelActivities.push({id,date:iso,title,time,dur,icon:'📌',done:false,brainDumpId:bdid});closeCalendarComposer();save();}
 function addParallelActivity(iso){openCalendarComposer(iso,615);}
 function toggleParallelDone(id){const a=(state.parallelActivities||[]).find(x=>x.id===id);if(!a)return;a.done=!a.done;if(a.brainDumpId){const task=(state.brainDump||[]).find(x=>x.id===a.brainDumpId);if(task)task.done=a.done;}save();}
-function calendarDrop(ev,iso){ev.preventDefault();let info=calendarDragInfo;try{const raw=ev.dataTransfer.getData('text/plain');if(raw){const i=raw.indexOf(':');info={kind:raw.slice(0,i),id:raw.slice(i+1)};}}catch(e){}if(!info)return;const minute=calendarGridMinute(ev),time=toHHMM(minute);if(info.kind==='parallel'){const a=(state.parallelActivities||[]).find(x=>x.id===info.id);if(a){a.time=time;save();}}else if(info.kind==='block'){const list=getDayBlocks(selectedDay);const idx=list.findIndex(x=>x.id===info.id);if(idx>=0){const delta=toMin(time)-toMin(list[idx].time);for(let i=idx;i<list.length;i++){const start=toMin(list[i].time);list[i].time=toHHMM(Math.max(0,Math.min(1439,start+delta)));}save();}}calendarDragInfo=null;}
 function updateAppleDayClock(){
   const line = document.getElementById('appleNowLine');
   const clock = document.getElementById('appleLiveClock');
