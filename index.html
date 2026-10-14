@@ -726,13 +726,16 @@ async function requirePasscodeToDeleteDC(id){
     }
     return false;
   }
-  const p1 = window.prompt("\""+id+"\" has no passcode set yet. Set one now and re-enter it to confirm you want to permanently delete it:", "");
-  if(!p1) return false;
-  const p2 = window.prompt("Re-enter the passcode to confirm deleting \""+id+"\":", "");
-  if(p1!==p2){ alert("Passcodes didn't match — deletion cancelled."); return false; }
+  // No passcode is set on this profile, so there's nothing to verify against — the confirm()
+  // dialog the caller already showed is confirmation enough. (Previously this made the user
+  // invent a throwaway passcode on the spot just to delete; leaving either prompt blank failed
+  // the deletion silently, with no error shown.)
   return true;
 }
-async function deleteProfileDC(id){
+async function deleteProfileDC(id, opts){
+  opts = opts || {};
+  const silent = !!opts.silent;      // suppress the per-profile "was deleted" alert (bulk delete)
+  const reload = opts.reload!==false; // suppress the self-reload (bulk delete reloads once, at the end)
   const ok = await requirePasscodeToDeleteDC(id);
   if(!ok) return false;
   const isSelf = (id===profileId);
@@ -746,8 +749,8 @@ async function deleteProfileDC(id){
     return false;
   }
   if(isSelf){ try{ localStorage.removeItem("dinacharya_profileId"); localStorage.removeItem(storageKey()); }catch(e){} }
-  alert("\""+id+"\" was deleted.");
-  if(isSelf) location.reload();
+  if(!silent) alert("\""+id+"\" was deleted.");
+  if(isSelf && reload) location.reload();
   return true;
 }
 function injectProfilePickerStylesDC(){
@@ -918,9 +921,20 @@ async function showProfilePicker(opts){
     btn.onclick = async ()=>{
       if(!confirm("This permanently deletes ALL "+allProfiles.length+" profile(s) and their saved data. Guest is not affected. Continue?")) return;
       const toDelete = allProfiles.slice();
-      for(const id of toDelete){ await deleteProfileDC(id); }
-      allProfiles = allProfiles.filter(id=>!toDelete.includes(id));
+      const deletedSelf = toDelete.includes(profileId);
+      const succeeded = [];
+      for(const id of toDelete){
+        // reload:false — even for the current profile — so a self-delete partway through
+        // doesn't reload the page and abandon the rest of the loop; silent:true so deleting
+        // many profiles doesn't pop a blocking alert for each one.
+        const ok = await deleteProfileDC(id, {silent:true, reload:false});
+        if(ok) succeeded.push(id);
+      }
+      allProfiles = allProfiles.filter(id=>!succeeded.includes(id));
       renderList();
+      const failed = toDelete.length - succeeded.length;
+      alert("Deleted "+succeeded.length+" profile(s)."+(failed? " "+failed+" couldn't be deleted — try again once you're online." : ""));
+      if(deletedSelf && succeeded.includes(profileId)) location.reload();
     };
     dz.appendChild(btn);
   }
