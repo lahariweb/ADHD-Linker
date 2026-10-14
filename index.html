@@ -212,7 +212,7 @@ main{padding:22px 0 60px}
 .apple-day-head h3{margin:0;font-family:'Fraunces',serif;font-size:16px}
 .timeplan-head-actions{display:flex;align-items:center;gap:8px}
 .timeplan-expand-btn{border:1px solid rgba(120,125,145,.25);background:rgba(120,125,145,.07);border-radius:8px;padding:4px 8px;font-size:11px;cursor:pointer;color:inherit}
-.timeplan-scroll{min-height:0}
+.timeplan-scroll{min-height:0;height:var(--daypanel-h,60vh);max-height:var(--daypanel-h,60vh);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding-right:3px}
 .today-split.timeplan-is-expanded{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}
 .today-agenda.timeplan-expanded{width:auto!important;max-width:none;box-sizing:border-box}
 .today-agenda.timeplan-expanded .timeplan-scroll{height:calc(100vh - 250px);max-height:none;overflow-y:auto;overscroll-behavior:contain}
@@ -232,7 +232,8 @@ main{padding:22px 0 60px}
 .apple-allday-label{padding:9px 4px 7px 0;font-weight:700}
 .apple-allday-content{padding:7px 0;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .apple-allday-chip{background:#e8eafa;color:#373a75;border-radius:5px;padding:4px 7px;font-size:10px;font-weight:700}
-.apple-day-scroll{height:auto;overflow:visible;position:relative;scrollbar-width:auto;border-bottom:1px solid var(--line)}
+.apple-day-scroll{height:var(--daypanel-h,60vh);max-height:var(--daypanel-h,60vh);overflow-y:auto;position:relative;scrollbar-width:thin;border-bottom:1px solid var(--line)}
+:root{--daypanel-h:60vh}
 .apple-day-grid{position:relative;min-width:210px;height:1440px;margin-left:48px;background:repeating-linear-gradient(to bottom,transparent 0,transparent 59px,var(--line) 59px,var(--line) 60px)}
 .apple-hour-label{position:absolute;left:-48px;top:-7px;width:40px;text-align:right;padding-right:6px;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
 .apple-event{position:absolute;left:4px;right:5px;min-height:27px;box-sizing:border-box;border-left:3px solid var(--accent);border-radius:5px;padding:4px 6px;background:#e9ebfa;color:#2f3267;overflow:hidden;cursor:grab;font-size:10px;line-height:1.25;z-index:2;touch-action:none}
@@ -258,7 +259,7 @@ main{padding:22px 0 60px}
 .apple-now-line::before{content:'';position:absolute;left:-3px;top:-4px;width:9px;height:9px;border-radius:50%;background:#e34d4d}
 .apple-now-label{position:absolute;left:4px;top:-8px;background:#e34d4d;color:#fff;border-radius:4px;padding:2px 4px;font-size:9px;font-weight:800;white-space:nowrap}
 .apple-calendar-note{font-size:10px;color:var(--muted);margin:8px 0 0}
-@media(max-width:760px){.today-split{grid-template-columns:minmax(0,1fr)}.apple-day-card{order:2}.today-agenda{order:1}.today-additions{order:3}.apple-day-scroll{height:auto;overflow:visible}}
+@media(max-width:760px){.today-split{grid-template-columns:minmax(0,1fr)}.apple-day-card{order:2}.today-agenda{order:1}.today-additions{order:3}:root{--daypanel-h:50vh}}
 
 /* editor sheet */
 .sheet-overlay{position:fixed;inset:0;background:#15132e55;display:flex;align-items:flex-end;justify-content:center;z-index:100}
@@ -1667,7 +1668,7 @@ function renderTodaySplit(list, nowId, dayNum){
   return `<div class="today-split">
     <section class="card today-agenda">
       <div class="apple-day-head"><h3>🗓️ Schedule</h3><div class="timeplan-head-actions"><span class="small">${list.length} blocks</span><button class="timeplan-expand-btn" onclick="toggleTimePlanExpand(this)" title="Expand Time Plan">Expand ↗</button></div></div>
-      <div class="timeplan-scroll">${renderTimeline(list, nowId)}</div>
+      <div class="timeplan-scroll" id="timeplanScroll">${renderTimeline(list, nowId)}</div>
     </section>
     ${renderAppleDayCalendar(list, dayNum)}
     <section class="card today-additions">
@@ -6553,6 +6554,7 @@ function renderSoon(name, icon){
 
 /* ============================= RENDER ROOT ============================= */
 let appleDayInitialScrollDone = false;
+let timeplanInitialScrollDone = false;
 function render(){
   if(appLocked) return; // hold off touching the page while the lock screen is up
   renderNav();
@@ -6563,6 +6565,8 @@ function render(){
   const scrollLeft = scrollEl ? scrollEl.scrollLeft : 0;
   const oldAppleScroll = document.getElementById('appleDayScroll');
   const appleScrollTop = oldAppleScroll ? oldAppleScroll.scrollTop : null;
+  const oldTimeplanScroll = document.getElementById('timeplanScroll');
+  const timeplanScrollTop = oldTimeplanScroll ? oldTimeplanScroll.scrollTop : null;
   const app = document.getElementById("app");
   if(currentNest==="dashboard") app.innerHTML = renderDashboard();
   else if(currentNest==="today") app.innerHTML = renderToday();
@@ -6577,6 +6581,15 @@ function render(){
     else if(!appleDayInitialScrollDone && dateForDay(selectedDay)===todayISO()){
       const now=new Date(); newAppleScroll.scrollTop=Math.max(0,now.getHours()*60+now.getMinutes()-210);
       appleDayInitialScrollDone=true;
+    }
+  }
+  const newTimeplanScroll = document.getElementById('timeplanScroll');
+  if(newTimeplanScroll){
+    if(timeplanScrollTop !== null){ newTimeplanScroll.scrollTop = timeplanScrollTop; }
+    else if(!timeplanInitialScrollDone && dateForDay(selectedDay)===todayISO()){
+      const nowEl = newTimeplanScroll.querySelector('.tblock.now');
+      if(nowEl) newTimeplanScroll.scrollTop = Math.max(0, nowEl.offsetTop - 100);
+      timeplanInitialScrollDone = true;
     }
   }
   updateSavedLabel();
