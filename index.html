@@ -1842,13 +1842,16 @@ function timelineBlockPointerDown(ev,id){
   if(ev.pointerType==='mouse' && ev.button!==0) return;
   const el=document.getElementById('blk_'+id);
   if(!el) return;
-  timelineDrag={id,el,moved:false,startX:ev.clientX,startY:ev.clientY};
-  try{ el.setPointerCapture(ev.pointerId); }catch(e){}
+  // Don't setPointerCapture here: grabbing it before we know this is a drag (not a tap)
+  // can suppress the native click on child elements (checkdot, tbody) in some browsers —
+  // that's why ticking a Schedule item sometimes only updated the top strip, not this card.
+  timelineDrag={id,el,pointerId:ev.pointerId,moved:false,startX:ev.clientX,startY:ev.clientY};
 }
 function timelineBlockPointerMove(ev){
   const d=timelineDrag;
   if(!d) return;
   if(!d.moved && Math.hypot(ev.clientX-d.startX, ev.clientY-d.startY) < 8) return;
+  if(!d.moved){ try{ d.el.setPointerCapture(d.pointerId); }catch(e){} }
   d.moved=true;
   ev.preventDefault();
   d.el.classList.add('dragging');
@@ -1857,7 +1860,7 @@ function timelineBlockPointerUp(ev){
   const d=timelineDrag;
   if(!d) return;
   timelineDrag=null;
-  try{ d.el.releasePointerCapture(ev.pointerId); }catch(e){}
+  if(d.moved){ try{ d.el.releasePointerCapture(ev.pointerId); }catch(e){} }
   d.el.classList.remove('dragging');
   if(!d.moved) return;
   timelineJustDragged=true;
