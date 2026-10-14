@@ -98,22 +98,17 @@ main{padding:22px 0 60px}
 .hero-wm svg{width:110%;height:auto}
 .hero-wm svg *{stroke:#f4e2ab}
 .hero .eyebrow{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:#e8c98a;font-weight:700}
-.hero h1{color:#fdf9ee;font-size:clamp(15px,2.4vw,18px);margin:3px 0 3px;text-shadow:0 0 18px rgba(244,227,171,.25)}
+.hero h1{color:#fdf9ee;font-size:clamp(18px,3vw,22px);margin:4px 0 3px;text-shadow:0 0 18px rgba(244,227,171,.25)}
 .hero p{color:#ecdcc0;max-width:48ch;margin:0;font-size:12.5px}
 .hero .hero-text{position:relative;z-index:1}
-.hero .hero-quote{font-family:"Fraunces",serif;font-style:italic;font-size:12.5px;line-height:1.5;color:#f5e8ce;margin:8px 0 0;max-width:62ch}
-.hero .hero-quote cite{display:block;font-style:normal;font-family:inherit;font-size:10.5px;color:#e8c98a;margin-top:2px}
-.hero .hero-subquote{font-size:10px;line-height:1.3;letter-spacing:.02em;color:#d8c8ac;margin:0 0 2px}
-.hero .hero-inspiration{font-family:"Fraunces",serif;font-style:italic;font-size:clamp(15px,2vw,18px);line-height:1.45;color:#f5e8ce;margin:7px 0 0;max-width:62ch}
-.hero .hero-attribution{font-family:"Fraunces",serif;font-style:italic;font-size:12px;line-height:1.35;color:#e8c98a;margin:2px 0 0}
 .hero .mandala2{position:absolute;right:-30px;top:-30px;width:110px;height:110px;opacity:.22;pointer-events:none;z-index:0}
 .hero-art-picker{position:absolute;right:8px;top:8px;z-index:2;display:flex;gap:4px}
 .hero-art-picker .hap-btn{width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:10.5px;cursor:pointer;opacity:.55;transition:opacity .15s}
 .hero-art-picker .hap-btn.on{opacity:1;background:rgba(255,255,255,.18)}
 .statrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;position:relative}
-.stat{background:transparent;border:0;border-radius:0;padding:0 8px 0 0;min-width:0;display:flex;align-items:baseline;gap:4px}
-.stat b{display:inline;font-family:inherit;font-size:11px;font-weight:700;color:#fdf9ee;text-shadow:none}
-.stat span{font-size:10px;color:#e8c98a}
+.stat{background:#ffffff12;border:1px solid #ffffff22;border-radius:12px;padding:6px 11px;min-width:74px}
+.stat b{display:block;font-family:"Fraunces",serif;font-size:16px;font-weight:500;color:var(--gold);text-shadow:0 0 10px rgba(201,174,119,.45)}
+.stat span{font-size:9.5px;color:#e8c98a}
 .quotecard{background:linear-gradient(135deg,rgba(236,234,247,.75),rgba(255,254,250,.9));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--glass-border);border-radius:18px;padding:18px 20px;position:relative;box-shadow:var(--glass-glow)}
 .quotecard p{font-family:"Fraunces",serif;font-style:italic;font-size:18px;line-height:1.5;margin:0 0 6px;color:var(--accent-2)}
 .quotecard span{font-size:12px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
@@ -124,32 +119,27 @@ main{padding:22px 0 60px}
 .tip-card{padding:12px 14px}
 .tip-card-label{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--accent-2);margin-bottom:4px}
 .tip-card-text{margin:0;font-family:"Fraunces",serif;font-style:italic;font-size:13.5px;color:var(--muted);line-height:1.45}
-.calcard{width:100%;max-width:min(520px,100%);box-sizing:border-box;margin:0 auto;padding:clamp(10px,2vw,18px)}
-.calcard .caltop{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;gap:8px}
-.calcard .caltop .nm{font-family:"Fraunces",serif;font-size:clamp(14px,1.5vw,17px)}
-.calcard .caltop .btn.secondary{padding:4px 9px;font-size:12px}
-.calgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:clamp(3px,.7vw,7px);width:100%;max-width:440px;margin:0 auto}
-.calgrid .wd{font-size:clamp(9px,1vw,11px);text-align:center;color:var(--muted);padding-bottom:2px}
-.calgrid .cell{aspect-ratio:1;max-width:48px;margin:0 auto;width:100%;box-sizing:border-box;border-radius:clamp(6px,1vw,9px);display:flex;align-items:center;justify-content:center;font-size:clamp(11px,1.25vw,15px);font-weight:700;background:#f4f7ee;color:var(--muted);border:1px solid transparent}
+.calcard{max-width:min(340px,100%);margin:0 auto;padding:14px 15px}
+.calcard .caltop{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+.calcard .caltop .nm{font-family:"Fraunces",serif;font-size:14.5px}
+.calcard .caltop .btn.secondary{padding:4px 10px;font-size:12px}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;max-width:280px;margin:0 auto}
+.calgrid .wd{font-size:9px;text-align:center;color:var(--muted);padding-bottom:2px}
+.calgrid .cell{aspect-ratio:1;max-width:34px;margin:0 auto;width:100%;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;background:#f4f7ee;color:var(--muted);border:1px solid transparent}
 .calgrid .cell.empty{background:transparent}
 .calgrid .cell.locked{color:#cac3ae;text-decoration:line-through;cursor:not-allowed}
 .calgrid .cell.l1{background:var(--soft);color:var(--accent)}
 .calgrid .cell.l2{background:#cfc9ec;color:#2f2d66}
 .calgrid .cell.l3{background:var(--accent);color:#fff}
 .calgrid .cell.today{outline:2px solid var(--gold);outline-offset:1px}
-/* Responsive month calendar: comfortable and centered on laptops, full-width on phones. */
+/* Scale the calendar up on laptop/desktop widths — phones keep the compact sizing above. */
 @media(min-width:700px){
-  /* Laptop calendar: a middle size between the earlier compact version and the oversized version. */
-  .calcard{max-width:min(480px,100%);padding:16px 18px}
-  .calgrid{max-width:400px;gap:clamp(4px,.6vw,7px)}
-  .calgrid .wd{font-size:10.5px;padding-bottom:3px}
-  .calgrid .cell{max-width:44px;font-size:clamp(12px,.95vw,15px);border-radius:8px}
-}
-@media(max-width:699px){
-  .calcard{max-width:100%;padding:12px 10px}
-  .calgrid{max-width:100%;gap:clamp(3px,1vw,5px)}
-  .calgrid .cell{max-width:none;font-size:clamp(11px,3.2vw,15px);border-radius:7px}
-  .calgrid .wd{font-size:clamp(9px,2.5vw,11px)}
+  .calcard{width:100%;max-width:none;box-sizing:border-box;padding:28px 34px}
+  .calcard .caltop .nm{font-size:19px}
+  .calcard .caltop .btn.secondary{padding:6px 14px;font-size:14px}
+  .calgrid{width:100%;max-width:none;box-sizing:border-box;gap:clamp(8px,1.2vw,18px)}
+  .calgrid .wd{font-size:12px;padding-bottom:4px}
+  .calgrid .cell{width:100%;max-width:none;font-size:clamp(16px,1.5vw,22px);border-radius:12px}
 }
 .calcard p.small{text-align:center;font-size:11px}
 
@@ -195,21 +185,10 @@ main{padding:22px 0 60px}
 .checkdot.on{background:var(--accent);border-color:var(--accent);position:relative}
 .checkdot.on::after{content:"✓";color:#fff;font-size:12px;position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
 
-/* Apple-inspired Today workspace: system typography, soft surfaces, responsive text */
-:root{--apple-font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif}
-body,button,input,select,textarea{font-family:var(--apple-font)}
-.today-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:12px;align-items:stretch;margin-top:12px;overflow:visible;min-height:0}
-.today-agenda,.apple-day-card,.today-additions{min-width:0;min-height:0;border-radius:18px;box-shadow:0 2px 12px rgba(35,40,60,.055);border:1px solid rgba(120,125,145,.18);font-family:var(--apple-font);container-type:inline-size}
-.today-agenda,.today-additions{overflow:hidden;max-width:100%}
-.today-split.timeplan-is-expanded{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);}
-.today-agenda.timeplan-expanded{width:auto!important;max-width:none;box-sizing:border-box;box-shadow:0 2px 14px rgba(0,0,0,.08);border-radius:18px;background:var(--card,#fff);}
-.today-agenda.timeplan-expanded .timeplan-scroll{height:calc(100vh - 250px);max-height:none}
-@media(max-width:1000px){.today-split.timeplan-is-expanded{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
-@media(max-width:760px){.today-split.timeplan-is-expanded{grid-template-columns:minmax(0,1fr)}}
-.timeplan-head-actions{display:flex;align-items:center;gap:8px}
-.timeplan-expand-btn{border:1px solid rgba(120,125,145,.25);background:rgba(120,125,145,.07);border-radius:8px;padding:4px 8px;font-size:11px;cursor:pointer;color:inherit}
-.today-agenda{padding:10px 9px!important;display:flex;flex-direction:column;min-height:0}
-.timeplan-scroll{min-height:0;height:calc(100vh - 250px);max-height:none;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:thin;padding-right:3px}
+/* Apple-inspired day calendar beside the timetable */
+.today-split{display:grid;grid-template-columns:minmax(250px,.72fr) minmax(0,1.28fr);gap:12px;align-items:start;margin-top:12px;overflow:visible}
+.today-agenda,.apple-day-card{min-width:0}
+.today-agenda{padding:10px 9px!important}
 .today-agenda .tblock{gap:6px;padding:6px 0 6px 10px;margin-left:4px}
 .today-agenda .tbody{padding:7px 8px;border-radius:9px}
 .today-agenda .tbody .nm{font-size:11.5px;margin-top:2px}
@@ -220,32 +199,18 @@ body,button,input,select,textarea{font-family:var(--apple-font)}
 .today-agenda .tbody .nm{line-height:1.25}
 .today-agenda .tt-code{display:inline-flex;gap:3px;flex-wrap:wrap;margin-top:4px}
 .tt-code-tag{font-size:8px;line-height:1.25;padding:2px 5px;border:1px solid currentColor;border-radius:99px;background:transparent!important;opacity:.86}
-
-/* Compact Time Plan: keep each activity on one line where possible. */
-.today-agenda .tblock{gap:4px;padding:3px 0 3px 8px;margin-left:3px;align-items:center}
-.today-agenda .tbody{padding:4px 6px;min-width:0;overflow:hidden}
-.today-agenda .thead{display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden}
-.today-agenda .tbody .time{white-space:nowrap;font-size:10px}
-.today-agenda .tbody .dur{white-space:nowrap;font-size:8px;padding:1px 4px}
-.today-agenda .tbody .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;font-size:11.5px;margin:0}
-.today-agenda .tbody .meta,.today-agenda .tt-code{display:none}
-.today-agenda .blkicon{width:15px;height:15px;font-size:10px;margin-right:2px;flex-shrink:0}
-
 .today-agenda .checkdot{width:17px;height:17px}
 .today-agenda .tblock::before{width:8px;height:8px;left:-5px;top:11px}
 .today-agenda .timeline{margin-top:0}
-.apple-day-card{padding:14px 12px;overflow:hidden;min-width:0;resize:horizontal;max-width:100%;transform-origin:right center}
+.apple-day-card{padding:14px 12px;overflow:hidden}
 .apple-day-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
-.apple-day-head h3{margin:0;font-family:var(--apple-font);font-size:16px;font-weight:650;letter-spacing:-.025em;color:#202124}
+.apple-day-head h3{margin:0;font-family:'Fraunces',serif;font-size:16px}
 .apple-live-clock{font-size:12px;font-weight:800;color:#d94747;white-space:nowrap;font-variant-numeric:tabular-nums}
 .apple-allday{display:grid;grid-template-columns:48px minmax(0,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line);min-height:43px;margin-bottom:8px;font-size:10px;color:var(--muted)}
 .apple-allday-label{padding:9px 4px 7px 0;font-weight:700}
 .apple-allday-content{padding:7px 0;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .apple-allday-chip{background:#e8eafa;color:#373a75;border-radius:5px;padding:4px 7px;font-size:10px;font-weight:700}
-.apple-day-scroll{height:calc(100vh - 300px);max-height:720px;min-height:320px;overflow-y:auto;overflow-x:hidden;position:relative;scrollbar-width:thin;overscroll-behavior:contain;border-bottom:1px solid var(--line);border-radius:0 0 10px 10px}
-/* Let Today grow toward the inside of the workspace while keeping the outer edge tidy. */
-.today-split>.apple-day-card{justify-self:end;width:100%;box-sizing:border-box}
-.apple-day-card{direction:ltr}
+.apple-day-scroll{height:auto;overflow:visible;position:relative;scrollbar-width:auto;border-bottom:1px solid var(--line)}
 .apple-day-grid{position:relative;min-width:210px;height:1440px;margin-left:48px;background:repeating-linear-gradient(to bottom,transparent 0,transparent 59px,var(--line) 59px,var(--line) 60px)}
 .apple-hour-label{position:absolute;left:-48px;top:-7px;width:40px;text-align:right;padding-right:6px;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
 .apple-event{position:absolute;left:4px;right:5px;min-height:27px;box-sizing:border-box;border-left:3px solid var(--accent);border-radius:5px;padding:4px 6px;background:#e9ebfa;color:#2f3267;overflow:hidden;cursor:grab;font-size:10px;line-height:1.25;z-index:2;touch-action:pan-y}
@@ -270,72 +235,8 @@ body,button,input,select,textarea{font-family:var(--apple-font)}
 .apple-now-line{position:absolute;left:-5px;right:0;height:2px;background:#e34d4d;z-index:5;pointer-events:none;box-shadow:0 0 0 1px #e34d4d18}
 .apple-now-line::before{content:'';position:absolute;left:-3px;top:-4px;width:9px;height:9px;border-radius:50%;background:#e34d4d}
 .apple-now-label{position:absolute;left:4px;top:-8px;background:#e34d4d;color:#fff;border-radius:4px;padding:2px 4px;font-size:9px;font-weight:800;white-space:nowrap}
-.apple-calendar-note{display:none}
-@container (min-width:280px){.today-agenda .tbody .nm{font-size:11px}}
-@container (min-width:340px){.today-agenda .tbody .nm{font-size:12px}.today-agenda .tbody .time{font-size:10px}.today-agenda .tbody .dur{font-size:9px}.today-agenda .blkicon{width:17px;height:17px;font-size:11px}}
-@container (min-width:410px){.today-agenda .tbody .nm{font-size:13px}.today-agenda .tbody .time{font-size:11px}.today-agenda .tbody .dur{font-size:10px}.today-agenda .tbody{padding:6px 8px}}
-.apple-day-card,.today-agenda,.today-additions{color:#25262b}
-.apple-event{font-family:var(--apple-font);border-radius:7px;box-shadow:0 1px 2px rgba(20,25,45,.06);font-size:11px}
-.apple-hour-label{font-family:var(--apple-font);font-size:10px;font-weight:500}
-@media(max-width:980px){.today-split{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr)}.today-additions{grid-column:1/-1}}
-@media(max-width:760px){
-  .today-split{grid-template-columns:minmax(0,1fr);gap:14px}
-  .apple-day-card{order:1;width:100%;min-width:0;resize:none;padding:12px 10px}
-  .today-agenda{order:2;width:100%;min-width:0}
-  .today-additions{order:3;grid-column:1/-1}
-  .apple-day-scroll{height:calc(100dvh - 245px);min-height:420px;max-height:calc(100dvh - 180px)}
-  .apple-day-grid{min-width:0;margin-left:43px}
-  .apple-hour-label{left:-43px;width:36px;font-size:10px}
-  .apple-event{left:2px!important;width:calc(100% - 5px)!important;right:3px!important;font-size:11px;padding:4px 5px}
-  .apple-event .apple-event-time{font-size:9px}
-  .timeplan-scroll{height:55vh;max-height:none}
-}
-@media(max-width:420px){
-  .apple-day-scroll{height:calc(100dvh - 225px);min-height:390px}
-  .apple-day-card .apple-day-head h3{font-size:15px}
-  .apple-event{font-size:10px;padding:3px 4px}
-}
-.today-split>.card{height:100%;min-width:0}
-.today-additions{padding:10px 12px;grid-column:1/-1}
-.today-additions-list{display:flex;flex-direction:column;gap:7px;max-height:280px;overflow-y:auto;overscroll-behavior:contain;padding-right:3px}
-.today-addition{display:flex;gap:8px;align-items:flex-start;padding:9px 10px;border:1px solid #ead1bb;border-left:3px solid #b66b35;border-radius:10px;background:#fffaf5;cursor:pointer;min-width:0}
-.today-addition.done{opacity:.65}
-.today-addition.done .ta-title{text-decoration:line-through}
-.today-addition-main{min-width:0;flex:1}
-.ta-time{font-size:10px;color:#8d684e;font-weight:800}
-.ta-title{font-size:12px;font-weight:700;overflow-wrap:anywhere;line-height:1.3}
-.ta-duration{font-size:10px;color:var(--muted);white-space:nowrap}
-.today-additions-empty{font-size:12px;color:var(--muted);padding:14px 8px;text-align:center;border:1px dashed var(--line);border-radius:10px}
-
-/* Requested compact wellness strips and two-row Today layout */
-.today-split>.today-agenda,.today-split>.apple-day-card{align-self:stretch;min-width:0}
-.today-split>.today-additions{grid-column:1/-1;align-self:start}
-.today-additions .apple-day-head{margin-bottom:7px}
-.today-additions .today-additions-empty{padding:8px;text-align:left}
-.meals-strip{padding:7px 11px!important;border-radius:10px!important;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:0}
-.meals-strip h3{font-size:12px!important;margin:0!important;white-space:nowrap}
-.meals-strip p{font-size:10px!important;margin:0!important}
-.macro-summary-inline{display:flex;align-items:center;gap:12px;flex-wrap:nowrap;min-width:0;margin-top:3px;white-space:nowrap}
-.macro-summary-inline .macro-glance{margin:0;gap:4px;flex-shrink:0}
-.macro-summary-inline .macro-glance b{font-family:var(--apple-font);font-size:18px;font-weight:700}
-.macro-summary-inline .macro-glance-unit{font-size:10px}
-.macro-nutrients{font-size:10.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;min-width:0}
-.hydration-grid .card{padding:6px 9px!important;border-radius:10px!important}
-.hydration-grid .card p.small{font-size:10px!important;margin:3px 0 0!important}
-.hydration-grid .counterbox{gap:5px!important}
-.hydration-grid .counterbox .btn{min-width:25px;padding:2px 6px!important;line-height:1.2}
-.hydration-grid .counterbox .cval{font-size:13px!important}
-.hydration-grid .cofcup-row{margin-top:4px}
-.hydration-grid .progtrack{height:4px;margin-top:4px!important}
-@media(max-width:560px){
-  .meals-strip{align-items:flex-start;flex-direction:column;gap:3px}
-  .macro-summary-inline{display:flex;flex-wrap:nowrap;white-space:nowrap;gap:5px;align-items:baseline;width:100%;overflow:hidden}
-  .macro-summary-inline .macro-glance{gap:3px;flex:0 0 auto}
-  .macro-summary-inline .macro-glance b{font-size:14px!important;letter-spacing:-.03em}
-  .macro-summary-inline .macro-glance-unit{font-size:8px!important}
-  .macro-nutrients{font-size:8px!important;white-space:nowrap;overflow:hidden;text-overflow:clip;letter-spacing:-.025em;flex:1 1 auto}
-  .macro-summary-inline *{min-width:0}
-}
+.apple-calendar-note{font-size:10px;color:var(--muted);margin:8px 0 0}
+@media(max-width:760px){.today-split{grid-template-columns:minmax(0,1fr)}.apple-day-card{order:2}.today-agenda{order:1}.apple-day-scroll{height:auto;overflow:visible}}
 
 /* editor sheet */
 .sheet-overlay{position:fixed;inset:0;background:#15132e55;display:flex;align-items:flex-end;justify-content:center;z-index:100}
@@ -404,7 +305,7 @@ body,button,input,select,textarea{font-family:var(--apple-font)}
 @media(max-width:480px){.mealcard{padding:9px 10px}.mealcard .mtitle{font-size:12px}.mealitem-chip{font-size:11px;padding:3px 6px 3px 8px}}
 .hydration-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;margin-bottom:14px}
 @media(max-width:560px){.hydration-grid{grid-template-columns:1fr}}
-.hydration-grid .card{margin-bottom:0;padding:9px 11px!important;border-radius:12px}.meal-glance{gap:4px;margin-top:7px}.meal-glance .mg-pill{font-size:10px;padding:4px 7px}.mealgrid .card{padding:10px 11px!important;border-radius:12px}.mealgrid .card h3{font-size:13px}.mealgrid .card textarea,.mealgrid .card input{padding:6px 8px!important;font-size:12px}.mealgrid{gap:8px}.macro-glance b{font-size:22px}.macro-glance{gap:5px;margin-top:5px}.card.card-compact{padding:9px 11px!important}.card.card-compact .macro-glance-bar{margin-top:5px}
+.hydration-grid .card{margin-bottom:0}
 .mealcard{border:1px solid var(--line);border-radius:14px;padding:11px 12px;background:#fff}
 .mealcard.done{background:var(--mint);border-color:var(--gold)}
 .mealcard .mtitle{display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:13.5px;color:var(--accent-2)}
@@ -598,6 +499,9 @@ body,button,input,select,textarea{font-family:var(--apple-font)}
 .pc-msg.bad{color:#b4552b}
 .pc-msg.good{color:#3f7a52}
 .pc-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+
+.recipe-meal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}.recipe-meal-card{min-width:0;border:1px solid var(--line);border-radius:14px;padding:10px;background:#fff}.recipe-meal-card h3{font-size:14px;margin-bottom:8px}.recipe-scroll{max-height:330px;overflow-y:auto;overscroll-behavior:contain;padding-right:3px}.recipe-add-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}.recipe-add-grid input,.recipe-add-grid select,.recipe-add-grid textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:#fff;font:inherit;font-size:13px;margin-top:4px}.recipe-url-field,.recipe-paste-field{grid-column:1/-1}.recipe-paste-field textarea{resize:vertical}.macro-edit-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:8px 0}.macro-edit-grid label{font-size:10px;color:var(--muted)}.macro-edit-grid input{display:block;width:100%;border:1px solid var(--line);border-radius:7px;padding:5px;margin-top:3px}@media(max-width:650px){.recipe-meal-grid{grid-template-columns:1fr}.recipe-scroll{max-height:260px}.recipe-add-grid{grid-template-columns:1fr}.macro-edit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.recipe-url-field,.recipe-paste-field{grid-column:auto}}
+
 </style>
 </head>
 <body>
@@ -727,7 +631,7 @@ function renderTipCard(icon, label, text){
 
 /* profileId is resolved before the first state load, so each tracker's local cache (and the
    lock screen / passcode) stays correctly scoped to that profile, not shared across them. */
-function sanitizeProfileId(s){ return (s||"guest").trim().replace(/[^a-zA-Z0-9]+/g,"_").replace(/^_+|_+$/g,"") || "guest"; }
+function sanitizeProfileId(s){ return (s||"guest").toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"") || "guest"; }
 let profileIdWasRemembered = !!localStorage.getItem("dinacharya_profileId");
 let profileId = localStorage.getItem("dinacharya_profileId") || "guest";
 function storageKey(){ return STORAGE_KEY+"_"+profileId; }
@@ -741,7 +645,7 @@ function defaultState(){
     dietPrefs:{noEgg:false, southIndianLean:true},
     profile:{age:30, heightCm:155, sex:"female", activity:"sedentary"},
     gapDecisions:{}, adhocTasks:[], adhocDone:{}, parallelActivities:[], customFoods:[],
-    foodLog:{}, macroTargets:{protein:null, carbs:null, fat:null, sugar:null, calories:null}, recipeCalLimit:null, coffeeLog:{}, heroArt:"mandala", startDate:START_DATE,
+    foodLog:{}, macroTargets:{protein:null, carbs:null, fat:null, sugar:null, calories:null}, recipeCalLimit:null, customRecipes:[], coffeeLog:{}, heroArt:"mandala", startDate:START_DATE,
     myPlan:{text:"", phases:null, useCustom:false},
     opsTasks:[], marketing:[], goals:[], bizPlanEffort:{}, customExpenseTypes:[],
     clients:[], projects:[], invoices:[], expenses:[],
@@ -1350,12 +1254,9 @@ function applyBlockEdit(n, id, patch){
   const idx = list.findIndex(b=>b.id===id);
   if(idx<0) return {list, overflow:0};
   Object.assign(list[idx], patch);
-  // Reorder by the edited start time first, so moving a block earlier/later also moves it in the timetable sequence.
-  list.sort((a,b)=>toMin(a.time)-toMin(b.time));
-  const movedIdx = list.findIndex(b=>b.id===id);
-  // Recompute the following chain from the moved block's new position.
-  let cursor = toMin(list[movedIdx].time) + effDur(list[movedIdx]);
-  for(let i=movedIdx+1;i<list.length;i++){
+  // recompute forward chain from idx+1 based on idx's new end time (skipped blocks cost 0 time)
+  let cursor = toMin(list[idx].time) + effDur(list[idx]);
+  for(let i=idx+1;i<list.length;i++){
     list[i].time = toHHMM(cursor);
     cursor += effDur(list[i]);
   }
@@ -1541,15 +1442,19 @@ function renderDashboard(){
         <span class="hap-btn ${state.heroArt==='lotusside'?'on':''}" onclick="setHeroArt('lotusside')" title="Lotus, side view">🌸</span>
       </div>
       <div class="hero-text">
-      <p class="hero-subquote">Slowly, softly, surely.</p>
-      <h1>🪷 Find your own rhythm</h1>
-      <p class="hero-inspiration">“${q[0]}”</p>
-      <p class="hero-attribution">— ${q[1]}</p>
+      <div class="eyebrow">A fresh start, every day</div>
+      <h1>✨ Grow at your own pace.</h1>
+      <p>Small steps, taken with care, become a life.</p>
       <div class="statrow">
         <div class="stat"><b>${streak}</b><span>day streak</span></div>
         <div class="stat"><b>${monthActiveCount()}</b><span>active days this month</span></div>
       </div>
       </div>
+    </div>
+    <div class="span12 lotus-divider"><span>🪷</span></div>
+    <div class="span12 card quotecard">
+      <p>"${q[0]}"</p>
+      <span>${KNOT_SVG} — ${q[1]}</span>
     </div>
     <div class="span12 card calcard">
       ${renderMonthCalendar()}
@@ -1601,9 +1506,7 @@ function selectDayFromCal(n){ selectedDay=n; currentNest="today"; render(); }
 function changeDay(delta){ selectedDay = Math.max(1, selectedDay+delta); openSheetId=null; render(); }
 function goToday(){ selectedDay = todayDayNum(); render(); }
 
-let todaySubpage="plan";
 function renderToday(){
-  if(todaySubpage==="brain") return `<div class="today-subnav"><button class="btn secondary" onclick="todaySubpage='plan';render()">← Today</button></div>${renderBrainDump("today")}`;
   const list = getDayBlocks(selectedDay);
 
   const gapKey = dayKey(selectedDay);
@@ -1628,7 +1531,7 @@ function renderToday(){
   let nowId = null;
   if(nowMin>=0) displayList.forEach(b=>{ if(toMin(b.time)<=nowMin) nowId=b.id; });
 
-  const body = renderMantraLine() + renderStrip(displayList, nowId) + renderAdhocCollapsible(dateForDay(selectedDay)) + renderTodaySplit(displayList, nowId, selectedDay);
+  const body = renderMantraLine() + renderStrip(displayList, nowId) + renderCheckinDropdown() + renderAdhocCollapsible(dateForDay(selectedDay)) + renderTodaySplit(displayList, nowId, selectedDay);
 
   return `
   <div class="card span12" style="margin-bottom:14px;padding:10px 13px">
@@ -1638,7 +1541,7 @@ function renderToday(){
         <b style="font-family:'Fraunces',serif;font-size:13px">${niceDate(dateForDay(selectedDay))}</b>
         <button class="btn secondary" style="padding:5px 9px;font-size:11.5px" onclick="changeDay(1)">Next →</button>
       </div>
-      <button class="btn secondary icon-only" aria-label="Thought Vault" style="padding:5px 9px;font-size:16px" onclick="todaySubpage='brain';render()" title="Thought Vault">🧠</button><button class="btn secondary icon-only" aria-label="Start late" style="padding:5px 9px;font-size:16px" onclick="startLateToday()" title="Start late">⏰</button>
+      <button class="btn secondary" style="padding:5px 9px;font-size:11.5px" onclick="startLateToday()" title="Shift today's timetable later">⏰ Start late</button>
       ${selectedDay!==todayDayNum()?`<button class="btn ghost" style="font-size:11.5px" onclick="goToday()">Back to today</button>`:""}
     </div>
   </div>
@@ -1652,7 +1555,7 @@ function renderToday(){
 function startLateToday(){
   const list = getDayBlocks(selectedDay);
   const current = list[0]?.time || "08:00";
-  const entered = prompt("What time are you starting the day? Enter the new start time (HH:MM, 24-hour clock). The day’s timetable will shift by the same amount.", current);
+  const entered = prompt("What time are you starting today? The timetable will shift later from your wake-up time.", current);
   if(entered===null) return;
   if(!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(entered)){ alert("Enter a valid time in 24-hour format, e.g. 09:30."); return; }
   const delta = toMin(entered)-toMin(current);
@@ -1694,31 +1597,13 @@ function renderAdhocCollapsible(iso){
   </div>`;
 }
 
-function toggleTimePlanExpand(btn){const card=btn.closest('.today-agenda');const split=btn.closest('.today-split');if(!card||!split)return;const expanded=card.classList.toggle('timeplan-expanded');split.classList.toggle('timeplan-is-expanded',expanded);btn.textContent=expanded?'Collapse ↙':'Expand ↗';btn.title=expanded?'Collapse Time Plan':'Expand Time Plan';}
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){const card=document.querySelector('.today-agenda.timeplan-expanded');if(card){card.classList.remove('timeplan-expanded');const split=card.closest('.today-split');if(split)split.classList.remove('timeplan-is-expanded');const b=card.querySelector('.timeplan-expand-btn');if(b){b.textContent='Expand ↗';b.title='Expand Time Plan';}}}});
 function renderTodaySplit(list, nowId, dayNum){
-  const iso = dateForDay(dayNum);
-  const additions = (state.parallelActivities||[]).filter(a=>a.date===iso && !a.allDay)
-    .sort((a,b)=>toMin(a.time)-toMin(b.time));
-  const additionCards = additions.map(a=>{
-    const linked=(state.brainDump||[]).find(t=>t.id===a.brainDumpId);
-    const done=linked?!!linked.done:!!a.done;
-    const title=String(a.title||"Extra activity").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
-    return `<div class="today-addition ${done?'done':''}" title="Double-click to check; triple-click to edit">
-      <div class="today-addition-main" onclick="parallelTap(event,'${a.id}')"><div class="ta-time">${fmt12(a.time)} – ${fmt12(toHHMM(toMin(a.time)+(Number(a.dur)||30)))}</div><div class="ta-title">${a.icon||'📌'} ${title}</div><div class="small">${a.category==='TT'?'TT':(typeLabel(a.type)+' · '+importanceLabel(a.priority)+' · Planned')}${a.desc?' · '+String(a.desc).replace(/</g,'&lt;'):''}</div></div>
-      <button class="btn ghost" style="padding:3px 6px;font-size:10px" onclick="event.stopPropagation();deleteParallelActivity('${a.id}')" title="Delete task">✕</button>
-    </div>`;
-  }).join('');
   return `<div class="today-split">
     <section class="card today-agenda">
-      <div class="apple-day-head"><h3>🗓️ Time Plan</h3><div class="timeplan-head-actions"><span class="small">${list.length} items</span><button class="timeplan-expand-btn" onclick="toggleTimePlanExpand(this)" title="Expand Time Plan">Expand ↗</button></div></div>
-      <div class="timeplan-scroll">${renderTimeline(list, nowId)}</div>
+      <div class="apple-day-head"><h3>🗓️ Timetable</h3><span class="small">${list.length} blocks</span></div>
+      ${renderTimeline(list, nowId)}
     </section>
     ${renderAppleDayCalendar(list, dayNum)}
-    <section class="card today-additions">
-      <div class="apple-day-head"><h3>＋ My Additions</h3><span class="small">${additions.length} items</span></div>
-      <div class="today-additions-list">${additionCards||'<div class="today-additions-empty">No additions yet.<br>Click a time in Today to add one.</div>'}</div>
-    </section>
   </div>`;
 }
 function renderAppleDayCalendar(list, dayNum){
@@ -1727,6 +1612,7 @@ function renderAppleDayCalendar(list, dayNum){
   const hourRows = Array.from({length:24}, (_,h)=>`<div class="apple-hour-label" style="top:${h*60}px">${h===0?'12 AM':h<12?h+' AM':h===12?'12 PM':(h-12)+' PM'}</div>`).join('');
   const extras = (state.parallelActivities||[]).filter(a=>a.date===iso);
   const allEvents = [
+    ...list.map(b=>({id:b.id,title:b.title,icon:b.icon||'',time:b.time,dur:Number(b.dur)||30,done:!!b.done,color:(b.priority&&BD_COLOR[b.priority])||CAT_COLOR[b.cat]||'var(--accent)',type:b.type,priority:b.priority,kind:'block'})),
     ...extras.map(a=>{const linked=(state.brainDump||[]).find(t=>t.id===a.brainDumpId);return {id:a.id,title:a.title,icon:a.icon||'📌',time:a.time,dur:Number(a.dur)||30,done:linked?!!linked.done:!!a.done,color:'#b66b35',kind:'parallel'};})
   ].map(e=>({...e,start:Math.max(0,Math.min(1439,toMin(e.time))),end:Math.min(1440,Math.max(0,toMin(e.time))+Math.max(15,Number(e.dur)||30))})).sort((a,b)=>a.start-b.start || a.end-b.end);
   const placed=[];
@@ -1735,48 +1621,28 @@ function renderAppleDayCalendar(list, dayNum){
   const events=placed.map(e=>{
     const top=e.start,height=Math.max(28,e.end-e.start),width=100/Math.max(1,e.lanes),left=e.lane*width;
     const safeTitle=String(e.title).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
-    return `<div class="apple-event ${e.done?'done':''} ${e.kind==='parallel'?'apple-parallel-event':''}" draggable="true" ondragstart="calendarDragStart(event,'${e.kind}','${e.id}')" style="top:${top}px;height:${height}px;left:calc(${left}% + 3px);width:calc(${width}% - 6px);right:auto;border-left-color:${e.color}" onclick="event.stopPropagation();parallelTap(event,'${e.id}')" title="Drag to move; double-click to check; triple-click to edit"><span class="apple-event-time">${fmt12(e.time)} – ${fmt12(toHHMM(e.end))}</span><strong>${e.icon} ${safeTitle}</strong>${e.kind==='parallel'?`<span class="apple-event-tag">${e.category||'Planned'}</span><button class="btn ghost" style="padding:1px 4px;font-size:9px" onclick="event.stopPropagation();deleteParallelActivity('${e.id}')">Delete</button>`:''}</div>`;
+    const action=e.kind==='block'?`openSheetId='${e.id}';render()`:`toggleParallelDone('${e.id}')`;
+    return `<div class="apple-event ${e.done?'done':''} ${e.kind==='parallel'?'apple-parallel-event':''}" draggable="true" ondragstart="calendarDragStart(event,'${e.kind}','${e.id}')" style="top:${top}px;height:${height}px;left:calc(${left}% + 3px);width:calc(${width}% - 6px);right:auto;border-left-color:${e.color}" onclick="event.stopPropagation();${action}" title="Drag to move; click to ${e.kind==='block'?'edit':'complete'}"><span class="apple-event-time">${fmt12(e.time)} – ${fmt12(toHHMM(e.end))}</span><strong>${e.icon} ${safeTitle}</strong>${e.kind==='parallel'?'<span class="apple-event-tag">Extra</span>':''}</div>`;
   }).join('');
   const allDay = extras.filter(a=>a.allDay);
   return `<section class="card apple-day-card">
     <div class="apple-day-head"><h3>${isToday?'Today':'Day view'}</h3><span class="apple-live-clock" id="appleLiveClock">${isToday?new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):'All-day view'}</span></div>
     <div class="apple-allday"><div class="apple-allday-label">All-day</div><div class="apple-allday-content">${allDay.length?allDay.map(a=>`<span class="apple-allday-chip">${String(a.title).replace(/</g,'&lt;')}</span>`).join(''):'<span class="small">No all-day events</span>'}</div></div>
     <div class="apple-day-scroll" id="appleDayScroll"><div class="apple-day-grid" id="appleDayGrid" onclick="calendarGridClick(event,'${iso}')" ondragover="event.preventDefault()" ondrop="calendarDrop(event,'${iso}')">${hourRows}${events}${isToday?'<div class="apple-now-line" id="appleNowLine"><span class="apple-now-label" id="appleNowLabel">NOW</span></div>':''}</div></div>
-    <p class="apple-calendar-note">Click an empty time to add an activity with start and end times. Drag events to reschedule. Planned activities also appear in Thought Vault; completion stays in sync.</p>
-    <div class="calendar-composer" id="calendarComposer" onclick="if(event.target===this)closeCalendarComposer()"><div class="calendar-composer-card"><h3 style="margin:0">＋ Add activity</h3><label for="calendarTaskTitle">Activity</label><input id="calendarTaskTitle" maxlength="100" placeholder="Read, call someone…"><label for="calendarTaskStart">Start time</label><input id="calendarTaskStart" type="time" value="10:15"><label for="calendarTaskEnd">End time</label><input id="calendarTaskEnd" type="time" value="10:45"><div id="calendarTypeField"><label for="calendarTaskType">Type</label><select id="calendarTaskType"><option value="call">Call</option><option value="email">Mail</option><option value="todo">To Do</option><option value="learn">Learn</option><option value="lookup">Look up</option></select></div><div id="calendarImportanceField"><label for="calendarTaskPriority">Importance</label><select id="calendarTaskPriority"><option value="red">red</option><option value="yellow">yellow</option><option value="green">green</option><option value="grey">grey</option></select></div><label for="calendarTaskCategory">Timetable category</label><select id="calendarTaskCategory" onchange="updateComposerCategory()"><option value="Planned">Planned</option><option value="TT">TT</option></select><label for="calendarTaskDesc">Keep in mind</label><textarea id="calendarTaskDesc" placeholder="Keep in mind…"></textarea><div class="calendar-composer-actions"><button class="btn secondary" onclick="closeCalendarComposer()">Cancel</button><button class="btn" onclick="saveCalendarComposer('${iso}')">Add activity</button></div></div></div>
+    <p class="apple-calendar-note">Click an empty time to add an activity with start and end times. Drag events to reschedule. Calendar tasks are also added to Brain dump; completion stays in sync.</p>
+    <div class="calendar-composer" id="calendarComposer" onclick="if(event.target===this)closeCalendarComposer()"><div class="calendar-composer-card"><h3 style="margin:0">＋ Add activity</h3><label for="calendarTaskTitle">Activity</label><input id="calendarTaskTitle" maxlength="100" placeholder="Read, call someone…"><label for="calendarTaskStart">Start time</label><input id="calendarTaskStart" type="time" value="10:15"><label for="calendarTaskEnd">End time</label><input id="calendarTaskEnd" type="time" value="10:45"><div class="calendar-composer-actions"><button class="btn secondary" onclick="closeCalendarComposer()">Cancel</button><button class="btn" onclick="saveCalendarComposer('${iso}')">Add activity</button></div></div></div>
   </section>`;
 }
 let calendarDragInfo=null;
-function calendarDragStart(ev,kind,id){calendarDragInfo={kind,id};window.__calendarDragged={kind,id};try{ev.dataTransfer.setData('text/plain',kind+':'+id);ev.dataTransfer.effectAllowed='move';}catch(e){}}
+function calendarDragStart(ev,kind,id){calendarDragInfo={kind,id};try{ev.dataTransfer.setData('text/plain',kind+':'+id);ev.dataTransfer.effectAllowed='move';}catch(e){}}
 function calendarGridMinute(ev){const grid=ev.currentTarget.closest?ev.currentTarget.closest('#appleDayGrid'):document.getElementById('appleDayGrid');const r=grid.getBoundingClientRect();return Math.max(0,Math.min(1425,Math.round(((ev.clientY-r.top)/r.height*1440)/15)*15));}
 function calendarGridClick(ev,iso){if(ev.target.closest('.apple-event')||ev.target.closest('.apple-hour-label')){if(ev.target.closest('.apple-hour-label')){const m=calendarGridMinute(ev);openCalendarComposer(iso,m);}return;}openCalendarComposer(iso,calendarGridMinute(ev));}
-function openCalendarComposer(iso,minute){const modal=document.getElementById('calendarComposer');if(!modal)return;const start=Math.max(0,Math.min(1425,Math.round(minute/15)*15));document.getElementById('calendarTaskTitle').value='';document.getElementById('calendarTaskStart').value=toHHMM(start);document.getElementById('calendarTaskEnd').value=toHHMM(Math.min(1440,start+30));modal.dataset.date=iso;modal.classList.add('open');updateComposerCategory();document.getElementById('calendarTaskTitle').focus();}
+function openCalendarComposer(iso,minute){const modal=document.getElementById('calendarComposer');if(!modal)return;const start=Math.max(0,Math.min(1425,Math.round(minute/15)*15));document.getElementById('calendarTaskTitle').value='';document.getElementById('calendarTaskStart').value=toHHMM(start);document.getElementById('calendarTaskEnd').value=toHHMM(Math.min(1440,start+30));modal.dataset.date=iso;modal.classList.add('open');document.getElementById('calendarTaskTitle').focus();}
 function closeCalendarComposer(){const m=document.getElementById('calendarComposer');if(m)m.classList.remove('open');}
-function saveCalendarComposer(iso){const title=(document.getElementById('calendarTaskTitle')?.value||'').trim();const time=document.getElementById('calendarTaskStart')?.value||toHHMM(new Date().getHours()*60+new Date().getMinutes());const end=document.getElementById('calendarTaskEnd')?.value||'';if(!title){document.getElementById('calendarTaskTitle').focus();return;}let dur=toMin(end)-toMin(time);if(dur<=0){alert('End time must be later than start time.');return;}dur=Math.max(15,Math.min(720,dur));state.parallelActivities=state.parallelActivities||[];state.brainDump=state.brainDump||[];const id='pa'+Date.now(),category=document.getElementById('calendarTaskCategory')?.value||'Planned',desc=(document.getElementById('calendarTaskDesc')?.value||'').trim();let bdid=null,type=null,priority=null;if(category==='Planned'){type=document.getElementById('calendarTaskType')?.value||'todo';priority=document.getElementById('calendarTaskPriority')?.value||'yellow';bdid='bd'+Date.now()+'x';state.brainDump.unshift({id:bdid,text:title,type,priority,day:selectedDay,done:false,ts:Date.now(),calendarDate:iso,calendarActivityId:id,desc,scope:'today'});}state.parallelActivities.push({id,date:iso,title,time,dur,icon:'📌',done:false,brainDumpId:bdid,type,priority,category,desc});closeCalendarComposer();save();}
-function typeLabel(v){return ({todo:'To do',task:'Task',event:'Event'})[v]||'To do';}
-function importanceLabel(v){return ({yellow:'Normal',red:'High',green:'Low'})[v]||'Normal';}
-let parallelClickTimer=null;
-function parallelTap(ev,id){if(ev.detail===1){if(parallelClickTimer)clearTimeout(parallelClickTimer);parallelClickTimer=setTimeout(()=>{toggleParallelDone(id);parallelClickTimer=null;},230);}else if(ev.detail===2){if(parallelClickTimer)clearTimeout(parallelClickTimer);parallelClickTimer=null;openParallelEditor(id);}}
-function updateComposerCategory(){const planned=(document.getElementById('calendarTaskCategory')?.value||'Planned')==='Planned';['calendarTypeField','calendarImportanceField'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=planned?'':'none';});}
-
+function saveCalendarComposer(iso){const title=(document.getElementById('calendarTaskTitle')?.value||'').trim();const time=document.getElementById('calendarTaskStart')?.value||'10:15';const end=document.getElementById('calendarTaskEnd')?.value||'';if(!title){document.getElementById('calendarTaskTitle').focus();return;}let dur=toMin(end)-toMin(time);if(dur<=0){alert('End time must be later than start time.');return;}dur=Math.max(15,Math.min(720,dur));state.parallelActivities=state.parallelActivities||[];state.brainDump=state.brainDump||[];const id='pa'+Date.now(),bdid='bd'+Date.now()+'x';state.brainDump.unshift({id:bdid,text:title,type:'todo',priority:'yellow',day:selectedDay,done:false,ts:Date.now(),calendarDate:iso,calendarActivityId:id});state.parallelActivities.push({id,date:iso,title,time,dur,icon:'📌',done:false,brainDumpId:bdid});closeCalendarComposer();save();}
 function addParallelActivity(iso){openCalendarComposer(iso,615);}
-function deleteParallelActivity(id){
-  const a=(state.parallelActivities||[]).find(x=>String(x.id)===String(id));
-  if(!a)return;
-  if(!confirm('Delete this task from the calendar and Thought Vault?'))return;
-  snapshotForUndo("Planned task deleted");
-  state.parallelActivities=(state.parallelActivities||[]).filter(x=>String(x.id)!==String(id));
-  state.brainDump=(state.brainDump||[]).filter(t=>String(t.id)!==String(a.brainDumpId||'') && String(t.calendarActivityId||'')!==String(id));
-  const editor=document.getElementById('parallelEditor');if(editor)editor.remove();
-  save();
-}
-function openParallelEditor(id){const a=(state.parallelActivities||[]).find(x=>x.id===id);if(!a)return;let old=document.getElementById('parallelEditor');if(old)old.remove();const esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');const wrap=document.createElement('div');wrap.id='parallelEditor';wrap.className='sheet-overlay';wrap.innerHTML=`<div class="sheet"><h3>Edit planned activity</h3><label>Activity</label><input id="peTitle" value="${esc(a.title)}"><div class="edit-grid"><div><label>Start</label><input id="peStart" type="time" value="${esc(a.time||'09:00')}"></div><div><label>End</label><input id="peEnd" type="time" value="${esc(toHHMM(toMin(a.time)+(Number(a.dur)||30)))}"></div></div><label>Category</label><select id="peCategory"><option value="Planned" ${a.category!=='TT'?'selected':''}>Planned</option><option value="TT" ${a.category==='TT'?'selected':''}>TT</option></select><label>Type</label><select id="peType">${BD_TYPES.map(([v,l])=>`<option value="${v}" ${a.type===v?'selected':''}>${l}</option>`).join('')}</select><label>Importance</label><select id="pePriority">${['red','yellow','green','grey'].map(v=>`<option value="${v}" ${a.priority===v?'selected':''}>${v}</option>`).join('')}</select><label>Keep in mind</label><textarea id="peDesc">${esc(a.desc||'')}</textarea><div class="row" style="justify-content:space-between;gap:8px;margin-top:16px"><button class="btn ghost" style="color:#b42318" onclick="deleteParallelActivity('${a.id}');document.getElementById('parallelEditor')?.remove()">Delete task</button><span class="row" style="gap:6px"><button class="btn secondary" onclick="document.getElementById('parallelEditor')?.remove()">Cancel</button><button class="btn" onclick="saveParallelEditor('${a.id}')">Save</button></span></div></div>`;document.body.appendChild(wrap);}
-function saveParallelEditor(id){const a=(state.parallelActivities||[]).find(x=>x.id===id);if(!a)return;const title=(document.getElementById('peTitle')?.value||'').trim(),start=document.getElementById('peStart')?.value,end=document.getElementById('peEnd')?.value;if(!title){alert('Please enter an activity.');return;}if(!start||!end||toMin(end)<=toMin(start)){alert('End time must be later than start time.');return;}a.title=title;a.time=start;a.dur=toMin(end)-toMin(start);a.category=document.getElementById('peCategory').value;a.desc=document.getElementById('peDesc').value.trim();a.type=document.getElementById('peType').value;a.priority=document.getElementById('pePriority').value;if(a.category==='TT'){if(a.brainDumpId)state.brainDump=(state.brainDump||[]).filter(t=>t.id!==a.brainDumpId);a.brainDumpId=null;}else{if(!a.brainDumpId){a.brainDumpId='bd'+Date.now()+'x';state.brainDump.unshift({id:a.brainDumpId,scope:'today',day:selectedDay,done:!!a.done,ts:Date.now(),calendarDate:a.date,calendarActivityId:a.id});}const t=state.brainDump.find(x=>x.id===a.brainDumpId);if(t)Object.assign(t,{text:a.title,desc:a.desc,type:a.type,priority:a.priority,done:!!a.done,scope:'today'});}document.getElementById('parallelEditor')?.remove();save();}
-function deleteTimetableBlock(id){if(!confirm('Delete this timetable item from this day only?'))return;setDayBlocks(selectedDay,getDayBlocks(selectedDay).filter(b=>b.id!==id));openSheetId=null;sheetDraft=null;save();}
 function toggleParallelDone(id){const a=(state.parallelActivities||[]).find(x=>x.id===id);if(!a)return;a.done=!a.done;if(a.brainDumpId){const task=(state.brainDump||[]).find(x=>x.id===a.brainDumpId);if(task)task.done=a.done;}save();}
 function calendarDrop(ev,iso){ev.preventDefault();let info=calendarDragInfo;try{const raw=ev.dataTransfer.getData('text/plain');if(raw){const i=raw.indexOf(':');info={kind:raw.slice(0,i),id:raw.slice(i+1)};}}catch(e){}if(!info)return;const minute=calendarGridMinute(ev),time=toHHMM(minute);if(info.kind==='parallel'){const a=(state.parallelActivities||[]).find(x=>x.id===info.id);if(a){a.time=time;save();}}else if(info.kind==='block'){const list=getDayBlocks(selectedDay);const idx=list.findIndex(x=>x.id===info.id);if(idx>=0){const delta=toMin(time)-toMin(list[idx].time);for(let i=idx;i<list.length;i++){const start=toMin(list[i].time);list[i].time=toHHMM(Math.max(0,Math.min(1439,start+delta)));}save();}}calendarDragInfo=null;}
-document.addEventListener('dragend',function(){const d=window.__calendarDragged;window.__calendarDragged=null;if(!d)return;setTimeout(()=>{if(!calendarDragInfo)return;const grid=document.getElementById('appleDayGrid');const r=grid?.getBoundingClientRect();const x=window.__lastDragX,y=window.__lastDragY;if(r&&x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom)return;if(d.kind==='parallel'){deleteParallelActivity(d.id);}else if(d.kind==='block'){if(confirm('Remove this timetable item from this day?'))deleteTimetableBlock(d.id);}calendarDragInfo=null;},0);});
-document.addEventListener('dragover',function(e){window.__lastDragX=e.clientX;window.__lastDragY=e.clientY;});
 function updateAppleDayClock(){
   const line = document.getElementById('appleNowLine');
   const clock = document.getElementById('appleLiveClock');
@@ -1791,9 +1657,9 @@ function updateAppleDayClock(){
 setInterval(updateAppleDayClock, 15000);
 
 function renderTimeline(list, nowId){
-  return `<div class="timeline" ondragover="event.preventDefault()">
+  return `<div class="timeline">
     ${list.map(b=>`
-      <div class="tblock ${b.done?'done':''} ${b.id===nowId?'now':''} ${b.anchor?'anchor':''} ${b.skipped?'skipped':''}" id="blk_${b.id}" draggable="true" ondragstart="calendarDragStart(event,'timelineblock','${b.id}')" ondrop="dropTimelineBlock(event,'${b.id}')" ondragover="event.preventDefault()" title="Drag onto another item to move">
+      <div class="tblock ${b.done?'done':''} ${b.id===nowId?'now':''} ${b.anchor?'anchor':''} ${b.skipped?'skipped':''}" id="blk_${b.id}">
         <span class="checkdot ${b.done?'on':''}" onclick="event.stopPropagation();toggleDone('${b.id}')"></span>
         <div class="tbody bar" style="border-left:3px solid ${(b.priority&&BD_COLOR[b.priority])||CAT_COLOR[b.cat]||'var(--line)'}" onclick="openSheetId='${b.id}';sheetDraft=null;render()">
           <div class="thead">
@@ -1807,22 +1673,6 @@ function renderTimeline(list, nowId){
         ${b.skipped? `<button class="btn ghost" style="font-size:11px;align-self:center" onclick="event.stopPropagation();unskipBlock('${b.id}')">Restore</button>` : ""}
       </div>`).join("")}
   </div>`;
-}
-
-function dropTimelineBlock(ev,targetId){
-  ev.preventDefault(); ev.stopPropagation();
-  let info=calendarDragInfo;
-  try{const raw=ev.dataTransfer.getData('text/plain');if(raw){const i=raw.indexOf(':');info={kind:raw.slice(0,i),id:raw.slice(i+1)};}}catch(e){}
-  if(!info || info.kind!=='timelineblock' || info.id===targetId)return;
-  const list=getDayBlocks(selectedDay).map(b=>({...b}));
-  const moving=list.find(b=>b.id===info.id), target=list.find(b=>b.id===targetId);
-  if(!moving||!target)return;
-  const duration=effDur(moving); moving.time=target.time;
-  list.sort((a,b)=>toMin(a.time)-toMin(b.time));
-  const idx=list.findIndex(b=>b.id===moving.id);
-  let cursor=toMin(list[idx].time)+duration;
-  for(let i=idx+1;i<list.length;i++){list[i].time=toHHMM(cursor);cursor+=effDur(list[i]);}
-  setDayBlocks(selectedDay,list);calendarDragInfo=null;save();
 }
 
 /* ---- done / skip-inference logic ---- */
@@ -1989,13 +1839,12 @@ function renderEditSheet(block){
         <div><label>End time</label><input name="editEnd" type="time" value="${esc(draft.end)}" onchange="sheetDraft.end=this.value;sheetDraft.dur=toMin(this.value)-toMin(sheetDraft.time);document.querySelector('.sheet .durval').textContent=sheetDraft.dur+' min'"></div>
       </div>
       <label style="margin-top:10px">Timetable category</label>
-      <select class="edit-type" onchange="sheetDraft.cat=this.value">${['Planned','TT'].map(id=>`<option value="${id}" ${draft.cat===id?'selected':''}>${id}</option>`).join('')}</select>
-      <label style="margin-top:10px">Keep in mind</label>
+      <select class="edit-type" onchange="sheetDraft.cat=this.value">${Object.keys(CAT_COLOR).map(id=>`<option value="${id}" ${draft.cat===id?'selected':''}>${id[0].toUpperCase()+id.slice(1)}</option>`).join('')}</select>
+      <label style="margin-top:10px">Extra / Details</label>
       <textarea placeholder="Notes, links, or extra details…" oninput="sheetDraft.desc=this.value">${esc(draft.desc)}</textarea>
       ${block.anchor? `<div class="anchornote">⚓ This is an anchor block (bath, meals, job block, sleep). It won't shrink below a sensible minimum when the day gets squeezed.</div>` : ""}
       <div class="sheetactions">
         <button class="btn" onclick="confirmEdit('${block.id}')">Save</button>
-        <button class="btn ghost" onclick="deleteTimetableBlock('${block.id}')">Delete</button>
         <button class="btn secondary" onclick="openSheetId=null;sheetDraft=null;render()">Cancel</button>
       </div>
     </div>
@@ -2082,96 +1931,41 @@ function renderCheckinFields(){
 function saveNote(v){ getCheckin(selectedDay).note = v; saveQuiet(); }
 
 /* ---- brain dump ---- */
-const BD_TYPES = [["call","Call"],["email","Mail"],["todo","To Do"],["learn","Learn"],["lookup","Look up"]];
+const BD_TYPES = [["call","📞 To call"],["email","📧 To email"],["todo","✅ To do"],["learn","📚 Learn"],["lookup","🔍 Look up"]];
 const BD_PRIORITIES = [["red","Most important"],["yellow","Important"],["green","When free"],["grey","Someday"]];
 const BD_TYPE_COLOR = {call:"#477c9b",email:"#7864a5",todo:"#3f7a52",learn:"#b4875a",lookup:"#6a7c8a"};
 const BD_COLOR = {red:"#b4552b", yellow:"#caa23c", green:"#3f7a52", grey:"#9c8268"};
-let bdDraftType = "todo", bdDraftPriority = "yellow", bdFilter = "All", bdDraftText = "", bdOptionsOpen = false;
+let bdDraftType = "todo", bdDraftPriority = "yellow", bdFilter = "All";
 function addBrainDump(){
   const el = document.getElementById("bdInput");
   const v = (el.value||"").trim();
   if(!v) return;
   state.brainDump = state.brainDump || [];
-  state.brainDump.unshift({id:"bd"+Date.now(), text:v, type:bdDraftType, priority:bdDraftPriority, day:selectedDay, done:false, ts:Date.now(), scope:currentNest==="today"?"today":"business"});
+  state.brainDump.unshift({id:"bd"+Date.now(), text:v, type:bdDraftType, priority:bdDraftPriority, day:selectedDay, done:false, ts:Date.now()});
   el.value = "";
-  bdDraftText = "";
-  bdOptionsOpen = false;
   save();
 }
 function toggleBd(id){ const it=state.brainDump.find(x=>x.id===id); if(it){ it.done=!it.done; if(it.calendarActivityId){const a=(state.parallelActivities||[]).find(x=>x.id===it.calendarActivityId);if(a)a.done=it.done;} save(); } }
-function deleteBd(id){
-  const item=(state.brainDump||[]).find(x=>String(x.id)===String(id));
-  snapshotForUndo("Item deleted");
-  if(item && item.calendarActivityId) state.parallelActivities=(state.parallelActivities||[]).filter(a=>String(a.id)!==String(item.calendarActivityId));
-  state.brainDump=(state.brainDump||[]).filter(x=>String(x.id)!==String(id));
-  save();
-}
-function pullThoughtVaultTasks(){
-  const targetISO=dateForDay(selectedDay);
-  const pending=(state.brainDump||[]).filter(it=>(it.scope||"business")==="today" && !it.done && (it.calendarDate || (Number.isFinite(Number(it.day)) ? dateForDay(Number(it.day)) : "")) < targetISO);
-  if(!pending.length){toast("No remaining tasks to pull");return;}
-  snapshotForUndo("Previous Thought Vault tasks pulled");
-  let minute=(targetISO===todayISO()) ? new Date().getHours()*60+new Date().getMinutes() : 9*60;
-  for(const item of pending){
-    let activity=(state.parallelActivities||[]).find(a=>String(a.id)===String(item.calendarActivityId));
-    if(activity){
-      activity.date=targetISO;
-      activity.time=toHHMM(minute);
-      activity.dur=Number(activity.dur)||30;
-      activity.done=false;
-    }else{
-      const id="pa"+Date.now()+Math.random().toString(36).slice(2,6);
-      activity={id,date:targetISO,title:item.text,time:toHHMM(minute),dur:30,icon:"📌",done:false,brainDumpId:item.id,type:item.type||"todo",priority:item.priority||"yellow",category:"Planned",desc:item.desc||""};
-      state.parallelActivities=state.parallelActivities||[];state.parallelActivities.push(activity);
-      item.calendarActivityId=id;
-    }
-    item.calendarDate=targetISO;item.day=selectedDay;item.done=false;item.scope="today";
-    minute+=Math.max(30,Number(activity.dur)||30);
-    if(minute>=23*60) minute=9*60;
-  }
-  save();toast(pending.length+" remaining task(s) pulled into this day");
-}
-function setBdType(t){
-  const el = document.getElementById("bdInput");
-  if(el) bdDraftText = el.value;
-  bdDraftType = t; bdOptionsOpen = true; render();
-  const next = document.getElementById("bdInput");
-  if(next){ next.focus(); next.setSelectionRange(next.value.length,next.value.length); }
-}
-function setBdPriority(p){
-  const el = document.getElementById("bdInput");
-  if(el) bdDraftText = el.value;
-  bdDraftPriority = p; bdOptionsOpen = true; render();
-  const next = document.getElementById("bdInput");
-  if(next){ next.focus(); next.setSelectionRange(next.value.length,next.value.length); }
-}
+function deleteBd(id){ snapshotForUndo("Item deleted"); state.brainDump = state.brainDump.filter(x=>x.id!==id); save(); }
+function setBdType(t){ bdDraftType = t; render(); }
+function setBdPriority(p){ bdDraftPriority = p; render(); }
 function bdOnInput(){
   const el = document.getElementById("bdInput");
   const panel = document.getElementById("bdOptions");
-  bdDraftText = el ? el.value : "";
-  bdOptionsOpen = !!(bdDraftText && bdDraftText.trim());
-  if(panel) panel.style.display = bdOptionsOpen ? "" : "none";
+  if(el && panel) panel.style.display = (el.value && el.value.trim()) ? "" : "none";
 }
-function renderBrainDump(scope="business"){
-  const selectedISO = dateForDay(selectedDay);
-  const all = (state.brainDump||[]).filter(it=>{
-    if((it.scope||"business")!==scope) return false;
-    if(scope!=="today") return true;
-    // Today Thought Vault is day-specific; linked calendar tasks follow their calendar date.
-    return (it.calendarDate || (Number.isFinite(Number(it.day)) ? dateForDay(Number(it.day)) : selectedISO)) === selectedISO;
-  });
-  const previousPending = scope==="today" ? (state.brainDump||[]).filter(it=>(it.scope||"business")==="today" && !it.done && (it.calendarDate || (Number.isFinite(Number(it.day)) ? dateForDay(Number(it.day)) : "")) < selectedISO).length : 0;
+function renderBrainDump(){
+  const all = (state.brainDump||[]);
   const items = bdFilter==="All" ? all : all.filter(it=>it.priority===bdFilter);
   const typeLabel = id => (BD_TYPES.find(t=>t[0]===id)||[,""])[1];
   return `<div class="card">
-    <h3>🧠 ${scope==="today"?"Today Thought Vault":"Business Scratchpad"}</h3>
-    <p class="small">${scope==="today"?"Today’s personal tasks and reminders.":"Business activities, notes and ideas."}</p>
-    ${scope==="today" && previousPending ? `<div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn secondary" onclick="pullThoughtVaultTasks()">Pull remaining from previous days (${previousPending})</button></div>` : ""}
+    <h3>🧠 Brain dump</h3>
+    <p class="small">Catch it here before it becomes a worry — tag it so you can find it again.</p>
     <div class="bd-input" style="margin-top:10px">
-      <input type="text" id="bdInput" value="${String(bdDraftText).replace(/&/g,"&amp;").replace(/\"/g,"&quot;").replace(/</g,"&lt;")}" placeholder="${scope==="today"?"Call someone, pick up groceries…":"Business idea, client follow-up…"}" oninput="bdOnInput()" onkeydown="if(event.key==='Enter')addBrainDump()">
+      <input type="text" id="bdInput" placeholder="Call the dentist, business idea, worry about rent…" oninput="bdOnInput()" onkeydown="if(event.key==='Enter')addBrainDump()">
       <button class="btn" onclick="addBrainDump()">Add</button>
     </div>
-    <div id="bdOptions" style="display:${bdOptionsOpen ? "" : "none"}">
+    <div id="bdOptions" style="display:none">
       <div class="row" style="margin-top:9px;gap:6px">
         ${BD_TYPES.map(([id,l])=>`<button class="chip ${bdDraftType===id?'on':''}" onclick="setBdType('${id}')">${l}</button>`).join("")}
       </div>
@@ -2183,20 +1977,16 @@ function renderBrainDump(scope="business"){
       <button class="chip ${bdFilter==='All'?'on':''}" onclick="bdFilter='All';render()">All (${all.length})</button>
       ${BD_PRIORITIES.map(([id])=>`<button class="pchip ${bdFilter===id?'on':''}" style="--pc:${BD_COLOR[id]}" onclick="bdFilter='${id}';render()"><span class="dot"></span>${id} (${all.filter(x=>x.priority===id).length})</button>`).join("")}
     </div>
-    <div class="bd-list" style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px">
-      ${items.length? BD_TYPES.map(([typeId,typeName])=>{
-        const priorityOrder = {red:0,yellow:1,green:2,grey:3};
-        const group = items.filter(it=>(it.type||"todo")===typeId).sort((a,b)=>(priorityOrder[a.priority]??4)-(priorityOrder[b.priority]??4)||(a.ts||0)-(b.ts||0));
-        if(!group.length) return "";
-        return `<section class="bd-type-card" style="border:1px solid var(--line);border-radius:12px;padding:10px;min-width:0">
-          <h4 style="margin:0 0 9px;font-size:14px">${typeName}<span class="small" style="font-weight:400;margin-left:6px">${group.length}</span></h4>
-          ${group.map(it=>`<div class="bd-item ${it.done?'done':''}" style="border-left:4px solid ${BD_COLOR[it.priority]||'var(--line)'};margin:6px 0;padding:7px">
-            <input type="checkbox" ${it.done?"checked":""} onchange="toggleBd('${it.id}')">
-            <div style="flex:1;min-width:0"><span>${it.text}</span><div class="bdtype-tag" style="color:${BD_COLOR[it.priority]||'var(--muted)'}">${(BD_PRIORITIES.find(t=>t[0]===it.priority)||[,it.priority||'grey'])[1]}</div></div>
-            <button onclick="deleteBd('${it.id}')">✕</button>
-          </div>`).join("")}
-        </section>`;
-      }).join("") : `<p class="small">Nothing here for this filter.</p>`}
+    <div class="bd-list" style="margin-top:12px">
+      ${items.length? items.map(it=>`
+        <div class="bd-item ${it.done?'done':''}" style="border-left:4px solid ${BD_COLOR[it.priority]||'var(--line)'}">
+          <input type="checkbox" ${it.done?"checked":""} onchange="toggleBd('${it.id}')">
+          <div style="flex:1">
+            <span>${it.text}</span>
+            <div class="bdtype-tag">${typeLabel(it.type)}</div>
+          </div>
+          <button onclick="deleteBd('${it.id}')">✕</button>
+        </div>`).join("") : `<p class="small">Nothing here for this filter.</p>`}
     </div>
   </div>`;
 }
@@ -4258,8 +4048,11 @@ const SHOPPING_CATALOG = {
   "Beverages & extras":["Green tea","Coffee","Herbal tea","Coconut water"]
 };
 function ensurePantrySeed(){
-  if(!state.pantrySeeded){
-    state.pantry = PANTRY_SEED.map((p,i)=>({id:"p"+i, ...p}));
+  state.pantry = Array.isArray(state.pantry) ? state.pantry : [];
+  state.shopping = Array.isArray(state.shopping) ? state.shopping : [];
+  state.customRecipes = Array.isArray(state.customRecipes) ? state.customRecipes : [];
+  if(!state.pantrySeeded || !state.pantry.length){
+    if(!state.pantry.length) state.pantry = PANTRY_SEED.map((p,i)=>({id:"p"+i, ...p}));
     state.pantrySeeded = true;
     saveQuiet();
   }
@@ -4289,9 +4082,18 @@ function getMeals(n){
 }
 function setMealText(meal, val){ getMeals(selectedDay)[meal].text = val; saveQuiet(); }
 function toggleMealDone(meal){ const m=getMeals(selectedDay)[meal]; m.done=!m.done; save(); }
+function inferRecipeMeal(r){
+  if(r.meal) return r.meal;
+  const g=(r.group||"").toLowerCase(), n=(r.name||"").toLowerCase();
+  if(/breakfast|tiffin|idli|dosa|upma|poha|pancake|porridge|omelette|omelet|chilla|paratha/.test(g+" "+n)) return "breakfast";
+  if(/snack|chutney|soup & sides|sweet|dessert|pakora|vada|cutlet|chaat/.test(g+" "+n)) return "snack";
+  return "lunch";
+}
+function allRecipes(){ return RECIPES.map(r=>({...r,meal:inferRecipeMeal(r)})).concat(state.customRecipes||[]); }
 function useRecipeForMeal(id, meal){
-  const r = RECIPES.find(x=>x.id===id); if(!r) return;
+  const r = allRecipes().find(x=>x.id===id); if(!r) return;
   getMeals(selectedDay)[meal].text = r.icon+" "+r.name;
+  if(r.macros){ state.customFoods=state.customFoods||[]; if(!state.customFoods.some(f=>f.n.toLowerCase()===r.name.toLowerCase())) state.customFoods.push({n:r.name,k:r.macros.kcal||0,p:r.macros.protein||0,c:r.macros.carbs||0,f:r.macros.fat||0,s:r.macros.sugar||0,meal,src:"recipe"}); }
   logFoodEntry(meal, r.name);
   save();
 }
@@ -4428,7 +4230,11 @@ function renderMacroTotals(){
       <h3 style="margin:0">📊 Today's macros</h3>
       <span class="small">${macroOpen? "Hide ▲" : "Show ▼"}</span>
     </div>
-    <div class="macro-summary-inline"><span class="macro-glance"><b>${Math.round(t.k)}</b><span class="macro-glance-unit">kcal${mt.calories? ` of ${mt.calories}` : " today"}</span></span><span class="macro-nutrients">${Math.round(t.p)}g protein · ${Math.round(t.c)}g carbs · ${Math.round(t.f)}g fat · ${Math.round(t.s)}g sugar</span></div>
+    <div class="macro-glance">
+      <b>${Math.round(t.k)}</b><span class="macro-glance-unit">kcal${mt.calories? ` of ${mt.calories}` : " today"}</span>
+    </div>
+    ${mt.calories? `<div class="macro-glance-bar"><span style="width:${pct}%"></span></div>` : ""}
+    <p class="small" style="margin-top:7px">${Math.round(t.p)}g protein · ${Math.round(t.c)}g carbs · ${Math.round(t.f)}g fat · ${Math.round(t.s)}g sugar</p>
     ${macroOpen? renderMacroTotalsBody(t, mt) : ""}
   </div>`;
 }
@@ -4525,7 +4331,7 @@ function updateQuickFoodResults(query){
   const raw = (query||"").trim();
   const q = raw.toLowerCase();
   const pool = q ? allFoodsSorted(quickAddMeal).filter(f=>f.n.toLowerCase().includes(q)) : allFoodsSorted(quickAddMeal);
-  const recipePool = q ? RECIPES.filter(r=>r.name.toLowerCase().includes(q)) : [];
+  const recipePool = q ? allRecipes().filter(r=>r.name.toLowerCase().includes(q)) : [];
   const el = document.getElementById("fresults_quick");
   if(!el) return;
   const exactMatch = q && pool.some(f=>f.n.toLowerCase()===q);
@@ -4713,9 +4519,10 @@ function mealGlanceRow(){
   </div>`;
 }
 function renderMeals(){
-  return `<div class="card meals-strip" style="margin-bottom:8px">
+  return `<div class="card" style="margin-bottom:14px">
     <h3>🍽 Today's meals</h3>
     <p class="small">Jot it down, tick off once eaten.</p>
+    ${mealGlanceRow()}
   </div>
   ${renderMacroTotals()}
   <div class="hydration-grid">
@@ -4897,7 +4704,7 @@ function pantryHasItem(tok){
 }
 function recipeMatches(){
   const can=[], almost=[];
-  RECIPES.forEach(r=>{
+  allRecipes().forEach(r=>{
     const miss = r.need.filter(t=>!pantryHasItem(t));
     if(!miss.length) can.push(r);
     else if(miss.length===1 && r.need.length>1) almost.push({r, miss:miss[0]});
@@ -4920,7 +4727,7 @@ const RECIPE_KCAL_BY_GROUP = {
   "Soup & sides":140, "South Indian tiffin":200, "Sambar & rasam":110,
   "South Indian curries":220, "South Indian rice":290, "Chutneys":70
 };
-function recipeKcal(r){ return RECIPE_KCAL_BY_GROUP[r.group] || 220; }
+function recipeKcal(r){ return Number(r.macros?.kcal || r.kcal) || RECIPE_KCAL_BY_GROUP[r.group] || 220; }
 function setRecipeCalLimit(v){
   const n = parseInt(v,10);
   state.recipeCalLimit = (n && n>0) ? n : null;
@@ -4937,57 +4744,75 @@ function recipeCard(r){
     </div>
     ${open? `<div class="recipe-card">
       <p class="small" style="margin:0 0 6px"><span class="rtag">${r.group}</span> <span class="rtag">~${recipeKcal(r)} kcal/serving</span></p>
-      <ul>${r.ingredients.map(i=>`<li>${i}</li>`).join("")}</ul>
-      ${r.url? `<a href="${r.url}" target="_blank" rel="noopener" class="small">Open full recipe ↗</a>` : ""}
+      <ul>${(r.ingredients||[]).map(i=>`<li>${escRecipe(i)}</li>`).join("")}</ul>
+      ${r.instructions?.length?`<h4>Method</h4><ol>${r.instructions.map(i=>`<li>${escRecipe(i)}</li>`).join("")}</ol>`:""}
+      ${r.macros?`<div class="rtags"><span class="rtag">${r.macros.kcal} kcal</span><span class="rtag">${r.macros.protein}g protein</span><span class="rtag">${r.macros.carbs}g carbs</span><span class="rtag">${r.macros.fat}g fat</span><span class="rtag">Approx. estimate</span></div>${(state.customRecipes||[]).some(x=>x.id===r.id)?`<div class="macro-edit-grid"><label>kcal<input type="number" min="0" value="${r.macros.kcal||0}" onchange="updateCustomRecipeMacro('${r.id}','kcal',this.value)"></label><label>Protein g<input type="number" min="0" value="${r.macros.protein||0}" onchange="updateCustomRecipeMacro('${r.id}','protein',this.value)"></label><label>Carbs g<input type="number" min="0" value="${r.macros.carbs||0}" onchange="updateCustomRecipeMacro('${r.id}','carbs',this.value)"></label><label>Fat g<input type="number" min="0" value="${r.macros.fat||0}" onchange="updateCustomRecipeMacro('${r.id}','fat',this.value)"></label></div>`:""}`:""}
+      ${r.url? `<a href="${escRecipe(r.url)}" target="_blank" rel="noopener" class="small">Open full recipe ↗</a>` : ""}
+      ${(state.customRecipes||[]).some(x=>x.id===r.id)?`<button class="btn ghost sm" onclick="deleteCustomRecipe('${r.id}')">Delete recipe</button>`:""}
       <div class="row" style="gap:6px;margin-top:8px;flex-wrap:wrap">
         ${["breakfast","lunch","snack","dinner"].map(m=>`<button class="btn secondary sm" onclick="useRecipeForMeal('${r.id}','${m}')">+ ${m}</button>`).join("")}
       </div>
     </div>` : ""}
   </div>`;
 }
+let recipeSort = "name";
+let recipeMealCard = "breakfast";
+function setRecipeSort(v){ recipeSort=v; render(); }
+function setRecipeMealCard(v){ recipeMealCard=v; render(); }
+function escRecipe(s){ return String(s||"").replace(/[&<>\"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])).replace(/'/g,"&#39;"); }
+function recipeNeedFromIngredient(line){
+  let v=String(line||"").toLowerCase().replace(/^\s*\d+(?:[./]\d+)?\s*/,"").replace(/^(?:cups?|tbsp|tablespoons?|tsp|teaspoons?|g|kg|ml|l|grams?|kilograms?|millilit(?:er|re)s?|pieces?|pcs|small|medium|large)\s+/i,"").trim();
+  v=v.replace(/^(?:of)\s+/,"").replace(/\s*\([^)]*\)/g,"").split(/[,;]/)[0].trim();
+  const synonyms=[[/(lentil|dal|dhal)/,"Lentils/Dal"],[/chickpea|chana/,"Chickpeas"],[/kidney bean|rajma/,"Rajma"],[/toor/,"Toor dal"],[/moong/,"Moong dal"],[/onion/,"Onion"],[/tomato/,"Tomato"],[/paneer/,"Paneer"],[/spinach/,"Spinach"],[/rice/,"Rice"],[/egg/,"Eggs"],[/potato/,"Potato"],[/carrot/,"Carrot"],[/tofu/,"Tofu"],[/yogurt|yoghurt|curd/,"Plain yoghurt"]];
+  const hit=synonyms.find(([re])=>re.test(v)); return hit?hit[1]:(v.charAt(0).toUpperCase()+v.slice(1));
+}
+function parseRecipeDraft(){
+  const raw=(document.getElementById("recipePaste")?.value||"").trim();
+  const url=(document.getElementById("recipeUrl")?.value||"").trim();
+  if(!raw && !url){ alert("Paste recipe text or add a recipe link first."); return; }
+  const lines=raw.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+  let name=(document.getElementById("recipeName")?.value||"").trim();
+  if(!name){ name=lines.find(x=>!/^https?:\/\//i.test(x) && !/^(ingredients|instructions|method|directions|steps|how to make)\s*:?$/i.test(x)) || (url.split("/").filter(Boolean).pop()||"My recipe").replace(/[-_]/g," ").replace(/\.html?.*$/i,""); }
+  const ingredientLines=[]; let mode=""; const steps=[];
+  for(const line of lines){
+    if(/^(ingredients|what you need)\s*:?$/i.test(line)){mode="ingredients";continue;}
+    if(/^(method|instructions|directions|steps|how to make)\s*:?$/i.test(line)){mode="steps";continue;}
+    if(/^(nutrition|macros|per serving)\s*:?$/i.test(line)){mode="macros";continue;}
+    if(/^https?:\/\//i.test(line)) continue;
+    if(mode==="ingredients") ingredientLines.push(line.replace(/^[-*•\d.)\s]+/,""));
+    else if(mode==="steps") steps.push(line.replace(/^[-*•\d.)\s]+/,""));
+  }
+  if(!ingredientLines.length){
+    const section=raw.match(/ingredients?\s*:?([\s\S]*?)(?=\n\s*(?:method|instructions|directions|steps|how to make)\s*:|$)/i);
+    if(section) ingredientLines.push(...section[1].split(/\n/).map(x=>x.replace(/^[-*•\d.)\s]+/,"").trim()).filter(Boolean));
+  }
+  if(!steps.length){ const section=raw.match(/(?:method|instructions|directions|steps|how to make)\s*:?([\s\S]*)/i); if(section) steps.push(...section[1].split(/\n/).map(x=>x.replace(/^[-*•\d.)\s]+/,"").trim()).filter(Boolean)); }
+  const ing=ingredientLines.filter(Boolean);
+  // Transparent, editable rough estimates: use common ingredient keywords, never present these as verified nutrition.
+  let kcal=220, protein=8, carbs=28, fat=8;
+  const nutrition=[[/paneer|cheese/,120,8,2,9],[/tofu/,80,9,2,5],[/egg/,72,6,0,5],[/dal|lentil|chickpea|chana|rajma|beans/,110,7,18,1],[/rice|roti|wheat|atta|oats|bread|pasta|noodle/,140,4,27,2],[/oil|ghee|butter/,45,0,0,5],[/milk|yoghurt|curd/,60,4,6,2],[/vegetable|spinach|tomato|onion|carrot|broccoli|potato/,35,2,7,0]];
+  kcal=0; protein=0; carbs=0; fat=0;
+  for(const ingLine of (ing.length?ing:[raw])){ let hit=false; for(const [re,k,pr,ca,fa] of nutrition){ if(re.test(ingLine)){kcal+=k;protein+=pr;carbs+=ca;fat+=fa;hit=true;break;} } if(!hit){kcal+=45;protein+=1;carbs+=6;fat+=1;} }
+  kcal=Math.round(kcal||220); protein=Math.round(protein); carbs=Math.round(carbs); fat=Math.round(fat);
+  const meal=document.getElementById("recipeMeal")?.value||"lunch";
+  const custom={id:"custom_recipe_"+Date.now(),name,icon:"📖",group:meal,meal,url,need:ing.map(recipeNeedFromIngredient).filter(Boolean),ingredients:ing,instructions:steps,macros:{kcal,protein,carbs,fat,estimate:true},sourceText:raw};
+  state.customRecipes=state.customRecipes||[]; state.customRecipes.unshift(custom); recipeOpenId=custom.id; save();
+}
+function updateCustomRecipeMacro(id,key,value){ const r=(state.customRecipes||[]).find(x=>x.id===id); if(!r)return; r.macros=r.macros||{}; r.macros[key]=Math.max(0,Number(value)||0); saveQuiet(); }
+function deleteCustomRecipe(id){ if(!confirm("Delete this recipe?"))return; state.customRecipes=(state.customRecipes||[]).filter(r=>r.id!==id); if(recipeOpenId===id)recipeOpenId=null; save(); }
 function renderRecipes(){
-  const limit = state.recipeCalLimit;
-  const withinLimit = r => !limit || recipeKcal(r) <= limit;
-  const {can: canAll, almost: almostAll} = recipeMatches();
-  const can = canAll.filter(withinLimit);
-  const almost = almostAll.filter(({r})=>withinLimit(r));
-  const groups = [...new Set(RECIPES.map(r=>r.group))];
-  const almostShown = almost.slice(0,8);
-  let browsePool = recipeGroupFilter ? RECIPES.filter(r=>r.group===recipeGroupFilter) : RECIPES;
-  browsePool = browsePool.filter(withinLimit);
-  return `<div class="card" style="margin-bottom:14px">
-    <h3>📖 Recipes</h3>
-    <p class="small">Matched against what's in your pantry. Tap a name to see ingredients, open the full recipe, or drop it into a meal.</p>
-    <div class="row" style="gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">
-      <label class="small" style="font-weight:700">Max kcal per serving</label>
-      <input type="number" placeholder="e.g. 250" value="${limit||''}" style="width:80px" onchange="setRecipeCalLimit(this.value)">
-      ${limit? `<button class="btn ghost sm" onclick="setRecipeCalLimit('')">Clear</button>` : ""}
-    </div>
-    <p class="small" style="margin-top:4px;color:var(--muted)">Kcal figures are rough per-serving estimates by dish type (the old app didn't store exact values per recipe) — use the AI-prompt tool in Quick-add if you need an exact number for something you've cooked.</p>
-  </div>
-  <div class="card" style="margin-bottom:14px">
-    <h3>✅ You can make now${can.length?` <span class="countbadge">${can.length}</span>`:""}</h3>
-    ${can.length? `<div class="recipe-list">${can.slice(0,20).map(recipeCard).join("")}</div>${can.length>20?`<p class="small" style="margin-top:6px">+ ${can.length-20} more below.</p>`:""}` : `<p class="small">${limit? "Nothing in stock fits that calorie limit yet." : "Tick a few pantry items with a quantity and matching recipes will show up here."}</p>`}
-  </div>
-  ${almost.length? `<div class="card" style="margin-bottom:14px">
-    <h3>🛒 One item away</h3>
-    <div style="display:flex;flex-direction:column;gap:6px">
-      ${almostShown.map(({r,miss})=>`<div class="row" style="justify-content:space-between;align-items:center;font-size:12.5px">
-        <span>${r.icon} ${r.name} <span class="small">— needs ${miss.replace(/\|/g," or ")} · ~${recipeKcal(r)} kcal</span></span>
-        <button class="btn secondary sm" onclick="addMissingToShopping('${miss.replace(/'/g,"\\'")}')">+ List</button>
-      </div>`).join("")}
-    </div>
-  </div>` : ""}
-  <div class="card" style="margin-bottom:14px">
-    <h3>Browse ${browsePool.length}${limit||recipeGroupFilter?` of ${RECIPES.length}`:""}</h3>
-    <div class="row" style="gap:6px;flex-wrap:wrap;margin-bottom:8px">
-      <span class="chip mini ${!recipeGroupFilter?'on':''}" onclick="setRecipeGroupFilter('')">All</span>
-      ${groups.map(g=>`<span class="chip mini ${recipeGroupFilter===g?'on':''}" onclick="setRecipeGroupFilter('${g.replace(/'/g,"\\'")}')">${g}</span>`).join("")}
-    </div>
-    ${browsePool.length? `<div class="recipe-list">${browsePool.map(recipeCard).join("")}</div>` : `<p class="small">Nothing in this group fits that calorie limit.</p>`}
-    <p class="small src" style="margin-top:8px">Recipes from Swasthi's Recipes and Dassana's Veg Recipes.</p>
-  </div>
-  ${renderDishes()}`;
+  const recipes=allRecipes(); const limit=state.recipeCalLimit;
+  const withinLimit=r=>!limit||recipeKcal(r)<=limit;
+  const groups=[["breakfast","🍳 Breakfast"],["lunch","🥗 Lunch"],["snack","🍎 Snacks"],["dinner","🍲 Dinner"]];
+  const available=recipes.filter(r=>r.need?.length && r.need.every(t=>pantryHasItem(t)) && withinLimit(r));
+  const sorted=(list)=>list.filter(withinLimit).sort((a,b)=>recipeSort==="kcal"?recipeKcal(a)-recipeKcal(b):a.name.localeCompare(b.name));
+  const card=(key,label)=>{const list=sorted(recipes.filter(r=>(r.meal||r.group||"").toLowerCase()===key || (key==="snack" && (r.group||"").toLowerCase().includes("snack"))));return `<div class="recipe-meal-card"><h3>${label} <span class="countbadge">${list.length}</span></h3><div class="recipe-scroll">${list.length?`<div class="recipe-list">${list.map(recipeCard).join("")}</div>`:`<p class="small">No recipes in this category yet. Add one below.</p>`}</div></div>`;};
+  return `<div class="card recipe-add-card" style="margin-bottom:14px"><h3>➕ Add a recipe</h3><p class="small">Paste recipe text or add a link. The app will split out ingredients and steps where it can, then create editable rough macro estimates. A link alone is saved as a source link; this offline HTML app cannot reliably read recipe pages from other websites.</p>
+    <div class="recipe-add-grid"><div><label class="small">Recipe name</label><input id="recipeName" placeholder="e.g. Paneer lunch bowl"></div><div><label class="small">Meal category</label><select id="recipeMeal"><option value="breakfast">Breakfast</option><option value="lunch" selected>Lunch</option><option value="snack">Snacks</option><option value="dinner">Dinner</option></select></div><div class="recipe-url-field"><label class="small">Online recipe link (optional)</label><input id="recipeUrl" type="url" placeholder="https://..."></div><div class="recipe-paste-field"><label class="small">Paste recipe — name, ingredients, method/instructions</label><textarea id="recipePaste" rows="5" placeholder="Recipe name\nIngredients:\n- 1 cup lentils\n- 1 onion\n\nMethod:\n1. Cook lentils…"></textarea></div></div>
+    <p class="small">Macro estimates are approximate per recipe, not verified nutrition. You can edit them after adding.</p><button class="btn" onclick="parseRecipeDraft()">Parse & add recipe</button></div>
+  <div class="card" style="margin-bottom:14px"><div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3 style="margin:0">📚 Recipe list</h3><label class="small">Sort <select onchange="setRecipeSort(this.value)"><option value="name" ${recipeSort==="name"?"selected":""}>Name A–Z</option><option value="kcal" ${recipeSort==="kcal"?"selected":""}>Calories low–high</option></select></label></div><div class="recipe-meal-grid">${groups.map(([k,l])=>card(k,l)).join("")}</div></div>
+  <div class="card" style="margin-bottom:14px"><h3>🧺 Recipes with available pantry items <span class="countbadge">${available.length}</span></h3><p class="small">Recipes whose listed ingredients match items currently in your pantry.</p>${available.length?`<div class="recipe-scroll"><div class="recipe-list">${sorted(available).map(recipeCard).join("")}</div></div>`:`<p class="small">No exact pantry matches yet. Add ingredients to your Pantry, or add a recipe with an ingredient list.</p>`}</div>
+  `;
 }
 /* ---- dishes: every item from the food list, browsable here too, not just via Quick-add search ---- */
 let dishOpenId = null;
@@ -5930,7 +5755,7 @@ function addTaskFromMeeting(projectId, mtgId){
   state.brainDump = state.brainDump||[];
   state.brainDump.unshift({id:"bd"+Date.now()+Math.random().toString(36).slice(2,6), text:"["+p.name+"] "+txt, type:"todo", priority:"yellow", day:selectedDay, done:false, ts:Date.now()});
   save();
-  toast("Task sent to Thought Vault ✓");
+  toast("Task sent to Brain dump ✓");
   openProjectDetail(projectId);
 }
 /* ---- export: whole Ledger or a single project, as a real .xlsx workbook (SheetJS, loaded via CDN) ---- */
@@ -6198,7 +6023,7 @@ function renderMarketingTable(){
 function renderDailyPage(){
   return renderPomodoroCompact()
   +renderGoals()
-  +renderBrainDump("business");
+  +renderBrainDump();
 }
 function renderBusiness(){
   const tabs = [["ledger","📒","Ledger"],["daily","🎛️","Control panel"],["plan","🧭","Plan"]];
@@ -6265,7 +6090,7 @@ function getJournal(n){ state.journal=state.journal||{}; return state.journal[da
 function saveJournalField(field, val){ getJournal(selectedDay)[field] = val; saveQuiet(); }
 function renderJournalEntry(){
   const j = getJournal(selectedDay);
-  return `${renderCheckinDropdown()}<div class="card">
+  return `<div class="card">
     <h3>📓 Journal & gratitude</h3>
     <p class="small">A few honest lines for ${niceDate(dateForDay(selectedDay),{day:"numeric",month:"short"})}.</p>
     <label class="small" style="display:block;margin-top:14px;font-weight:700">Today's entry</label>
@@ -6371,10 +6196,10 @@ function renderSavedLinks(){
   const todo = all.filter(i=>!i.read), done = all.filter(i=>i.read);
   const icon = isVideo ? '▶️' : '✍️';
   return `<section class="card card-compact" style="margin:18px 0">
-    <h3>📚 Reading list</h3>
+    <h3>🔗 Saved links</h3>
     <div class="row" style="gap:6px;margin:8px 0">
-      <button type="button" class="btn secondary" style="padding:5px 11px;font-size:12px;${type==='article'?'background:var(--accent);color:#fff;border-color:var(--accent)':''}" onclick="setNewSavedLinkType('article')">✍️ Articles</button>
-      <button type="button" class="btn secondary" style="padding:5px 11px;font-size:12px;${type==='video'?'background:var(--accent);color:#fff;border-color:var(--accent)':''}" onclick="setNewSavedLinkType('video')">▶️ Videos</button>
+      <button type="button" class="btn secondary" style="padding:5px 11px;font-size:12px;${type==='article'?'background:var(--accent);color:#fff;border-color:var(--accent)':''}" onclick="setSavedLinksViewType('article')">✍️ Articles</button>
+      <button type="button" class="btn secondary" style="padding:5px 11px;font-size:12px;${type==='video'?'background:var(--accent);color:#fff;border-color:var(--accent)':''}" onclick="setSavedLinksViewType('video')">▶️ Videos</button>
     </div>
     <div class="addrow">
       <input class="nm" id="newSavedLinkName" type="text" placeholder="Title">
@@ -6386,9 +6211,29 @@ function renderSavedLinks(){
   </section>`;
 }
 function renderReading(){
-  // The separate book/article-entry feature has been removed; saved articles and videos
-  // now live under the single Reading list heading.
-  return renderSavedLinks();
+  const books = state.reading||[];
+  return `<div class="card" style="margin-bottom:14px">
+    <h3>📚 Reading list</h3>
+    <p class="small">Books and articles worth coming back to.</p>
+    <div class="addrow">
+      <input class="nm" id="bookTitle" type="text" placeholder="Title">
+      <input class="nm" id="bookAuthor" type="text" placeholder="Author (optional)">
+      <button class="btn" onclick="addBook()">Add</button>
+    </div>
+  </div>
+  ${books.length? books.map(b=>`
+    <div class="book-item">
+      <div class="bhead"><span class="btitle">${b.title}</span></div>
+      ${b.author? `<span class="bauthor">${b.author}</span>` : ""}
+      <input type="text" placeholder="Notes, quotes, takeaways…" value="${(b.notes||"").replace(/"/g,'&quot;')}" oninput="setBookNotes('${b.id}',this.value)" style="width:100%;border:1px solid var(--line);border-radius:9px;padding:6px 9px;margin-top:8px;font-size:12.5px;background:#fcfdf9">
+      <div class="brow">
+        <div class="row" style="gap:5px">
+          ${READ_STATUSES.map(s=>`<button class="stagechip ${b.status===s?'on':''}" style="${b.status===s?'background:'+READ_COLOR[s]:''}" onclick="setBookStatus('${b.id}','${s}')">${s}</button>`).join("")}
+        </div>
+        <button onclick="deleteBook('${b.id}')" style="background:none;border:0;color:var(--muted);cursor:pointer">✕</button>
+      </div>
+    </div>`).join("") : `<p class="small">Nothing on the list yet.</p>`}
+  ${renderSavedLinks()}`;
 }
 
 /* ---- summary / consistency ---- */
@@ -6454,27 +6299,22 @@ function render(){
   const scrollLeft = scrollEl ? scrollEl.scrollLeft : 0;
   const oldAppleScroll = document.getElementById('appleDayScroll');
   const appleScrollTop = oldAppleScroll ? oldAppleScroll.scrollTop : null;
-  const oldTimeplanScroll = document.querySelector('.timeplan-scroll');
-  const oldTimeplanScrollTop = oldTimeplanScroll ? oldTimeplanScroll.scrollTop : null;
   const app = document.getElementById("app");
   if(currentNest==="dashboard") app.innerHTML = renderDashboard();
-  else if(currentNest==="today"){ app.innerHTML = renderToday(); }
+  else if(currentNest==="today") app.innerHTML = renderToday();
   else if(currentNest==="arogya") app.innerHTML = renderArogya();
   else if(currentNest==="business") app.innerHTML = renderBusiness();
   else if(currentNest==="journal") app.innerHTML = renderJournal();
   const newScrollEl = document.querySelector(".strip-scroll");
   if(newScrollEl && scrollLeft) newScrollEl.scrollLeft = scrollLeft;
   const newAppleScroll = document.getElementById('appleDayScroll');
-  if(newAppleScroll && appleScrollTop !== null) {
-    newAppleScroll.scrollTop = appleScrollTop;
-  } else if(newAppleScroll && !appleDayInitialScrollDone && document.getElementById('appleNowLine')) {
-    const now = new Date();
-    newAppleScroll.scrollTop = Math.max(0, now.getHours()*60 + now.getMinutes() - 90);
-    appleDayInitialScrollDone = true;
+  if(newAppleScroll){
+    if(appleScrollTop !== null){ newAppleScroll.scrollTop = appleScrollTop; }
+    else if(!appleDayInitialScrollDone && dateForDay(selectedDay)===todayISO()){
+      const now=new Date(); newAppleScroll.scrollTop=Math.max(0,now.getHours()*60+now.getMinutes()-210);
+      appleDayInitialScrollDone=true;
+    }
   }
-  const newTimeplanScroll = document.querySelector('.timeplan-scroll');
-  if(newTimeplanScroll && oldTimeplanScrollTop !== null) newTimeplanScroll.scrollTop = oldTimeplanScrollTop;
-  else if(newTimeplanScroll && currentNest==='today') { const active=document.querySelector('.today-agenda .tblock.now'); if(active) newTimeplanScroll.scrollTop=Math.max(0,active.offsetTop-newTimeplanScroll.offsetTop-50); }
   updateSavedLabel();
   updateAppleDayClock();
 }
@@ -6509,11 +6349,7 @@ async function openAccountPanel(){
       <button type="button" class="btn secondary" onclick="triggerImport()">⇩ Import</button>
     </div>
 
-    <h4 style="margin:12px 0 4px">Rename profile</h4>
-    <input type="text" id="acctRenameInput" placeholder="New profile name" value="${profileId.replace(/&/g,"&amp;").replace(/"/g,"&quot;")}">
-    <div class="pc-actions"><button type="button" class="btn secondary" onclick="renameProfileFromSettings()">Rename profile</button></div>
-
-    <h4 style="margin:12px 0 4px">Switch / create profile</h4>
+    <h4 style="margin:12px 0 4px">Switch profile</h4>
     <input type="text" id="acctSwitchInput" placeholder="e.g. family-name">
     <div class="pc-actions">
       <button type="button" class="btn secondary" onclick="switchProfileFromInput()">Switch</button>
@@ -6723,29 +6559,6 @@ function importBackup(evt){
   };
   reader.readAsText(file);
   evt.target.value="";
-}
-async function renameProfileFromSettings(){
-  const raw=(document.getElementById("acctRenameInput")||{}).value||"";
-  const next=sanitizeProfileId(raw);
-  if(!raw.trim()){acctMsg("Enter a new profile name.",true);return;}
-  if(next===profileId){acctMsg("That is already this profile name.",true);return;}
-  if(!confirm(`Rename this profile from "${profileId}" to "${next}"? Its saved data will be moved to the new profile name.`))return;
-  const old=profileId, oldKey=STORAGE_KEY+"_"+old, newKey=STORAGE_KEY+"_"+next;
-  try{
-    const local=localStorage.getItem(oldKey);
-    if(local!==null)localStorage.setItem(newKey,local);
-    if(fbReady){
-      const db=firebase.database();
-      const snap=await db.ref("adhdPlannerState/"+old).once("value");
-      if(snap.exists()) await db.ref("adhdPlannerState/"+next).set(snap.val());
-      const prof=await db.ref("adhdPlannerProfiles/"+old).once("value");
-      if(prof.exists()) await db.ref("adhdPlannerProfiles/"+next).set(prof.val());
-    }
-    localStorage.setItem("dinacharya_profileId",next);
-    profileId=next;
-    acctMsg("Profile renamed. Reloading…",false);
-    location.reload();
-  }catch(e){acctMsg("Could not rename profile: "+(e.message||"sync error"),true);}
 }
 function switchProfileFromInput(){
   const v = (document.getElementById("acctSwitchInput")||{}).value || "";
