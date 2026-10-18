@@ -752,6 +752,27 @@ function defaultState(){
     clients:[], projects:[], invoices:[], expenses:[],
     savedLinksSeeded:false, savedSubstackLinks:[], savedYoutubeLinks:[] };
 }
+/* Firebase Realtime Database silently turns a JS array into a plain {"0":..,"1":..} OBJECT
+   whenever it's written with a gap or a non-numeric-sequential key (e.g. after deleting an
+   item leaves a hole) — snap.val() then hands back an object where the app expects .filter()/
+   .find() to work. Run every array-shaped field in state through this after any merge of
+   remote/imported data so "X.filter is not a function" can't recur from a bad round trip. */
+const ARRAY_STATE_KEYS = ["brainDump","pantry","shopping","weight","pipeline","income","reading",
+  "adhocTasks","parallelActivities","customFoods","customRecipes","opsTasks","marketing","goals",
+  "clients","projects","invoices","expenses","savedSubstackLinks","savedYoutubeLinks"];
+function normalizeStateArrays(s){
+  if(!s) return s;
+  ARRAY_STATE_KEYS.forEach(k=>{
+    const v = s[k];
+    if(Array.isArray(v)) return;
+    if(v && typeof v === "object"){
+      s[k] = Object.keys(v).sort((a,b)=>Number(a)-Number(b)).map(key=>v[key]).filter(x=>x!=null);
+    } else if(v==null){
+      s[k] = [];
+    }
+  });
+  return s;
+}
 function loadState(){
   const defaults = defaultState();
   try{
@@ -759,7 +780,7 @@ function loadState(){
     if(raw){
       const loaded = Object.assign({}, defaults, JSON.parse(raw));
       loaded.dietPrefs = Object.assign({}, defaults.dietPrefs, loaded.dietPrefs, {noEgg:false});
-      return loaded;
+      return normalizeStateArrays(loaded);
     }
   }catch(e){}
   return defaults;
@@ -1168,7 +1189,7 @@ function pullInitialState(retriesLeft){
   stateRef.once("value").then(snap=>{
     const remote = snap.val();
     if(remote){
-      state = Object.assign({}, loadState(), remote);
+      state = normalizeStateArrays(Object.assign({}, loadState(), remote));
       state.dietPrefs = Object.assign({}, state.dietPrefs, {noEgg:false});
       saveLocalOnly();
     }
@@ -1190,7 +1211,7 @@ function cloudResyncNow(manual){
   stateRef.once("value").then(snap=>{
     const remote = snap.val();
     if(remote && remote.lastSaved && (!state.lastSaved || new Date(remote.lastSaved) > new Date(state.lastSaved))){
-      state = Object.assign({}, state, remote);
+      state = normalizeStateArrays(Object.assign({}, state, remote));
       state.dietPrefs = Object.assign({}, state.dietPrefs, {noEgg:false});
       saveLocalOnly();
       if(!appLocked) render();
@@ -1217,7 +1238,7 @@ function attachRemoteListener(){
     // just-set start date — moments after it was made. Only accept the remote version
     // when it's actually newer than what we already have.
     if(remote.lastSaved && state.lastSaved && new Date(remote.lastSaved) <= new Date(state.lastSaved)) return;
-    state = Object.assign({}, state, remote);
+    state = normalizeStateArrays(Object.assign({}, state, remote));
     state.dietPrefs = Object.assign({}, state.dietPrefs, {noEgg:false});
     saveLocalOnly();
     setSyncPill("☁️ updated from another device");
@@ -1229,6 +1250,7 @@ function pushToFirebase(){
   if(!fbReady || !stateRef) return;
   clearTimeout(syncTimer);
   syncTimer = setTimeout(()=>{
+    normalizeStateArrays(state);
     const json = JSON.stringify(state);
     lastPushedJSON = json;
     setSyncPill("☁️ saving…");
@@ -1856,9 +1878,9 @@ function renderTodaySplit(list, nowId, dayNum){
     <button class="${tab==='calendar'?'on':''}" onclick="setTodaySplitTab('calendar')">📜 Calendar</button>
     <button class="${tab==='unplanned'?'on':''}" onclick="setTodaySplitTab('unplanned')">➕ Unplanned</button>
   </div>
-  <div class="today-split">
-    <section class="card today-agenda ${tab==='schedule'?'tab-active':''}">
-      <div class="apple-day-head"><h3>🗓️ Schedule</h3><div class="timeplan-head-actions"><span class="small">${list.length} blocks</span><button class="timeplan-expand-btn" onclick="toggleTimePlanExpand(this)" title="Expand Time Plan">Expand ↗</button></div></div>
+  <div class="today-split ${timeplanExpanded?'timeplan-is-expanded':''}">
+    <section class="card today-agenda ${tab==='schedule'?'tab-active':''} ${timeplanExpanded?'timeplan-expanded':''}">
+      <div class="apple-day-head"><h3>🗓️ Schedule</h3><div class="timeplan-head-actions"><span class="small">${list.length} blocks</span><button class="timeplan-expand-btn" onclick="toggleTimePlanExpand(this)" title="${timeplanExpanded?'Collapse Time Plan':'Expand Time Plan'}">${timeplanExpanded?'Collapse ↙':'Expand ↗'}</button></div></div>
       <div class="timeplan-scroll" id="timeplanScroll">${renderTimeline(list, nowId)}</div>
     </section>
     ${renderAppleDayCalendar(list, dayNum, tab==='calendar'?'tab-active':'')}
@@ -1872,6 +1894,7 @@ function renderTodaySplit(list, nowId, dayNum){
   </div>`;
 }
 let todaySplitTab = 'schedule';
+let timeplanExpanded = false; // persists across render() (e.g. after moveBlock up/down) — only ⬇️/Esc/the button itself change it
 function setTodaySplitTab(t){ todaySplitTab=t; render(); }
 /* ---- Rearrange Schedule modal: reorder-only picker (no duration edits) — nudge items up/down
    with small arrow buttons, nothing applies to the real Schedule until "Okay" is tapped. */
@@ -1945,8 +1968,8 @@ function commitRearrangeModal(){
   toast('Schedule rearranged ✓');
   save();
 }
-function toggleTimePlanExpand(btn){const card=btn.closest('.today-agenda');const split=btn.closest('.today-split');if(!card||!split)return;const expanded=card.classList.toggle('timeplan-expanded');split.classList.toggle('timeplan-is-expanded',expanded);btn.textContent=expanded?'Collapse ↙':'Expand ↗';btn.title=expanded?'Collapse Time Plan':'Expand Time Plan';}
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){const card=document.querySelector('.today-agenda.timeplan-expanded');if(card){card.classList.remove('timeplan-expanded');const split=card.closest('.today-split');if(split)split.classList.remove('timeplan-is-expanded');const b=card.querySelector('.timeplan-expand-btn');if(b){b.textContent='Expand ↗';b.title='Expand Time Plan';}}}});
+function toggleTimePlanExpand(btn){const card=btn.closest('.today-agenda');const split=btn.closest('.today-split');if(!card||!split)return;timeplanExpanded=!timeplanExpanded;card.classList.toggle('timeplan-expanded',timeplanExpanded);split.classList.toggle('timeplan-is-expanded',timeplanExpanded);btn.textContent=timeplanExpanded?'Collapse ↙':'Expand ↗';btn.title=timeplanExpanded?'Collapse Time Plan':'Expand Time Plan';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape' && timeplanExpanded){timeplanExpanded=false;const card=document.querySelector('.today-agenda.timeplan-expanded');if(card){card.classList.remove('timeplan-expanded');const split=card.closest('.today-split');if(split)split.classList.remove('timeplan-is-expanded');const b=card.querySelector('.timeplan-expand-btn');if(b){b.textContent='Expand ↗';b.title='Expand Time Plan';}}}});
 function typeLabel(v){return ({todo:'To do',task:'Task',event:'Event'})[v]||'To do';}
 function importanceLabel(v){return ({yellow:'Normal',red:'High',green:'Low'})[v]||'Normal';}
 let parallelClickTimer=null;
@@ -7898,7 +7921,7 @@ function importBackup(evt){
     try{
       const incoming=JSON.parse(e.target.result);
       if(!confirm("Import this backup? It will replace everything currently on this profile.")) return;
-      state=Object.assign({}, defaultState(), incoming);
+      state=normalizeStateArrays(Object.assign({}, defaultState(), incoming));
       saveLocalOnly();
       pushToFirebase();
       location.reload();
