@@ -634,8 +634,8 @@ const START_DATE = "2026-10-12"; // Dinacharya tracking begins here
 const STORAGE_KEY = "dinacharya_v1";
 
 const DEFAULT_TEMPLATE = [
-  {id:"t1",  time:"08:00", title:"Wake up & brush",                     dur:30,  cat:"rest",   icon:"⏰", anchor:true},
-  {id:"t2",  time:"08:30", title:"Coffee & read",                      dur:45,  cat:"rest",   icon:"☕", anchor:false},
+  {id:"t1",  time:"08:00", title:"Rise & Shine",                       dur:30,  cat:"rest",   icon:"🐓", anchor:true},
+  {id:"t2",  time:"08:30", title:"Coffee & Read",                      dur:30,  cat:"rest",   icon:"☕", anchor:false},
   {id:"t3",  time:"09:15", title:"Exercise",                             dur:40,  cat:"move",   icon:"🏋️", anchor:true},
   {id:"t4",  time:"09:55", title:"Bath & self care",                     dur:30,  cat:"rest",   icon:"🛁", anchor:true},
   {id:"t5",  time:"10:25", title:"Meditation and intention",             dur:15,  cat:"mind",   icon:"🧘", anchor:false},
@@ -1788,7 +1788,9 @@ function renderToday(){
   if(nowMin>=0) displayList.forEach(b=>{ if(toMin(b.time)<=nowMin) nowId=b.id; });
 
   // Ad-hoc tasks was dropped — it duplicated what Unplanned (parallel activities) already does.
-  const body = renderMantraLine() + renderStrip(displayList, nowId) + renderTodaySplit(displayList, nowId, selectedDay);
+  const stripIso = dateForDay(selectedDay);
+  const stripAdditions = (state.parallelActivities||[]).filter(a=>a.date===stripIso && !a.allDay);
+  const body = renderMantraLine() + renderStrip(displayList, nowId, stripAdditions) + renderTodaySplit(displayList, nowId, selectedDay);
 
   return `
   <div class="card span12" style="margin-bottom:14px;padding:10px 13px">
@@ -1854,14 +1856,28 @@ function resetScheduleForDay(dayNum){
   }
 }
 
-function renderStrip(list, nowId){
-  return `<div class="strip-scroll">
-    ${list.map(b=>`
+function renderStrip(list, nowId, parallelItems){
+  // The top bead strip mirrors the Schedule list below it — real template/added blocks AND
+  // anything added as a 🗓️ Schedule/➕ Unplanned activity (parallelItems), merged and sorted by
+  // time, the same way renderTimeline does for the full Schedule view. A bead for a parallel item
+  // taps through to its own editor (parallelTap) rather than toggleDone, since it isn't a real block.
+  const blockBeads = list.map(b=>({t:toMin(b.time), html:`
       <div class="bead ${b.done?'done':''} ${b.id===nowId?'now':''}" onclick="toggleDone('${b.id}')" title="${b.title.replace(/"/g,'&quot;')}">
         <div class="circ">${b.icon?iconHTML(b.icon,18):"•"}</div>
         <div class="t">${fmt12(b.time)}</div>
-      </div>`).join("")}
-  </div>`;
+      </div>`}));
+  const parallelBeads = (parallelItems||[]).map(a=>{
+    const linked=(state.brainDump||[]).find(t=>t.id===a.brainDumpId);
+    const done = linked? !!linked.done : !!a.done;
+    const title = String(a.title||'Extra activity').replace(/"/g,'&quot;');
+    return {t:toMin(a.time), html:`
+      <div class="bead parallel ${done?'done':''}" onclick="parallelTap(event,'${a.id}')" title="${title}">
+        <div class="circ">${iconHTML(a.icon||'📎',18)}</div>
+        <div class="t">${fmt12(a.time)}</div>
+      </div>`};
+  });
+  const merged = blockBeads.concat(parallelBeads).sort((x,y)=>x.t-y.t).map(r=>r.html).join("");
+  return `<div class="strip-scroll">${merged}</div>`;
 }
 
 function renderCheckinDropdown(){
@@ -2206,13 +2222,39 @@ function commitCalendarComposer(payload){
   lastComposerCategory = category;
   closeCalendarComposer();save();
 }
+// Used instead of commitCalendarComposer() once a Schedule conflict has been walked through
+// block-by-block. Blocks the person chose "shift" for have already been moved (in
+// resolveScheduleConflict, via applyBlockEdit) by the time this runs. Blocks they chose
+// "parallel" for were never moved — this inserts the new activity as a real Schedule block
+// (same as an unconflicted TT add) while holding those parallel-kept blocks' times fixed through
+// the cascade, the same way an anchor block is protected, so they keep genuinely overlapping the
+// new block on purpose instead of getting silently repacked away from it.
+function finalizeTTInsert(p){
+  const {iso,title,time,dur,desc,icon}=p;
+  const dayNum = p.dayNum || dayNumberFor(iso);
+  const list = getDayBlocks(dayNum).map(b=>({...b}));
+  const parallelIds = p.parallelIds||[];
+  const tempAnchored = [];
+  list.forEach(b=>{ if(parallelIds.includes(b.id) && !b.anchor){ b.anchor=true; tempAnchored.push(b.id); } });
+  const id = 'ca'+Date.now();
+  list.push({id, time, title, dur, cat:'custom', icon:icon||'🗓️', anchor:false, done:false, desc});
+  list.sort((a,b)=>toMin(a.time)-toMin(b.time));
+  recomputeCascade(list); // anchor-aware — fixed + temp-anchored (parallel-kept) blocks keep their own time
+  list.forEach(b=>{ if(tempAnchored.includes(b.id)) b.anchor=false; }); // only pinned for this one insert, not permanently
+  setDayBlocks(dayNum, list);
+  lastComposerCategory = 'TT';
+  closeCalendarComposer(); save();
+}
 /* Conflict resolution is asked ONE overlapping Schedule block at a time (not as one combined
-   popup) — per block the choice is: keep that block exactly where it is (and give up putting
-   the new activity into the Schedule at all — it lands as a parallel/Unplanned item instead),
-   or shift that one block later (cascading whatever follows it forward too). A shift only ever
-   pushes a block later, never earlier. Shifting one block can newly overlap a block that wasn't
-   in the original list, so after each shift the overlap check re-runs and any newly-conflicting
-   block is queued too. */
+   popup) — per block the choice is: keep that block exactly where it is and let the new activity
+   sit alongside it in parallel, or shift that one block later (cascading whatever follows it
+   forward too). Choosing "parallel" for one block only resolves THAT block — if other blocks are
+   still in the queue (or still overlap after a later shift), they're still asked about one at a
+   time; it never short-circuits the rest of the queue. A shift only ever pushes a block later,
+   never earlier. Shifting one block can newly overlap a block that wasn't in the original list,
+   so after each shift the overlap check re-runs and any newly-conflicting block is queued too.
+   Once every overlap is resolved, the new activity is inserted as a real Schedule block — any
+   block resolved as "parallel" keeps its own time through that insert, same as an anchor. */
 let conflictQueue=[];
 function openScheduleConflictPopup(overlaps){
   conflictQueue = overlaps.map(b=>b.id);
@@ -2222,7 +2264,7 @@ function askNextScheduleConflict(){
   const p=pendingTTActivity;
   let old=document.getElementById('scheduleConflictModal'); if(old) old.remove();
   if(!p) return;
-  if(!conflictQueue.length){ commitCalendarComposer(p); pendingTTActivity=null; return; }
+  if(!conflictQueue.length){ finalizeTTInsert(p); pendingTTActivity=null; return; }
   const list=getDayBlocks(p.dayNum);
   const b=list.find(x=>x.id===conflictQueue[0]);
   if(!b){ conflictQueue.shift(); askNextScheduleConflict(); return; }
@@ -2234,7 +2276,7 @@ function askNextScheduleConflict(){
     <p class="small">"${esc(p.title)}" (${fmt12(p.time)}–${newEndLbl}) overlaps "${esc(b.title)}" (${fmt12(b.time)}–${bEndLbl}) in your Schedule.</p>
     <div class="row" style="justify-content:flex-end;gap:8px;margin-top:16px;flex-wrap:wrap">
       <button class="btn secondary" onclick="cancelScheduleConflict()">Cancel</button>
-      <button class="btn ghost" onclick="resolveScheduleConflict('parallel')">Keep "${esc(b.title)}" — make mine parallel instead</button>
+      <button class="btn ghost" onclick="resolveScheduleConflict('parallel')">Keep "${esc(b.title)}" — overlap it in parallel</button>
       <button class="btn" onclick="resolveScheduleConflict('shift')">Shift "${esc(b.title)}" later</button>
     </div></div>`;
   document.body.appendChild(wrap);
@@ -2242,20 +2284,24 @@ function askNextScheduleConflict(){
 function cancelScheduleConflict(){ pendingTTActivity=null; conflictQueue=[]; document.getElementById('scheduleConflictModal')?.remove(); }
 function resolveScheduleConflict(action){
   const p=pendingTTActivity; if(!p) return;
+  const id=conflictQueue.shift();
   if(action==='parallel'){
-    conflictQueue=[];
-    document.getElementById('scheduleConflictModal')?.remove();
-    commitCalendarComposer({...p, category:'Planned'}); // drop out of the Schedule, lands as a parallel/Unplanned activity instead
-    pendingTTActivity=null;
+    // This ONE overlapping block is kept exactly where it is, and the new activity is allowed to
+    // sit alongside it at the same time (parallel) — that resolves only this block's conflict.
+    // Any OTHER overlapping block still queued (or still overlapping after a later shift) must
+    // still be asked about on its own; picking "parallel" here must never short-circuit the rest.
+    p.parallelIds = p.parallelIds || [];
+    if(id) p.parallelIds.push(id);
+    askNextScheduleConflict();
     return;
   }
-  const id=conflictQueue.shift();
   const newStart=toMin(p.time), newEnd=newStart+p.dur;
   const list=getDayBlocks(p.dayNum);
   const b=list.find(x=>x.id===id);
   if(b && toMin(b.time)<newEnd) applyBlockEdit(p.dayNum, id, {time:toHHMM(newEnd)});
-  // re-check for any block (already-queued or not) still overlapping after that shift
-  const refreshed=getDayBlocks(p.dayNum).filter(x=>!x.skipped && toMin(x.time)<newEnd && (toMin(x.time)+effDur(x))>newStart);
+  // re-check for any block (already-queued or not) still overlapping after that shift — but skip
+  // blocks already resolved as "parallel" above, those are allowed to keep overlapping on purpose
+  const refreshed=getDayBlocks(p.dayNum).filter(x=>!x.skipped && !(p.parallelIds||[]).includes(x.id) && toMin(x.time)<newEnd && (toMin(x.time)+effDur(x))>newStart);
   refreshed.forEach(x=>{ if(!conflictQueue.includes(x.id)) conflictQueue.push(x.id); });
   askNextScheduleConflict();
 }
