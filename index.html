@@ -731,6 +731,8 @@ html .nestbtn:after,html .todaytabs button:after,html .ltabs button:after,html .
 /* Default four priority cards; Everything remains a compact two-column activity list. */
 .bd-priority-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:16px;align-items:start}.bd-priority-panel{min-width:0;border:1px solid var(--line);border-top:3px solid var(--priority-color);border-radius:14px;padding:14px;background:var(--bg)}.bd-priority-panel h4{margin:0;font-size:14px;line-height:1.5;overflow-wrap:anywhere}.bd-priority-description{margin:5px 0 10px;font-size:11px}.bd-priority-panel .bd-list{margin-top:8px}.bd-empty{margin:8px 0;color:var(--muted)}.bd-everything-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px;align-items:start}.bd-everything-grid>.small{grid-column:1/-1}.bd-priority-grid .bd-item,.bd-everything-grid .bd-item{min-width:0;padding:10px 8px;gap:6px}.bd-item-main>span{overflow-wrap:anywhere;word-break:break-word}.bd-priority-grid .bd-item-controls,.bd-everything-grid .bd-item-controls{min-width:0;gap:5px}.bd-priority-grid .bd-mini-select,.bd-everything-grid .bd-mini-select{max-width:100%;min-width:0}.bd-priority-grid .bd-item>button,.bd-everything-grid .bd-item>button{flex-shrink:0;align-self:flex-start}.bd-view-toggle{flex-wrap:wrap}
 @media(max-width:640px){.bd-priority-grid,.bd-everything-grid{gap:9px}.bd-priority-panel{padding:10px 8px}.bd-priority-panel h4{font-size:12px}.bd-priority-description{font-size:10px}.bd-priority-grid .bd-mini-select,.bd-everything-grid .bd-mini-select{width:100%;font-size:11px}.bd-priority-grid .bd-item,.bd-everything-grid .bd-item{flex-wrap:wrap}.bd-priority-grid .bd-item-main,.bd-everything-grid .bd-item-main{flex-basis:calc(100% - 28px)}.undo-toast{font-size:13px}}
+
+.wake-tracking{margin-top:10px;padding-top:8px;border-top:1px solid var(--line);font-size:12px}.wake-tracking summary{cursor:pointer;color:var(--accent);font-size:11px;padding:4px 0}.wake-tracking input[type=time]{width:112px;max-width:100%;padding:6px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink)}.wake-tracking input[type=checkbox]{vertical-align:middle}.wake-tracking label{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}.wake-tracking .row{align-items:center}
 </style>
 </head>
 <body>
@@ -769,14 +771,55 @@ return 'data:image/svg+xml,'+encodeURIComponent(svg).replace(/'/g,'%27');
 }
 const PAGE_PHOTOS=Object.fromEntries(['today','arogya','business','journal'].map(k=>[k,neonLandscape(k)]));
 /* Planner improvements — continuous days, page progress, calendar and summary. */
-function planningStart(){
-// Wake time defines the boundary; avoid getDayBlocks here (it creates days).
-const day=(state.days||{})[dayKey(typeof selectedDay==='number'?selectedDay:1)];
-const wake=Array.isArray(day)?day.find(b=>b.id==='t1'):null;
-return toMin((wake&&wake.time)||(state.templateOverrides?.t1?.time)||'08:00');
+function findWakeBlock(list){
+if(!Array.isArray(list))return null;
+return list.find(b=>b.plannerRole==='wake')||list.find(b=>b.id==='t1')||list.find(b=>/\b(?:wake(?:[\s-]*up)?|waking|rise\s*(?:&|and)\s*shine)\b/i.test(String(b.title||'')))||null;
 }
-function planMinute(time){const m=toMin(time);return m<planningStart()?m+1440:m;}
-function plannerTimeLabel(time){return fmt12(time)+(toMin(time)<planningStart()?' · next day':'');}
+function isWakeMilestone(block){return !!block&&(block.plannerRole==='wake'||block.id==='t1');}
+function splitWakeAndFreshen(list){
+const wake=findWakeBlock(list);if(!wake)return false;
+if(wake.wakeSplitVersion===1)return false;
+const oldDuration=Number(wake.dur)||0;
+let fresh=list.find(b=>b.id===wake.id+'_freshen'||(!isWakeMilestone(b)&&b!==wake&&/^freshen(?:ing)?(?:\s+up)?$/i.test(String(b.title||'').trim())));
+{
+if(!fresh){fresh={id:wake.id+'_freshen',time:wake.time,title:'Freshen up',dur:60,cat:'rest',icon:'🚿',done:!!wake.done,skipped:!!wake.skipped,plannerRole:'freshen'};list.splice(list.indexOf(wake)+1,0,fresh);}
+else {fresh.dur=60;fresh.plannerRole='freshen';}
+}
+wake.plannerRole='wake';wake.title='Wake up';wake.dur=0;wake.wakeSplitVersion=1;
+if(fresh&&oldDuration<60){const boundary=toMin(wake.time),relative=time=>{const m=toMin(time);return m<boundary?m+1440:m;};let cursor=relative(fresh.time)+60;for(let i=list.indexOf(fresh)+1;i<list.length;i++){const block=list[i];if(block.skipped||block.unscheduled)continue;let start=relative(block.time);if(start<cursor&&!block.done&&!block.locked){block.time=toHHMM(cursor);start=cursor;}cursor=Math.max(cursor,start)+(Number(block.dur)||0);}}
+return true;
+}
+function wakeTimeDifference(actual,target){let minutes=toMin(actual)-toMin(target);if(minutes>720)minutes-=1440;if(minutes< -720)minutes+=1440;return minutes;}
+function wakeTimeStatus(actual,target){const delta=wakeTimeDifference(actual,target);return delta===0?'On time':Math.abs(delta)+' min '+(delta>0?'later':'earlier');}
+function setWakeTarget(value){
+if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(value))return;
+snapshotForUndo('Wake-up target updated');state.wakeTargetTime=value;state.templateOverrides=state.templateOverrides||{};state.templateOverrides.t1={...(state.templateOverrides.t1||{}),time:value};
+const list=getDayBlocks(selectedDay),wake=findWakeBlock(list);if(wake){wake.time=value;const fresh=list.find(b=>b.plannerRole==='freshen');if(fresh&&!fresh.done&&!fresh.locked)fresh.time=value;recomputeCascade(list);}
+openSheetId=null;sheetDraft=null;save();toast('Wake-up target saved for this day and new days.');
+}
+function setWakeTracking(enabled){state.wakeTrackingEnabled=!!enabled;save();}
+function saveActualWake(value){
+if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(value))return toast('Choose your actual wake-up time.');
+const iso=dateForDay(selectedDay);if(iso>todayISO())return toast('Wake-up time can be logged on or after that date.');
+snapshotForUndo('Wake-up time logged');state.wakeLog=state.wakeLog||{};state.wakeLog[iso]={actual:value,target:toHHMM(planningStart()),loggedAt:new Date().toISOString()};save();
+}
+function logWakeNow(){const now=new Date();saveActualWake(toHHMM(now.getHours()*60+now.getMinutes()));}
+function renderWakeTracking(wake){
+const iso=dateForDay(selectedDay),entry=state.wakeLog?.[iso],enabled=!!state.wakeTrackingEnabled;
+const history=Object.entries(state.wakeLog||{}).filter(([date,x])=>date<=todayISO()&&date>=addDaysISO(todayISO(),-6)&&x?.actual&&x?.target);
+return `<details class="wake-tracking" onclick="event.stopPropagation()" ${enabled?'open':''}><summary>Wake-up target & optional tracking</summary><label class="small">Daily wake-up target <input type="time" aria-label="Daily wake-up target" value="${escapeHtml(state.wakeTargetTime||wake.time)}" onchange="setWakeTarget(this.value)"></label><p class="small">Updates this day and new days. Existing customised days keep their planned time.</p><label class="small"><input type="checkbox" ${enabled?'checked':''} onchange="setWakeTracking(this.checked)"> Track actual wake-up time</label>${enabled?`<div class="row" style="gap:8px;flex-wrap:wrap;margin-top:8px"><label class="small">Actual wake-up <input id="actualWakeTime" type="time" aria-label="Actual wake-up time" value="${escapeHtml(entry?.actual||'')}"></label><button class="btn secondary small" ${iso>todayISO()?'disabled':''} onclick="saveActualWake(document.getElementById('actualWakeTime').value)">Save time</button>${iso===todayISO()?'<button class="btn secondary small" onclick="logWakeNow()">Woke up now</button>':''}</div>${entry?`<p class="small">Planned ${fmt12(entry.target)} · Actual ${fmt12(entry.actual)} · ${wakeTimeStatus(entry.actual,entry.target)}</p>`:''}<p class="small">Last 7 days: ${history.length} logged · ${history.filter(([,x])=>x.actual===x.target).length} at the planned time</p>`:''}</details>`;
+}
+function renderWakeEditSheet(block){return `<div class="sheet-overlay" onclick="if(event.target===this){openSheetId=null;render()}"><div class="sheet sheet-thin" role="dialog" aria-modal="true" aria-label="Edit wake-up time"><h3>Wake up</h3><label>Wake-up time<input id="wakeEditTime" type="time" value="${escapeHtml(block.time)}"></label><p class="small">Wake up is a single time. Freshen up remains a separate 60-minute activity.</p><div class="sheetactions"><button class="btn secondary" onclick="openSheetId=null;sheetDraft=null;render()">Cancel</button><button class="btn" onclick="setWakeTarget(document.getElementById('wakeEditTime').value)">Save wake-up time</button></div></div></div>`;}
+function planningStart(dayNum){
+// Read saved blocks directly: creating a day here would recurse through time sorting.
+const n=typeof dayNum==='number'?dayNum:(typeof selectedDay==='number'?selectedDay:1);
+const day=(state.days||{})[dayKey(n)];
+const wake=findWakeBlock(day);
+const importedFirst=Array.isArray(day)?day.find(b=>String(b.id||'').startsWith('ai_')):null;
+return toMin(wake?.time||importedFirst?.time||state.wakeTargetTime||state.templateOverrides?.t1?.time||'08:00');
+}
+function planMinute(time,dayNum){const m=toMin(time);return m<planningStart(dayNum)?m+1440:m;}
+function plannerTimeLabel(time,dayNum){return fmt12(time)+(toMin(time)<planningStart(dayNum)?' · next day':'');}
 function choosePlannerDate(iso){
 if(!iso || iso<trackStartDate())return;
 selectedDay=dayNumberFor(iso);calMonthOffset=0;openSheetId=null;render();
@@ -1780,12 +1823,17 @@ const ov = state.templateOverrides;
 const list0 = DEFAULT_TEMPLATE.map(b=>({...b, ...(ov[b.id]||{}), done:false}));
 // A "set as default" time/duration edit can knock this day's blocks out of order or leave
 // a gap/overlap — re-sort then cascade forward from the first block, same as a same-day edit.
-list0.sort((a,b)=>planMinute(a.time)-planMinute(b.time));
-let cursor = planMinute(list0[0].time) + effDur(list0[0]);
+const initialWake=findWakeBlock(list0);if(initialWake&&state.wakeTargetTime)initialWake.time=state.wakeTargetTime;
+splitWakeAndFreshen(list0);
+const newBoundary=toMin(findWakeBlock(list0)?.time||'08:00');
+const newDayMinute=time=>{const m=toMin(time);return m<newBoundary?m+1440:m;};
+list0.sort((a,b)=>newDayMinute(a.time)-newDayMinute(b.time));
+let cursor = newDayMinute(list0[0].time) + effDur(list0[0]);
 for(let i=1;i<list0.length;i++){ list0[i].time = toHHMM(cursor); cursor += effDur(list0[i]); }
 state.days[dayKey(n)] = list0;
 }
 const list = mergeLegacySplits(state.days[dayKey(n)]);
+if(splitWakeAndFreshen(list)){state.days[dayKey(n)]=list;if(!state.wakeTargetTime&&n===selectedDay)state.wakeTargetTime=findWakeBlock(list).time;saveQuiet();}
 list.forEach(b=>{ if(!DYNAMIC_SLOT_IDS.has(b.id) && TEMPLATE_ICON_BY_ID[b.id] && b.icon!==TEMPLATE_ICON_BY_ID[b.id]) b.icon=TEMPLATE_ICON_BY_ID[b.id]; });
 // A manually-chosen icon replacement (set via the block editor, or baked into an AI-pasted
 // schedule) is remembered by activity title and always wins last, even over the template's
@@ -2589,11 +2637,12 @@ setInterval(updateAppleDayClock, 15000);
 
 function sleepWakeTime(dayNum){
 const next=(state.days||{})[dayKey(dayNum+1)];
-return (Array.isArray(next)&&next.find(b=>b.id==='t1')?.time)||state.templateOverrides?.t1?.time||DEFAULT_TEMPLATE.find(b=>b.id==='t1').time;
+return findWakeBlock(next)?.time||state.templateOverrides?.t1?.time||DEFAULT_TEMPLATE.find(b=>b.id==='t1').time;
 }
 function routineTimeRange(b,dayNum){
-if(b.id==='t24')return plannerTimeLabel(b.time)+' – '+fmt12(sleepWakeTime(dayNum))+' · next day';
-return plannerTimeLabel(b.time)+((b.dur&&!b.skipped)?' – '+fmt12(toHHMM(planMinute(b.time)+b.dur)):'');
+if(isWakeMilestone(b)||b.id==='t24')return plannerTimeLabel(b.time,dayNum);
+if(b.id==='t24')return plannerTimeLabel(b.time,dayNum)+' – '+fmt12(sleepWakeTime(dayNum))+' · next day';
+return plannerTimeLabel(b.time,dayNum)+((b.dur&&!b.skipped)?' – '+fmt12(toHHMM(planMinute(b.time,dayNum)+b.dur)):'');
 }
 
 function renderTimeline(list, nowId, parallelItems){
@@ -2621,6 +2670,7 @@ ${b.skipped? `<span class="dur skiptag">skipped</span>` : b.unscheduled ? `<span
 <div class="nm ${(b.done||b.skipped)?'doneline':''}"><span class="blkicon" onclick="event.stopPropagation();toggleDone('${b.id}')" title="Tap to tick off">${iconHTML(b.icon,18)}</span> ${b.title}</div>
 ${(b.type||b.priority)?`<div class="tt-code">${b.type?`<span class="tt-code-tag" style="color:${BD_TYPE_COLOR[b.type]||'var(--muted)'}">${(BD_TYPES.find(t=>t[0]===b.type)||[,b.type])[1]}</span>`:''}${b.priority?`<span class="tt-code-tag" style="color:${BD_COLOR[b.priority]||'var(--muted)'}">${(BD_PRIORITIES.find(t=>t[0]===b.priority)||[,b.priority])[1]}</span>`:''}</div>`:''}
 ${b.desc? `<div class="meta">${b.desc}</div>` : ""}
+${isWakeMilestone(b)?renderWakeTracking(b):''}
 </div>
 <div class="blk-move-col tl-move-col">
 <button class="blk-move" ${i===0?'disabled':''} onclick="event.stopPropagation();moveBlock('${b.id}',-1)" title="Move earlier">⬆️</button>
@@ -2706,7 +2756,7 @@ above) or the "Rearrange Schedule" picker (below) — both tap-based, no pointer
 still only change through the block's own "edit task" sheet or the Schedule-conflict /
 reschedule-or-skip popups that come from the Agenda side. */
 /* ---- done / skip-inference logic ---- */
-function effDur(b){ return b.skipped ? 0 : b.dur; }
+function effDur(b){ return b.skipped||isWakeMilestone(b) ? 0 : b.dur; }
 // A block's time is locked if it's a template anchor (Exercise, Bath, etc.) or you've manually
 // fixed it (editing its start time does this automatically) — UNLESS you've explicitly unlocked
 // it via "Unlock time", which overrides either source until you set a time by hand again.
@@ -2813,8 +2863,9 @@ function setTimetableDraft(key,value){ const d=getTimetableDraft(); if(!(key in 
 let timetableImportPreview=null, timetableImportError='';
 function timetableTemplate(){
 return {version:1, blocks:[
-{title:"Wake up",icon:"🌅",time:"08:00",dur:30},
-{title:"Example focus block",icon:"💻",time:"08:30",dur:60}
+{title:"Wake up",icon:"🌅",time:"08:00",dur:0},
+{title:"Freshen up",icon:"🚿",time:"08:00",dur:60},
+{title:"Example focus block",icon:"💻",time:"09:00",dur:60}
 ]};
 }
 function routinePromptContext(){
@@ -2828,7 +2879,7 @@ return {date:iso,weekday:date.toLocaleDateString('en-AU',{weekday:'long'}),bathA
 }
 function buildTimetablePrompt(){
 const d=getTimetableDraft(),context=routinePromptContext();
-return `Act as my daily-schedule planner. Rebuild the routine for the selected date, ${context.date}, as time blocks with icons.\n${d.notes.trim()?('My notes: '+d.notes.trim()+'\n'):''}Selected-day chores, bath/body care and existing schedule:\n${JSON.stringify(context,null,2)}\nInclude the supplied chore and bath/body-care activities explicitly, keeping their details in the title where practical. Include evening face care as a separate block when the care notes specify it. Use the selected date's weekday rotation, not today's date. Preserve fixed activities at their supplied times and durations; move flexible activities around them. Retain existing activities unless my notes explicitly request removing them. Do not duplicate an activity already represented by a fixed block. If constraints conflict or cannot fit, ask me to resolve them before generating JSON.\nCover the day from a reasonable wake time to bedtime. Use flexible breaks or free time between fixed activities. No overlaps unless I explicitly request parallel activities. Each block needs a short but informative title, one emoji icon, a 24-hour time (HH:MM), and duration in minutes.\nWhen ready, return only one valid JSON object in this exact schema. No markdown or explanation.\n${JSON.stringify(timetableTemplate(),null,2)}`;
+return `Act as my daily-schedule planner. Rebuild the routine for the selected date, ${context.date}, as time blocks with icons.\n${d.notes.trim()?('My notes: '+d.notes.trim()+'\n'):''}Selected-day chores, bath/body care and existing schedule:\n${JSON.stringify(context,null,2)}\nInclude the supplied chore and bath/body-care activities explicitly, keeping their details in the title where practical. Include evening face care as a separate block when the care notes specify it. Use the selected date's weekday rotation, not today's date. Preserve fixed activities at their supplied times and durations; move flexible activities around them. Retain existing activities unless my notes explicitly request removing them. Do not duplicate an activity already represented by a fixed block. If constraints conflict or cannot fit, ask me to resolve them before generating JSON.\nWake-up defines the start of the planning day. Make the first block a standalone Wake up milestone with dur:0 and one time, using my requested wake time when supplied. Add a separate Freshen up activity starting at wake-up time with dur:60. Do not combine wake-up and freshening into one block. Put after-midnight activities after the evening blocks. Cover the day from wake time to bedtime. Use flexible breaks or free time between fixed activities. No overlaps unless I explicitly request parallel activities. Each block needs a short but informative title, one emoji icon, a 24-hour time (HH:MM), and duration in minutes.\nWhen ready, return only one valid JSON object in this exact schema. No markdown or explanation.\n${JSON.stringify(timetableTemplate(),null,2)}`;
 }
 
 async function copyTimetablePrompt(){const prompt=buildTimetablePrompt();try{await navigator.clipboard.writeText(prompt);toast('Prompt copied. Paste it into your AI chat.');}catch{showPromptFallback(prompt);}}
@@ -2844,7 +2895,7 @@ if(!b||typeof b!=='object')throw new Error('Block '+(i+1)+' is missing.');
 const title=String(b.title||'').trim();
 if(!title||title.length>150)throw new Error('Block '+(i+1)+' needs a title between 1 and 150 characters.');
 if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(String(b.time||'')))throw new Error('Block '+(i+1)+' ("'+title+'") needs a 24-hour time like 09:30.');
-const dur=Number(b.dur);if(!Number.isFinite(dur)||dur<5||dur>480)throw new Error('Block '+(i+1)+' ("'+title+'") needs a duration of 5-480 minutes.');
+const dur=Number(b.dur),wakeTitle=/^wake(?:[\s-]*up)?$/i.test(title);if(!Number.isFinite(dur)||(dur<5&&!(wakeTitle&&dur===0))||dur<0||dur>480)throw new Error('Block '+(i+1)+' ("'+title+'") needs 5–480 minutes; a standalone Wake up milestone may use 0.');
 let icon=String(b.icon||'').trim();
 if(!icon||icon.length>8)icon='📌';
 return {title,time:b.time,dur:Math.round(dur),icon};
@@ -2863,11 +2914,15 @@ const newList = plan.blocks.map((b,i)=>{
 const key=b.title.trim().toLowerCase();
 return {id:'ai_'+Date.now()+'_'+i, time:b.time, title:b.title, dur:b.dur, cat:'TT', icon:(overrides[key]||b.icon), done:false};
 });
-// Plain clock-time sort, not planMinute()'s cross-midnight-aware one: planMinute() treats
-// anything before the day's current wake block (id 't1') as "after midnight, next day," but
-// a freshly AI-replaced day has no 't1' block yet, so it would wrongly push early-morning
-// blocks to the end of the list.
-newList.sort((a,b)=>toMin(a.time)-toMin(b.time));
+// Wake-up is the planning day's clock boundary; after-midnight blocks stay after evening activities.
+const wake=findWakeBlock(newList)||newList[0];
+wake.plannerRole='wake';
+splitWakeAndFreshen(newList);
+state.wakeTargetTime=wake.time;
+state.templateOverrides=state.templateOverrides||{};state.templateOverrides.t1={...(state.templateOverrides.t1||{}),time:wake.time};
+const boundary=toMin(wake.time);
+const relative=time=>{const m=toMin(time);return m<boundary?m+1440:m;};
+newList.sort((a,b)=>relative(a.time)-relative(b.time));
 setDayBlocks(selectedDay, newList);
 timetableImportPreview=null;timetableImportError='';
 save();
@@ -3220,6 +3275,7 @@ let sheetDraft = null;
 function openSheetFor(id){ openSheetId=id; sheetDraft=null; render(); }
 function renderEditSheet(block){
 if(!block) return "";
+if(isWakeMilestone(block))return renderWakeEditSheet(block);
 const inConflictEdit = (conflictEditId===block.id && conflictFlow);
 const draft = sheetDraft || {title:block.title, time:block.time, dur:block.dur, cat:block.cat==='Planned'?'Planned':'TT', type:block.type||'todo', priority:block.priority||'yellow', desc:block.desc||'', skipped:!!block.skipped, locked:!!block.locked};
 if(block.id==='t24')draft.end=sleepWakeTime(selectedDay);
