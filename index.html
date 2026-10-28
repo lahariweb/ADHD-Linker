@@ -725,6 +725,12 @@ html .nestbtn:after,html .todaytabs button:after,html .ltabs button:after,html .
 
 /* Compact goals, with the add-goal form at the bottom of Studio. */
 .goals-section{margin-top:18px}.goal-progress-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:14px;align-items:start}.goal-progress-grid:has(>.goal-progress-card:only-child){grid-template-columns:repeat(2,minmax(0,1fr))}.goal-progress-card{min-width:0;margin:0!important;padding:16px!important}.goal-progress-card b{overflow-wrap:anywhere}.goal-progress-card input{max-width:100%;box-sizing:border-box}.goal-create-card{margin-top:18px}.goal-progress-grid>.small{grid-column:1/-1}@media(max-width:640px){.goal-progress-grid,.goal-progress-grid:has(>.goal-progress-card:only-child){grid-template-columns:1fr}.goal-create-card .addrow{flex-wrap:wrap}.goal-create-card .nm{min-width:0;flex-basis:100%}}
+
+/* Readable notifications, including the Undo popup. */
+.undo-toast{background:#f7e6c9!important;color:#281c24!important;border:1px solid #d8ac71;border-radius:16px;max-width:calc(100vw - 32px);width:max-content;box-sizing:border-box;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:1200;padding:12px 16px;line-height:1.5;flex-wrap:wrap;justify-content:center;gap:8px 14px;box-shadow:0 8px 30px #0006}.undo-toast span,.undo-toast button{color:#281c24!important}.undo-toast button{font-weight:800!important;padding:4px 8px;border-radius:6px;text-decoration:underline;text-underline-offset:3px;min-height:32px}.undo-toast button:hover{background:#281c2414}.toast-msg{background:#342330!important;color:#fff2db!important;border:1px solid #b88b59;border-radius:14px;bottom:calc(108px + env(safe-area-inset-bottom,0px));max-width:calc(100vw - 32px);box-sizing:border-box;line-height:1.5;z-index:1201}.toast-msg.bad{background:#592f36!important;color:#fff1e7!important}
+/* Default four priority cards; Everything remains a compact two-column activity list. */
+.bd-priority-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:16px;align-items:start}.bd-priority-panel{min-width:0;border:1px solid var(--line);border-top:3px solid var(--priority-color);border-radius:14px;padding:14px;background:var(--bg)}.bd-priority-panel h4{margin:0;font-size:14px;line-height:1.5;overflow-wrap:anywhere}.bd-priority-description{margin:5px 0 10px;font-size:11px}.bd-priority-panel .bd-list{margin-top:8px}.bd-empty{margin:8px 0;color:var(--muted)}.bd-everything-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px;align-items:start}.bd-everything-grid>.small{grid-column:1/-1}.bd-priority-grid .bd-item,.bd-everything-grid .bd-item{min-width:0;padding:10px 8px;gap:6px}.bd-item-main>span{overflow-wrap:anywhere;word-break:break-word}.bd-priority-grid .bd-item-controls,.bd-everything-grid .bd-item-controls{min-width:0;gap:5px}.bd-priority-grid .bd-mini-select,.bd-everything-grid .bd-mini-select{max-width:100%;min-width:0}.bd-priority-grid .bd-item>button,.bd-everything-grid .bd-item>button{flex-shrink:0;align-self:flex-start}.bd-view-toggle{flex-wrap:wrap}
+@media(max-width:640px){.bd-priority-grid,.bd-everything-grid{gap:9px}.bd-priority-panel{padding:10px 8px}.bd-priority-panel h4{font-size:12px}.bd-priority-description{font-size:10px}.bd-priority-grid .bd-mini-select,.bd-everything-grid .bd-mini-select{width:100%;font-size:11px}.bd-priority-grid .bd-item,.bd-everything-grid .bd-item{flex-wrap:wrap}.bd-priority-grid .bd-item-main,.bd-everything-grid .bd-item-main{flex-basis:calc(100% - 28px)}.undo-toast{font-size:13px}}
 </style>
 </head>
 <body>
@@ -3463,7 +3469,7 @@ const BD_TYPES = [["call","📞 Call"],["email","📧 Correspond"],["todo","✅ 
 const BD_PRIORITIES = [["red","🔴 Do Now","Needs attention first"],["yellow","🟡 Handle Soon","Being worked on or awaiting action"],["green","🟢 Schedule","Plan a time for this"],["grey","⚪ Defer","Not a priority right now"]];
 const BD_TYPE_COLOR = {call:"#477c9b",email:"#7864a5",todo:"#3f7a52",learn:"#b4875a",lookup:"#6a7c8a"};
 const BD_COLOR = {red:"#b4552b", yellow:"#caa23c", green:"#3f7a52", grey:"#9c8268"};
-let bdDraftType = "todo", bdDraftPriority = "yellow", bdFilter = "All", bdDraftText = "";
+let bdDraftType = "todo", bdDraftPriority = "yellow", bdFilter = "Board", bdDraftText = "";
 let bdPullSelection = new Set();
 // The add-item draft (text, type, priority) is read from these module-level vars, not the DOM,
 // and the <input> below is rendered with its current value every time — so switching the draft
@@ -3560,7 +3566,7 @@ if(scope!=="today") return true;
 return (it.calendarDate || (Number.isFinite(Number(it.day)) ? dateForDay(Number(it.day)) : selectedISO)) === selectedISO;
 });
 const previousPendingItems = scope==="today" ? (state.brainDump||[]).filter(it=>(it.scope||"business")==="today" && !it.done && (it.calendarDate || (Number.isFinite(Number(it.day)) ? dateForDay(Number(it.day)) : "")) < selectedISO) : [];
-const items = bdFilter==="All" ? all : all.filter(it=>it.priority===bdFilter);
+const items = ["All","Board"].includes(bdFilter) ? all : all.filter(it=>it.priority===bdFilter);
 return `<div class="card">
 <h3>🧠 ${scope==="today"?"Brain dump":"Business Scratchpad"}</h3>
 <p class="small">${scope==="today"?"A little space for tasks, ideas and reminders.":"Catch it here before it becomes a worry — tag it so you can find it again."}</p>
@@ -3591,28 +3597,14 @@ ${BD_TYPES.map(([id,l])=>`<button class="chip ${bdDraftType===id?'on':''}" oncli
 ${BD_PRIORITIES.map(([id,l,desc])=>`<button class="pchip ${bdDraftPriority===id?'on':''}" style="--pc:${BD_COLOR[id]}" title="${desc}" onclick="setBdPriority('${id}')"><span class="dot"></span>${l}</button>`).join("")}
 </div>
 </div>
-<div class="row" style="margin-top:14px;gap:6px">
-<button class="chip ${bdFilter==='All'?'on':''}" onclick="bdFilter='All';render()">Everything (${all.length})</button>
-${BD_PRIORITIES.map(([id,l,desc])=>`<button class="pchip ${bdFilter===id?'on':''}" style="--pc:${BD_COLOR[id]}" title="${desc}" onclick="bdFilter='${id}';render()"><span class="dot"></span>${l} (${all.filter(x=>x.priority===id).length})</button>`).join("")}
+<div class="row bd-view-toggle" style="margin-top:14px;gap:8px" aria-label="Brain dump view">
+<button class="chip ${bdFilter!=='All'?'on':''}" aria-pressed="${bdFilter!=='All'}" onclick="bdFilter='Board';render()">Priority cards</button>
+<button class="chip ${bdFilter==='All'?'on':''}" aria-pressed="${bdFilter==='All'}" onclick="bdFilter='All';render()">Everything (${all.length})</button>
 </div>
-<div style="margin-top:6px">
-${BD_PRIORITIES.filter(([id])=>bdFilter==='All'||bdFilter===id).map(([pid,plabel])=>{
-const inThisPriority = items.filter(it=>it.priority===pid);
-if(!inThisPriority.length) return "";
-const subcards = BD_TYPES.map(([tid,tlabel])=>{
-const inType = inThisPriority.filter(it=>it.type===tid);
-if(!inType.length) return "";
-return `<div class="priority-subcard">
-<div class="priority-subcard-head">${tlabel} (${inType.length})</div>
-<div class="bd-list" style="margin-top:0">${inType.map(it=>renderBdItem(it, scope)).join("")}</div>
-</div>`;
-}).join("");
-return `<div class="priority-card">
-<h4>${plabel} <span class="small">(${inThisPriority.length})</span></h4>
-${subcards || `<p class="small">Nothing here.</p>`}
-</div>`;
-}).join("") || `<p class="small" style="margin-top:12px">Nothing here for this filter.</p>`}
-</div>
+${bdFilter==='All'?`<div class="bd-everything-grid">${all.map(it=>renderBdItem(it,scope)).join('')||'<p class="small">No activities yet.</p>'}</div>`:`<div class="bd-priority-grid">${BD_PRIORITIES.map(([pid,label,description])=>{
+const grouped=all.filter(it=>(it.priority||'yellow')===pid);
+return `<section class="bd-priority-panel" style="--priority-color:${BD_COLOR[pid]}" aria-label="${label.replace(/^[^ ]+ /,'')}"><h4>${label} <span class="small">(${grouped.length})</span></h4><p class="small bd-priority-description">${description}</p><div class="bd-list">${grouped.map(it=>renderBdItem(it,scope)).join('')||'<p class="small bd-empty">Nothing here yet.</p>'}</div></section>`;
+}).join('')}</div>`}
 </div>`;
 }
 
