@@ -732,7 +732,6 @@ html .nestbtn:after,html .todaytabs button:after,html .ltabs button:after,html .
 .bd-priority-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:16px;align-items:start}.bd-priority-panel{min-width:0;border:1px solid var(--line);border-top:3px solid var(--priority-color);border-radius:14px;padding:14px;background:var(--bg)}.bd-priority-panel h4{margin:0;font-size:14px;line-height:1.5;overflow-wrap:anywhere}.bd-priority-description{margin:5px 0 10px;font-size:11px}.bd-priority-panel .bd-list{margin-top:8px}.bd-empty{margin:8px 0;color:var(--muted)}.bd-everything-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px;align-items:start}.bd-everything-grid>.small{grid-column:1/-1}.bd-priority-grid .bd-item,.bd-everything-grid .bd-item{min-width:0;padding:10px 8px;gap:6px}.bd-item-main>span{overflow-wrap:anywhere;word-break:break-word}.bd-priority-grid .bd-item-controls,.bd-everything-grid .bd-item-controls{min-width:0;gap:5px}.bd-priority-grid .bd-mini-select,.bd-everything-grid .bd-mini-select{max-width:100%;min-width:0}.bd-priority-grid .bd-item>button,.bd-everything-grid .bd-item>button{flex-shrink:0;align-self:flex-start}.bd-view-toggle{flex-wrap:wrap}
 @media(max-width:640px){.bd-priority-grid,.bd-everything-grid{gap:9px}.bd-priority-panel{padding:10px 8px}.bd-priority-panel h4{font-size:12px}.bd-priority-description{font-size:10px}.bd-priority-grid .bd-mini-select,.bd-everything-grid .bd-mini-select{width:100%;font-size:11px}.bd-priority-grid .bd-item,.bd-everything-grid .bd-item{flex-wrap:wrap}.bd-priority-grid .bd-item-main,.bd-everything-grid .bd-item-main{flex-basis:calc(100% - 28px)}.undo-toast{font-size:13px}}
 
-.wake-tracking{margin-top:10px;padding-top:8px;border-top:1px solid var(--line);font-size:12px}.wake-tracking summary{cursor:pointer;color:var(--accent);font-size:11px;padding:4px 0}.wake-tracking input[type=time]{width:112px;max-width:100%;padding:6px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink)}.wake-tracking input[type=checkbox]{vertical-align:middle}.wake-tracking label{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}.wake-tracking .row{align-items:center}
 </style>
 </head>
 <body>
@@ -789,25 +788,11 @@ wake.plannerRole='wake';wake.title='Wake up';wake.dur=0;wake.wakeSplitVersion=1;
 if(fresh&&oldDuration<60){const boundary=toMin(wake.time),relative=time=>{const m=toMin(time);return m<boundary?m+1440:m;};let cursor=relative(fresh.time)+60;for(let i=list.indexOf(fresh)+1;i<list.length;i++){const block=list[i];if(block.skipped||block.unscheduled)continue;let start=relative(block.time);if(start<cursor&&!block.done&&!block.locked){block.time=toHHMM(cursor);start=cursor;}cursor=Math.max(cursor,start)+(Number(block.dur)||0);}}
 return true;
 }
-function wakeTimeDifference(actual,target){let minutes=toMin(actual)-toMin(target);if(minutes>720)minutes-=1440;if(minutes< -720)minutes+=1440;return minutes;}
-function wakeTimeStatus(actual,target){const delta=wakeTimeDifference(actual,target);return delta===0?'On time':Math.abs(delta)+' min '+(delta>0?'later':'earlier');}
 function setWakeTarget(value){
 if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(value))return;
 snapshotForUndo('Wake-up target updated');state.wakeTargetTime=value;state.templateOverrides=state.templateOverrides||{};state.templateOverrides.t1={...(state.templateOverrides.t1||{}),time:value};
 const list=getDayBlocks(selectedDay),wake=findWakeBlock(list);if(wake){wake.time=value;const fresh=list.find(b=>b.plannerRole==='freshen');if(fresh&&!fresh.done&&!fresh.locked)fresh.time=value;recomputeCascade(list);}
 openSheetId=null;sheetDraft=null;save();toast('Wake-up target saved for this day and new days.');
-}
-function setWakeTracking(enabled){state.wakeTrackingEnabled=!!enabled;save();}
-function saveActualWake(value){
-if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(value))return toast('Choose your actual wake-up time.');
-const iso=dateForDay(selectedDay);if(iso>todayISO())return toast('Wake-up time can be logged on or after that date.');
-snapshotForUndo('Wake-up time logged');state.wakeLog=state.wakeLog||{};state.wakeLog[iso]={actual:value,target:toHHMM(planningStart()),loggedAt:new Date().toISOString()};save();
-}
-function logWakeNow(){const now=new Date();saveActualWake(toHHMM(now.getHours()*60+now.getMinutes()));}
-function renderWakeTracking(wake){
-const iso=dateForDay(selectedDay),entry=state.wakeLog?.[iso],enabled=!!state.wakeTrackingEnabled;
-const history=Object.entries(state.wakeLog||{}).filter(([date,x])=>date<=todayISO()&&date>=addDaysISO(todayISO(),-6)&&x?.actual&&x?.target);
-return `<details class="wake-tracking" onclick="event.stopPropagation()" ${enabled?'open':''}><summary>Wake-up target & optional tracking</summary><label class="small">Daily wake-up target <input type="time" aria-label="Daily wake-up target" value="${escapeHtml(state.wakeTargetTime||wake.time)}" onchange="setWakeTarget(this.value)"></label><p class="small">Updates this day and new days. Existing customised days keep their planned time.</p><label class="small"><input type="checkbox" ${enabled?'checked':''} onchange="setWakeTracking(this.checked)"> Track actual wake-up time</label>${enabled?`<div class="row" style="gap:8px;flex-wrap:wrap;margin-top:8px"><label class="small">Actual wake-up <input id="actualWakeTime" type="time" aria-label="Actual wake-up time" value="${escapeHtml(entry?.actual||'')}"></label><button class="btn secondary small" ${iso>todayISO()?'disabled':''} onclick="saveActualWake(document.getElementById('actualWakeTime').value)">Save time</button>${iso===todayISO()?'<button class="btn secondary small" onclick="logWakeNow()">Woke up now</button>':''}</div>${entry?`<p class="small">Planned ${fmt12(entry.target)} · Actual ${fmt12(entry.actual)} · ${wakeTimeStatus(entry.actual,entry.target)}</p>`:''}<p class="small">Last 7 days: ${history.length} logged · ${history.filter(([,x])=>x.actual===x.target).length} at the planned time</p>`:''}</details>`;
 }
 function renderWakeEditSheet(block){return `<div class="sheet-overlay" onclick="if(event.target===this){openSheetId=null;render()}"><div class="sheet sheet-thin" role="dialog" aria-modal="true" aria-label="Edit wake-up time"><h3>Wake up</h3><label>Wake-up time<input id="wakeEditTime" type="time" value="${escapeHtml(block.time)}"></label><p class="small">Wake up is a single time. Freshen up remains a separate 60-minute activity.</p><div class="sheetactions"><button class="btn secondary" onclick="openSheetId=null;sheetDraft=null;render()">Cancel</button><button class="btn" onclick="setWakeTarget(document.getElementById('wakeEditTime').value)">Save wake-up time</button></div></div></div>`;}
 function planningStart(dayNum){
@@ -2670,7 +2655,7 @@ ${b.skipped? `<span class="dur skiptag">skipped</span>` : b.unscheduled ? `<span
 <div class="nm ${(b.done||b.skipped)?'doneline':''}"><span class="blkicon" onclick="event.stopPropagation();toggleDone('${b.id}')" title="Tap to tick off">${iconHTML(b.icon,18)}</span> ${b.title}</div>
 ${(b.type||b.priority)?`<div class="tt-code">${b.type?`<span class="tt-code-tag" style="color:${BD_TYPE_COLOR[b.type]||'var(--muted)'}">${(BD_TYPES.find(t=>t[0]===b.type)||[,b.type])[1]}</span>`:''}${b.priority?`<span class="tt-code-tag" style="color:${BD_COLOR[b.priority]||'var(--muted)'}">${(BD_PRIORITIES.find(t=>t[0]===b.priority)||[,b.priority])[1]}</span>`:''}</div>`:''}
 ${b.desc? `<div class="meta">${b.desc}</div>` : ""}
-${isWakeMilestone(b)?renderWakeTracking(b):''}
+
 </div>
 <div class="blk-move-col tl-move-col">
 <button class="blk-move" ${i===0?'disabled':''} onclick="event.stopPropagation();moveBlock('${b.id}',-1)" title="Move earlier">⬆️</button>
