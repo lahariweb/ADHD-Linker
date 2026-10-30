@@ -183,9 +183,10 @@ monitor that the whole Overview page needed to scroll just to see the calendar's
 .timeline{position:relative;margin-top:4px}
 .tblock{display:flex;gap:12px;padding:10px 0;border-left:2px solid var(--line);margin-left:7px;padding-left:16px;position:relative}
 .tblock.dragging{opacity:.35}
-.plan-drag-handle{position:absolute;left:50%;top:0;transform:translateX(-50%);width:44px;height:28px;display:grid;place-items:center;border:0;background:transparent;color:var(--muted);cursor:grab;touch-action:none;user-select:none;z-index:2;border-radius:8px}
-.plan-drag-handle:hover,.plan-drag-handle:focus-visible{color:var(--gold);background:#c9ae771a;outline:1px solid var(--gold)}
-.tbody.bar{position:relative}.plan-drag-handle svg{pointer-events:none}
+.neon-schedule-icon{display:inline-block;vertical-align:middle;overflow:visible;filter:drop-shadow(0 0 1px currentColor) drop-shadow(0 0 4px currentColor);background:transparent;flex-shrink:0}
+.today-agenda .blkicon:has(.neon-schedule-icon){border:0;background:transparent}
+.tbody.bar{position:relative}
+.today-agenda.timeplan-expanded .plan-drag-surface{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
 .plan-drag-ghost{position:fixed!important;z-index:10000;pointer-events:none;opacity:.92!important;box-shadow:0 10px 30px #0006;background:var(--card);border-radius:14px;transform:scale(1.02)}
 .plan-drop-before::after{content:"";position:absolute;left:18px;right:0;top:0;height:3px;border-radius:4px;background:var(--gold);box-shadow:0 0 8px #c9ae7755}
 .timeline.plan-drop-end{border-bottom:3px solid var(--gold)}
@@ -215,8 +216,8 @@ monitor that the whole Overview page needed to scroll just to see the calendar's
 .tbody .dur{font-size:10.5px;background:var(--mint);color:var(--accent-2);padding:2px 8px;border-radius:99px;white-space:nowrap}
 .checkdot{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex:0 0 auto;align-self:center;cursor:pointer;background:#211e2c}
 .blk-move-col{display:flex;flex-direction:column;gap:1px;align-self:center;flex:0 0 auto}
-.tl-move-col{display:flex}.tl-move-col .blk-move{min-width:28px;min-height:28px;font-size:11px;opacity:.75}.tl-move-col .blk-move:disabled{opacity:.25;cursor:default}
-.today-agenda.timeplan-expanded .tl-move-col{display:flex}
+.tl-move-col{display:none;grid-template-columns:repeat(2,24px);gap:1px;align-self:center}.tl-move-col .blk-move{min-width:24px;min-height:22px;padding:2px;font-size:14px;opacity:.75;color:var(--muted)}.tl-move-col .blk-move:last-child{grid-column:1/-1;justify-self:center;font-size:11px;min-height:18px}.tl-move-col .blk-move:disabled{opacity:.25;cursor:default}
+.today-agenda.timeplan-expanded .tl-move-col{display:grid}
 .blk-move{background:transparent;border:none;opacity:.3;font-size:9px;line-height:1;padding:3px;cursor:pointer;border-radius:4px}
 .blk-move:hover:not(:disabled){opacity:.8;background:rgba(0,0,0,.05)}
 .blk-move:disabled{opacity:.1;cursor:default}
@@ -245,7 +246,7 @@ schedule. On phone there's no room for any of this side by side, so it stays tab
 .today-agenda,.apple-day-card{min-width:0;display:flex;flex-direction:column;height:var(--daypanel-h);min-height:0;overflow:hidden}
 .today-additions{min-width:0;display:flex;flex-direction:column;grid-column:1/-1;height:280px;min-height:0;overflow:hidden}
 .today-agenda{padding:10px 9px!important}
-.today-agenda .tblock{gap:6px;padding:6px 0 6px 10px;margin-left:4px}
+.today-agenda .tblock{gap:6px;padding:3px 0 3px 10px;margin-left:4px}
 .today-agenda .tbody{padding:7px 8px;border-radius:9px}
 .today-agenda .tbody .nm{font-size:11.5px;margin-top:2px}
 .today-agenda .tbody .time,.today-agenda .tbody .meta{font-size:9px}
@@ -740,6 +741,7 @@ html .nestbtn:after,html .todaytabs button:after,html .ltabs button:after,html .
 .bd-priority-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:16px;align-items:start}.bd-priority-panel{min-width:0;border:1px solid var(--line);border-top:3px solid var(--priority-color);border-radius:14px;padding:14px;background:var(--bg)}.bd-priority-panel h4{margin:0;font-size:14px;line-height:1.5;overflow-wrap:anywhere}.bd-priority-description{margin:5px 0 10px;font-size:11px}.bd-priority-panel .bd-list{margin-top:8px}.bd-empty{margin:8px 0;color:var(--muted)}.bd-everything-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px;align-items:start}.bd-everything-grid>.small{grid-column:1/-1}.bd-priority-grid .bd-item,.bd-everything-grid .bd-item{min-width:0;padding:10px 8px;gap:6px}.bd-item-main>span{overflow-wrap:anywhere;word-break:break-word}.bd-priority-grid .bd-item-controls,.bd-everything-grid .bd-item-controls{min-width:0;gap:5px}.bd-priority-grid .bd-mini-select,.bd-everything-grid .bd-mini-select{max-width:100%;min-width:0}.bd-priority-grid .bd-item>button,.bd-everything-grid .bd-item>button{flex-shrink:0;align-self:flex-start}.bd-view-toggle{flex-wrap:wrap}
 @media(max-width:640px){.bd-priority-grid,.bd-everything-grid{gap:9px}.bd-priority-panel{padding:10px 8px}.bd-priority-panel h4{font-size:12px}.bd-priority-description{font-size:10px}.bd-priority-grid .bd-mini-select,.bd-everything-grid .bd-mini-select{width:100%;font-size:11px}.bd-priority-grid .bd-item,.bd-everything-grid .bd-item{flex-wrap:wrap}.bd-priority-grid .bd-item-main,.bd-everything-grid .bd-item-main{flex-basis:calc(100% - 28px)}.undo-toast{font-size:13px}}
 
+.schedule-roundup-items{margin:8px 0 0;padding-left:16px;color:var(--ink);font-size:11px;line-height:1.6}.schedule-roundup-items li{margin:4px 0;overflow-wrap:anywhere}.timetable-instructions-label{display:block;font-size:12px;font-weight:700;margin:12px 0 6px}.timetable-instructions{width:100%;min-height:72px;resize:vertical;border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:transparent;color:var(--ink);font:inherit;font-size:12px}
 </style>
 </head>
 <body>
@@ -787,22 +789,23 @@ function splitWakeAndFreshen(list){
 const wake=findWakeBlock(list);if(!wake)return false;
 if(wake.wakeSplitVersion===1)return false;
 const oldDuration=Number(wake.dur)||0;
+const freshMinutes=15;
 let fresh=list.find(b=>b.id===wake.id+'_freshen'||(!isWakeMilestone(b)&&b!==wake&&/^freshen(?:ing)?(?:\s+up)?$/i.test(String(b.title||'').trim())));
 {
-if(!fresh){fresh={id:wake.id+'_freshen',time:wake.time,title:'Freshen up',dur:60,cat:'rest',icon:'🚿',done:!!wake.done,skipped:!!wake.skipped,plannerRole:'freshen'};list.splice(list.indexOf(wake)+1,0,fresh);}
-else {fresh.dur=60;fresh.plannerRole='freshen';}
+if(!fresh){fresh={id:wake.id+'_freshen',time:wake.time,title:'Freshen up',dur:freshMinutes,cat:'rest',icon:'🚿',done:!!wake.done,skipped:!!wake.skipped,plannerRole:'freshen'};list.splice(list.indexOf(wake)+1,0,fresh);}
+else {fresh.dur=Number(fresh.dur)||freshMinutes;fresh.plannerRole='freshen';}
 }
 wake.plannerRole='wake';wake.title='Wake up';wake.dur=0;wake.wakeSplitVersion=1;
-if(fresh&&oldDuration<60){const boundary=toMin(wake.time),relative=time=>{const m=toMin(time);return m<boundary?m+1440:m;};let cursor=relative(fresh.time)+60;for(let i=list.indexOf(fresh)+1;i<list.length;i++){const block=list[i];if(block.skipped||block.unscheduled)continue;let start=relative(block.time);if(start<cursor&&!block.done&&!block.locked){block.time=toHHMM(cursor);start=cursor;}cursor=Math.max(cursor,start)+(Number(block.dur)||0);}}
+if(fresh&&oldDuration<fresh.dur){const boundary=toMin(wake.time),relative=time=>{const m=toMin(time);return m<boundary?m+1440:m;};let cursor=relative(fresh.time)+fresh.dur;for(let i=list.indexOf(fresh)+1;i<list.length;i++){const block=list[i];if(block.skipped||block.unscheduled)continue;let start=relative(block.time);if(start<cursor&&!block.done&&!block.locked){block.time=toHHMM(cursor);start=cursor;}cursor=Math.max(cursor,start)+(Number(block.dur)||0);}}
 return true;
 }
 function setWakeTarget(value){
 if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(value))return;
-snapshotForUndo('Wake-up target updated');state.wakeTargetTime=value;state.templateOverrides=state.templateOverrides||{};state.templateOverrides.t1={...(state.templateOverrides.t1||{}),time:value};
+prepareRoutineDefaults();snapshotForUndo('Wake-up target updated');state.wakeTargetTime=value;state.templateOverrides=state.templateOverrides||{};state.templateOverrides.t1={...(state.templateOverrides.t1||{}),time:value};
 const list=getDayBlocks(selectedDay),wake=findWakeBlock(list);if(wake){wake.time=value;const fresh=list.find(b=>b.plannerRole==='freshen');if(fresh&&!fresh.done&&!fresh.locked)fresh.time=value;recomputeCascade(list);}
 openSheetId=null;sheetDraft=null;save();toast('Wake-up target saved for this day and new days.');
 }
-function renderWakeEditSheet(block){return `<div class="sheet-overlay" onclick="if(event.target===this){openSheetId=null;render()}"><div class="sheet sheet-thin" role="dialog" aria-modal="true" aria-label="Edit wake-up time"><h3>Wake up</h3><label>Wake-up time<input id="wakeEditTime" type="time" value="${escapeHtml(block.time)}"></label><p class="small">Wake up is a single time. Freshen up remains a separate 60-minute activity.</p><div class="sheetactions"><button class="btn secondary" onclick="openSheetId=null;sheetDraft=null;render()">Cancel</button><button class="btn" onclick="setWakeTarget(document.getElementById('wakeEditTime').value)">Save wake-up time</button></div></div></div>`;}
+function renderWakeEditSheet(block){return `<div class="sheet-overlay" onclick="if(event.target===this){openSheetId=null;render()}"><div class="sheet sheet-thin" role="dialog" aria-modal="true" aria-label="Edit wake-up time"><h3>Wake up</h3><label>Wake-up time<input id="wakeEditTime" type="time" value="${escapeHtml(block.time)}"></label><p class="small">Wake up is a single time. Freshen up remains a separate activity; the new default allows 15 minutes.</p><div class="sheetactions"><button class="btn secondary" onclick="openSheetId=null;sheetDraft=null;render()">Cancel</button><button class="btn" onclick="setWakeTarget(document.getElementById('wakeEditTime').value)">Save wake-up time</button></div></div></div>`;}
 function planningStart(dayNum){
 // Read saved blocks directly: creating a day here would recurse through time sorting.
 const n=typeof dayNum==='number'?dayNum:(typeof selectedDay==='number'?selectedDay:1);
@@ -814,7 +817,7 @@ return toMin(wake?.time||importedFirst?.time||state.wakeTargetTime||state.templa
 function planMinute(time,dayNum){const m=toMin(time);return m<planningStart(dayNum)?m+1440:m;}
 function plannerTimeLabel(time,dayNum){return fmt12(time)+(toMin(time)<planningStart(dayNum)?' · next day':'');}
 function choosePlannerDate(iso){
-if(!iso || iso<trackStartDate())return;
+if(!iso || (iso<trackStartDate()&&iso!==todayISO()))return;
 selectedDay=dayNumberFor(iso);calMonthOffset=0;openSheetId=null;render();
 }
 let dateSlideDirection='forward';
@@ -830,15 +833,15 @@ lastRenderedPlannerDay=selectedDay;
 let days='';
 for(let i=-3;i<=3;i++){
 const d=addDaysISO(iso,i),n=dayNumberFor(d),v=new Date(d+'T00:00:00');
-days+=`<button class="day-bubble ${i===0?'chosen':''} ${d===todayISO()?'is-today':''}" ${n<1?'disabled':''} onclick="choosePlannerDate('${d}')" aria-pressed="${i===0}" title="${niceDate(d)}"><small>${v.toLocaleDateString(undefined,{weekday:'short'})}</small><b>${v.getDate()}</b><i>${dayActivity(n).done?'•':''}</i></button>`;
+days+=`<button class="day-bubble ${i===0?'chosen':''} ${d===todayISO()?'is-today':''}" ${n<1&&d!==todayISO()?'disabled':''} onclick="choosePlannerDate('${d}')" aria-pressed="${i===0}" title="${niceDate(d)}"><small>${v.toLocaleDateString(undefined,{weekday:'short'})}</small><b>${v.getDate()}</b><i>${dayActivity(n).done?'•':''}</i></button>`;
 }
-return `<div class="day-selector" ondblclick="returnDateBarToday(event)" tabindex="0" role="group" aria-label="Date navigation. Double-click the empty bar or press Home to return to today." title="Double-click the empty bar to return to today" onkeydown="if(event.key==='Home'&&event.target===this){event.preventDefault();goToday();}"><button class="btn ghost" onclick="changeDay(-7)" aria-label="Previous week">‹</button><div class="date-slide-window"><div class="day-bubbles ${changed?'date-slide-'+direction:''}">${days}</div></div><button class="btn ghost" onclick="changeDay(7)" aria-label="Next week">›</button></div>`;
+return `<div class="day-selector" ondblclick="returnDateBarToday(event)" tabindex="0" role="group" aria-label="Date navigation. Double-click the empty bar or press Home to return to today." title="Double-click the empty bar to return to today" onkeydown="if(event.key==='Home'&&event.target===this){event.preventDefault();goToday();}"><button class="btn ghost" onclick="changeDay(-7)" aria-label="Previous week">‹</button><div class="date-slide-window"><div class="day-bubbles ${changed?'date-slide-'+direction:''}">${days}</div></div><button class="btn ghost" onclick="changeDay(7)" aria-label="Next week">›</button><button class="btn secondary sm" onclick="goToday()" aria-label="Go to today">Today</button></div>`;
 }
 function renderOverviewClock(){
-const now=new Date(),zone=Intl.DateTimeFormat().resolvedOptions().timeZone;
-return `<div class="overview-clock" style="--surface-image:url('${PAGE_PHOTOS.arogya}');position:relative"><small style="position:absolute;top:8px;left:16px;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);opacity:.75">Kala &middot; Time &amp; Date</small><div class="clock-date"><b>${String(now.getDate()).padStart(2,'0')}.${String(now.getMonth()+1).padStart(2,'0')}</b><span>${now.toLocaleDateString(undefined,{month:'short'}).toUpperCase()}</span></div><div><span>Today · ${now.toLocaleDateString(undefined,{weekday:'long'})}</span><b id="overviewTime">${now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</b><small>${escapeHtml(zone.replaceAll('_',' '))}</small></div></div>`;
+const now=new Date(),zone='Australia/Melbourne',date=new Date(todayISO()+'T12:00:00');
+return `<div class="overview-clock" style="--surface-image:url('${PAGE_PHOTOS.arogya}');position:relative"><small style="position:absolute;top:8px;left:16px;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);opacity:.75">Kala &middot; Time &amp; Date</small><div class="clock-date"><b>${String(date.getDate()).padStart(2,'0')}.${String(date.getMonth()+1).padStart(2,'0')}</b><span>${date.toLocaleDateString(undefined,{month:'short'}).toUpperCase()}</span></div><div><span>Today · ${date.toLocaleDateString(undefined,{weekday:'long'})}</span><b id="overviewTime">${now.toLocaleTimeString([],{timeZone:'Australia/Melbourne',hour:'2-digit',minute:'2-digit'})}</b><small>${escapeHtml(zone.replaceAll('_',' '))}</small></div></div>`;
 }
-function updateOverviewClock(){const e=document.getElementById('overviewTime');if(e)e.textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+function updateOverviewClock(){const e=document.getElementById('overviewTime');if(e)e.textContent=new Date().toLocaleTimeString([],{timeZone:'Australia/Melbourne',hour:'2-digit',minute:'2-digit'});}
 setInterval(updateOverviewClock,1000);
 function sectionProgress(key,n){
 const k=dayKey(n),iso=dateForDay(n);
@@ -882,31 +885,260 @@ return `<div class="summary-head"><h2>Your progress, at a glance</h2><select ari
 const START_DATE = "2026-10-12"; // Dinacharya tracking begins here
 const STORAGE_KEY = "dinacharya_v1";
 
+const ROUTINE_DEFAULT_VERSION=3;
 const DEFAULT_TEMPLATE = [
-{id:"t1", time:"08:00", title:"Rise & Shine", dur:30, cat:"rest", icon:"🐓", anchor:true},
-{id:"t2", time:"08:30", title:"Coffee & Read", dur:30, cat:"rest", icon:"☕", anchor:false},
-{id:"t3", time:"09:15", title:"Exercise", dur:40, cat:"move", icon:"🏋️", anchor:true},
-{id:"t4", time:"09:55", title:"Bath & self care", dur:30, cat:"rest", icon:"🛁", anchor:true},
-{id:"t5", time:"10:25", title:"Meditation and intention", dur:15, cat:"mind", icon:"🧘", anchor:false},
-{id:"t6", time:"10:40", title:"Breakfast + plan top 3", dur:30, cat:"food", icon:"🥣", anchor:true},
-{id:"t7", time:"11:10", title:"Job applications (7)", dur:120, cat:"job", icon:"🧑‍💻", anchor:true, desc:"~15–20 min each, focus block, phone away"},
-{id:"t8", time:"13:10", title:"Break", dur:15, cat:"rest", icon:"🦋", anchor:false, desc:"water, stretch"},
-{id:"t9", time:"13:25", title:"Skill-building block", dur:75, cat:"skill", icon:"🎓", anchor:false, desc:"whatever you're learning right now"},
-{id:"t10", time:"14:40", title:"Lunch preparation", dur:45, cat:"food", icon:"data:image/png;base64,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", anchor:true},
-{id:"t11", time:"15:25", title:"Lunch + rest", dur:45, cat:"food", icon:"🍽️", anchor:true},
-{id:"t12", time:"16:10", title:"Business focus block", dur:90, cat:"business",icon:"📈", anchor:false, desc:"outreach / site / pipeline"},
-{id:"t13", time:"17:40", title:"House chore", dur:40, cat:"home", icon:"🧼", anchor:false},
-{id:"t14", time:"18:20", title:"Coffee", dur:15, cat:"food", icon:"☕", anchor:false},
-{id:"t15", time:"18:35", title:"Job follow-ups", dur:30, cat:"job", icon:"📬", anchor:false, desc:"recruiters, LinkedIn, 1 networking message"},
-{id:"t16", time:"19:05", title:"Go outside", dur:40, cat:"move", icon:"🌳", anchor:false, desc:"walk, errands, people"},
-{id:"t17", time:"19:45", title:"Dinner preparation", dur:45, cat:"food", icon:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAB0CAYAAABOpvapAABPbElEQVR42u39ebxl11nfCX+ftfbeZ7jnzlPNVSrNKkmWJVmyPEq2sTE2GIwlY4Yw2EAnkKQT0gHSdOQiQye8HUh3SEKgGZpmlHAYDWawLdnGlmRJ1lQaax7uvXWnc8+8h7XW03/sc26VDLwhsk0IqfXR1j33nHN3nbN/65l/z7Ph0rq0Lq1L69K6tC6tS+vSurQurUvr0rq0Lq1L69K6tC6tS+vSurS+skv+Jn0ZHX2fe7/oez37F3zP69Dtxx8ePhYQLnr+EsB/hQAqwocRDiEcGX72Qyh3o4CKfHmAEYHw69jtf6PcJMp1KIfR/542gPy1BvMeDNchHELl/fj/0mVViDlIvX8V46ZKpTpGpahRI5BQJRbFUkGcAy3IIiXTPmnI6Pk26dg6fR6jL1D8+Zeo/AB6LwYwwyfDX2fQ5a8VoPdjOILwYfyfJ42t1zBbvZbdZp7dWjUHJJH9VO1uqdp5jMyIlWm1Mk6kdRESNcTGqBEjYIcKXIZf2QMBvJpAETJBclWTUoQOXrfE+5Uw8OdkUJyjx0nb4WR6jrNrv8vKPmTwZ0C/b1vi/1oBLn8NVK7lwwQRwsteeyM73TUc0jlzs0xEN0vVXiONaDcVZk0DoTJEKYTyKIZHMKgT1IuCVdVIFUGMqI6ETig1ulVEgiDeiFHEClgBG0EUQ6UKYsEptAt8J0vp5+fpp8ek7x7TDk/6VZ5MfomXBMkuXFVF/ynR/c+id99P+G8J9l85wArCfRjuRktQBVA6d7BQvZnbmJM7zWT1Dsaj68xUNEXVgTjIHPQCLpOAq3uVSSWahXgWrUyLVGeF6kz5uDaFRHU0qglRFYwFG4MYRARUQQOIIi5DQqpa9NCih3FNDb11SJsqYUvVbYFvikhPxBSRSRQSA0kVikDY7HtanZNho/OYnPOf8at8OrmfJwWj5bctwQaCHH75Jv4bBfBIWuUwbgRq783sqdzMO5iN3y0z9TeYnZU5ag7SFNoZvmdccJNBkwOi9ctEJw8KU5cJk3sJYzNQqaM2ImggaEDVI5Tgee8guBLI0gfb/ixGDBiDGIuYCMQitoKNKxgbI2IRYzCAeIcUfRhsoO3TytZxpXVMyc8qfl0kzq1pGEPFQBoISy3VjfNPy2r2MXOG3/zwL/PIYUyAMFLj+lcJtPxVSazcgwfhNFrb+SHeZXabb9IdU2+ze8cmMSk0O7imdyGdDL5+rYS5m0xYuE505jLC2AzBGDQ4fDEg5H183icUKcEXaPDloVpK6PBriYDIBbUsmPLn9vPDyEgEEYMYQRDEGoyNMTbBJlVsZRxTm8JWJ7GVMYxEUAyQ9lnYfEHZeFK19ZTiV5VqHNnJMUNs4MRZwvGjT/qz+X3+OX6t9nFzHBRVNXwY/iqA/ooCrPdhR8D2Xq27Kq/j27h87IP2wNyVTFhY38St9QvXn8VN3Wbc3jeJ7roePz6D8zkubVH0mrh+i+AKQvAoWkqgGIwRVBVEhsCa0oeSIVDbz8vovz/z3DbA21fDIAY1xgjIhQ2CYozF2ghbqRHVprD1WYka82qTCcQNhM2X0HOfU85/LlCcDTJZs2Zy0jJoEo480w0vLX+kOMp/qv+W+Rwoep9a7iZ8ucK7vzKA9V6M/CgBFdo36XztzfzPcmDie+xVO+aoCpw6W+RLQlq71RRXv0vcnpvw9QZF2qJon6fobeHzbAiegpjtLIQpxQ8RgzXl84IgxpaiqYqIXuRLhaF9CCVYohgp36sjAI0Zqm07lOThQSnpOtocBkUREUGMwRqLsRYTVYiq49jGPFFjsVTtzePoqU/A8icDphnM4p5EYkv4wiPqnzn+WxznXya/Yx6FgN6Nlfvx/10APJLa+7jbfv2H7v87cmX1B6MbD+wmsoSjx/NstW76O95pihu+ATezC5dtkW6eI+9u4Iv8IlU6UrMlAIpceD54RAvEF6jrgUtRNyDkPdSnGM1Bc0QL1DsEj0hAQyBQSj+qRHGEsRaRBIkqSFTFRDVMXAdbReIxTDyGRBWIa9ioOrTTSbkB5EJiBARjBGtjbFInGp8jGt+FCR5OfwZevE9xx4LsvcoYY2z43CcLf+TcL3aOVA/Pfjo7o/eq+UqEV/LltLX3342553587xu5PbmKn4hevfMO5mbg6Km8d8LY3v73SXHz+8gbDbLNM2Sb5/B5Hx0Zxm0VakvPVwwEj+Z9NO8S0iYha6L5FuRtcF206KNFCr4gFAXqfSmxGtCgOB9QBWNiatWYsYql0RjHVqssnTqBH6p6iQSbRNgkwVQqxEkdW5/EVCex8TgVWyO3DUJUx0R1TGUKU5smqk5gkxpIVGoO1dJBMxZrLVFtnHhqD7Y6A+ceQ5/4t4ge83LwDmu65437o4+uZc/5H2rcb34OQqn9voy2Wb5sjlRpCjX9bv5RdFX8L+2r98W0+3n68LLtLHytpHd8kLwxTrp+gqx5HuezoUcrqqqC2NKrBbQY4Psb6GCN0F/FD9bx/TY+7eDTlCIt8E5RV4bCAkgAIxDZ8lupARvFjFUrzDYSpusx41FGpVbFTO6GY0dZWe7wpFeiobslAmoEEcVaQeKIqF4lnpngzPg010/PMzWxiK9MIvEY2Bq+SPHBYJIJbH2eaGwOE1dBAyIBEYsxhqgyRjy9j6g+Dy/+Hjz+L5Ad087sujHhc79D+rnTv3rsd9/8PdevPdj9cqps+XKBe49gfvnv8VPxq6ofYu+CD88vh9aJGdu785+QX3kL6dox+mun8UU29GRHtjRCVdG8i+8uo51zuM45XGcN1+9Q9B15D9SDV1AriFawxkNwJFEZltbGFIlAY0u1XmU6Tpg1wlQSMAxAlFB4dOdV6MoWPLVMZAzPL0CzCrEzZKnD5cOrYgwuBOrApz3c5+CyBGYU7p6cYM+undj5g9QWL6M6swtrI7xX8kGfQIKd2E08Njd06HTbZse1ceKZy7FB0U/+MGz9ocrtHwjmhYfj7I8/+0Tzpelv3fmHzSNfLpDlSwb3XuSxw9jr/i731W5Lvp7Zqdw/tmrXBrdL710/gq8I3bPPkA16ZZVm5PXaSHAp2jtPuvIc+dpxwmCLInNkfU8+gLwAUxFc3bJqAqeDZS3z7KzN8qaGMlNsUKuIjk3FUl+cI+Q5jV7GrAgVl0LhcGKQiSrBeWR8FtEIffgEpBbxylZFObZLEBsY3zFFdX4PvfNn6SxvEQo4jeU/taHphFqivIHAHZHiKjCRwbgFHaszsetyJg7ezPi+m4jq47j+JnmvDfVdxJN7tu21sTHWCMn4AvHCIXjsF+Cxf4i8/ludWTuV5L/3sfNbL069Y/GjW09+OUD+UgAWHca3g78nv169Re5hqpq5L/TjJfvVFF/3g6Sbp+muHCWoIiW0YI1o1sdvHiM0X2SwfJzxmZgoGWP16Cat5QwF7CTYhYQlq5zIlbNrHtdVpoCdHm6swq55S1L1NGatJtVEZtI6i4uThGKAL3qUqQoFG0p7PrcfHn4elgu8FwoPgwzOXxao3zHNzpvfRjy5m6K/xtaJI6w/9TyfWSn4o65gU+X6SmBuEk5EwnJmmAvC26LAPB5seTltVKW6cAUzN7yN8b3X4XobpN1N7ORV2PFFUMVYgxFLXB2juudmOPpp+OOvR97wAWeWXkyy3//s6vrz42/c8/HOi1+qTY5esfTeXYLb/m7zT6s3cg8zScqL/WTFv4n0Pf+YdOVFOmunt8NNFSMhG+A3j+FXnyLdOEv3XMbVb72MQ1/3dqJKg6zbpbu8wvnnXmD5uVOsrQ4IPZhKYb8VZivCVBDmJ5X6njpZDbYGPXwWpN4aKOsDsada1GuWZFyRiTEYH8PhsQs70BMrmJWcvLD0ndLNoRdBbYcwe/kOXNYmrG5BbBibTbCHLG+JUq49D84Im4nhBVVcDmoCT3ZgKYfvXRD27J9l8uo3ItTZfPbTnPjITxCPTzNz45uZvuwAxflP4lp7iedvhMoEiiOkXfTUQ1Quey3mrvvQj78n4k1/K6+87uzCVPf0R168beb1sNnVoXvwSnCyrxBcK/fj197JrY1X6S/JgaqTZhGtHdst7Xf/M7LOWdorJ9CgqkHR4MVvnaH33B/SO/Yw/ZVN1o97Ln/dXl7zzW9DbY0QHFGtwtiOncxfdx17Dh1gdj6weyxnl8uZE2EhESpT6KcSkZcsnCdmi4IpI8QBtAKZCYjEYrRC6PSRVovE1dU0e6JLW/TXPS2vbCH0aopbhHhWCFkT8lVc7xzFxgkk36IydwPVHVdTr4J1KbadM5cpU05YFLhM4BpRxnMhbPYo2pto1kJDTt7p0F0bsPXs87SOfQFDG/rP4gdNTDKNqU6DBkJQtLtGdMUbYVCF5/+dkWvelCf50V3aHMyO/RS/++G7sYeffWUAvyIVPVIbvb9vPlF/vdzF5J48+8yp6PQV/xvp5TfQPvlkmQsWQyhysrNfID39GBUzwaAnnH/pLFe/dorXf+9bURnD2GGacFuPx7juGj7dIO8us3XyDOvPpnRXhE9FgY8C+UAwNeG2mvD16pmfqdCojxGPzVMdrxDSgPTWSVybZOYQ0dyt+N4mnSd+m0Evw1nBRYpawVQEE3viCsQxTF6/n4lX3YWpzkNUAS+45llaLz3C6pHj9FdTsgHSdaJPBOXIQHiTUa7wigugDsZmJsEYBlsdfOEochjfaZi9corqjquo7HorlZ2vGSZoDJX6BNW5a+HX3oIsbmGd+Pzjp8yJx6I7rvmc+/wrtcfRX8aJ4gEMd8IDwJ3LCOCXvyq6vbLX3xUm55xpSbQxOEh+8Ba6S0dwzpXJiUGHwYnPMjj9JHk+R3LwjfRP/wl7roq4/usOUWQRxmSIBZUwrPRY3OAcxcbz5M1l+psFg2XBtYQsVvId83rbxJR01lfwnR57Ms9Vb9jB3tfcAlnKxnNHOf/4C/ge2ASsBbv6eUz0ebyFaBzYIUQVsKmg/TJP6DGIDczeegWNa15NUE/I1tE8AR8j9Jjdv5Pp6YLlF0/QPu50ta080YS6KpWgeCvMTibsOXiQ6d07kOVnee6FKqfP9UkqQndFGWw1mb38CabSJiHborr3LiSqknWb2MkW8Q1/F574bsLl12iyHztxwv8A8E1MY/TubaqR8ACwgPJfKEdGf5GEAkZ+VByHUSDw4MvPsfVd+k12lxJqu4N76YzpLb6V1PfJ++1Scvst0pc+TuvUC2ydBw0bdE79Cjv3wlV3ThPcgHTzFHGlRkgqQECCw+dtsvXj+L7FmkNkG8fon+1QwTBeVX1X4XCbbe31cxomyKG3TjFzyxW4oo+YTeZv2kltvsrKo6cpWim2YkjqSm3nHmT6CvzW87iNVXwaSD2sqxJbYd+MZea6PYztP0gYpGADKhbICdkABmc5s7pKa2uNg5FHq8L+nvD9jQBeqYtl59wE8/v2Y6IId+zz6KDLod01pGhw7FSHpC6kbcPZpzKy3lFmipTgc+qXvRO1MdnWOeyu2zCPzyHpmmUi1up08dX/O0zLT9P8ixSw3qeW++HPk/Doz0js3Rg5LB40/D5aueMWDpld3EiVq6QiuwSm8xZjpqo3UyNAxfp+jp/dS9ZZL0uteUrvhU/QPfMCm2cNPlfchOeJGctrZ5TL2oF+u8rU/AHy9nP4wTKGgDiv2dYWWasgRAckazUZLHU5GQkvTChbSSz95aa+R2HnJMxdV2Py0H5cHhGFJt45rLaYXIiI7txL6+gS/bUetb0Hkem9mOwY5yuOT7fh6Hk4ncKmwAd3wfULgmqfbPklorEZqEyAqROCIfROUemf5lee6fP75wp+YE5YGgifDMI/qMDByDI1NUlt52V4NbiTXyhJAiHC9TOu229pt+qcW+pRbQiRClsvBgp3mkX/B0g0Qe3AXRT9Nm5mnqSyD02fEJJE4/Fi4u7X8sffu4PNIGQIWyjnTc4xt6pHzn2ep+QetsCg9wbz4cNwmAted3QxuCIo9xu/fmW4tvo6vjvas+9ro+naFXbMgQ4g60GnB0c93YqCMR5TEYksHnBZSnCO9ORDdJdeYpDu4zl3jherSr0Ky5OBM054/MUOvRNP8a75TV471cXnq/jU4fsIQYg0Uu2eJMphoWKQoDyURTyeK6uFlbGK6vftUaau3QXMYQgca2bsqTb5+SOWnVGHd+1LsDugBtpfPyWDjWVwfR46Dz931pA7Ydoo75yAmxKl169TH9tDPHsjgR7a30TdeXSwqqu9DT63lEmaeSILP9cWMhEqVtnnhZ2NCVjcj/MOOXUECUAQcIEgBp8OePWVFdY2Ik7mjpUJ2B0MO05AHC0hlT/A1HeSzF2FKzISWx3VtTWKCVPj3DJ9uYXpOkxNQLUOXtCuYfKr8+X2mdMfb33B/Zwclk+CvizdabfBBX2U74l/4gOP/tjY1135s9WvveeN0c7qjElazq23i+4LrdB+ru9bx4NfPk0YOyhUDtZFG5fD5jrr3QX6k7spVp6n+fyDnD9V6OZaX56IHGcmhHTcMFkV6lOGJkorZNTbayxstRj0AlWtsrj7eubjhLkikzkR5ioRU7Fhl4cr2p5+bjnnlQlU3rgHqczNaM0GefDEJv/o46d4aqPDx463WW5m3JD0+ZmjnudayB9uBaZNQaMtTHvDwXpgQZT3TQo3JwoOik4OheDDAt7uA8ZJlx9Fl8/J0TMiHz4mNAulFgkmEjBwbcXwuUHg6VrEXAqzzdNo7jFiVY0VAhinhFxJaobJyYTfOF/wBwKPKXSMMLWhVG2Typghmj1EZKskJ38dGUvRjhPZDJx8htBbx/dWXMhWUh96hTP12NsD02oP7Jqs3HDzjeOXNb79B8bP3nxPt/LQzt/2Tb0Xc/hB1I6KBPeuXTd21Qc+9lv1b7jt27jjO004+9HCLH9O259ZlXOf6dqtpcJ0ttR0uyLNJmb2AFK7soaPd2oUI/0zW2yOX8XghT/h/LElXVs3EuN1NjbSqyt5XYnHDJXEEFAyp9haxAEV5iXiqj37mBgbJ4otogr5ANSjxqCxMls1vFYDl6tyqApTjYR451skrl3Gw8ee5YnNTbb6llpsCJnwcNPwWF85mgpP9CHqwBvnFcYtl0/VuXkmZsLloIIJgs+gaLXpnniO1vMP0Tn5OOlmxlqe8EhbaQboaih5WwA5DCrC8qTleck59FyTKxPBYzAuCB5MUMQIJoBvByZ6jsmuUunCjFEqhTKdC2YQaEy2SBZvIMkCleVfRaamYXULvyocfxbppSIuD5L3vC3WU5Me2zL+7HlJpruqcc9z5S1avXr/tWOdI/d8QOMHd9wXlvReTMTdmHvuF9/+5ud+svZVO94Rrn9/qi/9WmxbT0S9IxFnPq/4mhBUKHINzqn2+iK9JZWZzEHWhYN3MffsL3D85JP0NpfotxFrlFpFJMSBXRKxGKaotlrERSAbH+PymQn2Fzlz+RZX75qjkg8ots5gEBibFRmfVtprsLEBcYwLnnhMuKumdAaerVag++zn6NZ2cnQdOl3DeL2kW/W80klhbsqQp8q76/CeRYPdO8/8xCK2MoFInfHWGQYnXiBbhcTBILXEiWV2YhzvHMVaiyMU/GIKpmqIVPCFUosFV0DSgEYMG5uGtYHCeoFOlGGSOkFT8KlQdCBPFe+FGWN4Uz0QLcyQWUNrc4NuW9g4vkrtmueZTp8gmjL43GJ7St62bPW8VqqqToQaiDMiNQv5cS8SrTH1rpr1x3+HcPl7s/GvuWXX7q1Hf+dTaztugpUNe/hZdPWN1TdN3e7+rdzypiz0XMzmx8UUlqU/KWh3hOAJacmQiYsU2+uJqUYii1cXGqYXRGdeS7Ve4L7wAE+fyWlvFkjVYBuGhakG7379Xbzj9rexZ9Bkbn2VV9fGuawbmFrf5IYDszQSg0vblOV7C3kKSRWtTyFTE9DZxIhFjeA91BAaPaFfFGT9E6yutHVioDKeKWlHSKagPmbIisBYTXUW5FW7YyYaO4jHd2BNhAkeKZrqO1vSbitHUsFGwnUT4zQ0ot5pk+y6ggN3fRV3LFbZemGFQTuQe6HfUxYXhLxQbFu5c9nzukxIdu4jefV7cT6hdXqF9dXAxoay3lZWU1j10DJgppWZ62fZcc0BXPM8rVbAqzBVT9kVPQ87LkdOHUPOe9aOaXjpOBYlwmOLHOMLgvcErBHfDoxfURUmx6BzypqZ/XktPTbtm92JmV/idy3Aj9zh/n/V2+JDYepyL4NVg2+K6eSce8hpuy3BZ8S9jtq1Dhu9lDOtXLq9NvWrryQ2O61ix+Dy9zGjj3L6cyucSCPOLwReXKhxfjLw5OoSp154ELu6TiUXbLuP6fe5/sAYs+MGVzjEWvCgoXQApcgheNjqI8+1YDnAeY+uK8Wq0j/m8bvnWPz27+KWay6Tm5I2V3Va3BgrHWs5bYSF2QZBKvJoJ+fssud23cJ11vDNsxQrx8jWNtG+yOlU+FjLE+WBPVYxB67FvONrid7+diqX7WHnwRnesrPPwdOrHGgHZuvC8bwshriOUvOwqyG42NLcXKHZWWJQSdUtivgDFt1nMLssaeJ1ICoDEfqtNo+fOcczRWDCC64nXL+wysStt+NXV+H4Crph9KXniF5YwXs4205Z7qVkLmcqDmILj8dj5q5PMNOTUDRRwZjBJvk5d+Xb+vxK9Oj09GRca95BNUGLLSuaQ1SDaoZKGrIOcTPnqbUe/+xczqf/CDbftEejxbMcXHnK/snuvWcXfeVxr8m4sa/7x/J1vf9DWz/9PJ/YimjZHqtqyfKU8xksemGuBrWq4arFCgszCS4PZSG5lyE2QsYaoIJmAySJ0SeXCOtCEcA7wamQtj3mhjkW/v43Y+sJYe4aFg4eZOI1z9N84hFqz51lwke0jOFV0TRbdkBDCnTDQ7cNkZAVYOuJRGOBg77gB6bGqF12GxOHrqO6cxFMBvkKPrcEF2H27ObQe3pMPHCMK1YDdR/4tBpcLJwuoGmVensDog3aDfh4TeTmnRF37p7CRXWsOhqdVJonO6ycKHggMzwmAdRQawXecR3svPNOXKcgOvE8fsv4/rLEJ5f1d573/JP5HqcegPRGqO/tcChN9YcWG/J1ySI+mqiIRyFk0F8StPCNmkwtTshXRzuu6F4mCQtgAq5tVAWVCszOhIX9bfv4Qzzb3qlv+btNNkYh1aNncCIcueML/vDcXvsfK+PPqs838K6plXf8AH9r6v9m4j88zKdOCu1JqMxXmJu0mEoDNKXSbFHfDLiii1QTbMWUzLMig5YvuVFTE+ipLcI6pF7IMiVTyL0iC5ad338Xkig+H4D0QYXqwh4W3jzJ+BVn2P/skyydWCNyTaZqwnqAX20JL+YKufKhvTEHg6J2htmb30TjqluJZhy4NUK6uk1gF1PD2oigY9RmF9n1upSTDy/xjqLOoc0eHRfY2xACBjcGGzH8QYAXe8rzJx2Nyha3LxoGvkI0Vmf6ygK1BQsvwUTfsrjledstCa+++05832Ge/QRuCdVWYp8/4bc+v+m/7z8IZ0e5qgehDXyOPu/5mS73v/NWvpGdC047W9aEFM1SSINaQSXRG6MQFYtRRIJTR8hFiEoiYWU+LLwji167tPzw1Z9iA2RE9zSP3Yo8egvc+hg//dAfhb93y5hcG12/6lz+u8b3jpO8+hu558OXs+/nP8IjD2dspCn9gxXW8yZjzZxaBC+2UqYtjEUFYw1LZWqaZHYKYgHXRDYHpM9ukWVCT5VcII8MvurZ8+2vItmzCx10kEqCugLN++BSYgrixUka4zdSmX2a1vIWoen4yEbg4z3DvupO3nLZNAuNFer7L6d26F0k8w0ozuHarSFXOkFRCIqEHpgqEk3i3RmiyjhzByytlQaXT07RPnaaLRWcBioBHUQVUTEk6YCBN/zRWc9lskYSC74AKcoY+VoJ7PFw+9fs4MAbXoVfWUKOPU1YBt+t+bXlavLUseZP/Zhw9uf3UT1wADd+NXLL2wjyfvEE5a7b9dO733P5+zB1lfw4hIAMAn5DCCpirV+I8hyLF2jlMIeABd/Fd5cjuexad9V3jX9r56oX6X5S/40IR+DltUkRzV/6I7hcDMlVPbx7Cu/asPduXvu//B0u+/Sf8MjvPM2pF1LqNWhMGkKsFHXoxAbqiszM4A68CTd3AKlMEVUa6LFHSHd8lFbSpsiEAvDWM3HrDPVbrsf3+5jIEwYpIe9jfIfNQY9ffWmZatpnrdXl2w8qc+Oe892Ib37dB7gnrjLZPsNk/ynVHXMy/qpbMdEZdLNdkuxsDVEP3pf1Y4nBFxAKMAkiMSEolbEGki7R3DA8Yi0PFTAZw0Q7yJWDgrdNCOemx0jJmHMONzCM1+dJU8/myTWyNiwsjHHXN15NbbqKe/ExzNI6/hyErMH55gSPf34FY0kBvvMUKadK8eWn4XRNd0++N/6fGncs/iP27/Ru/aXIuD6kitkIZBsJEtdx2VaI2puspam4xqYz1Fbgxg/A3FfByZ+H9T81YedBGu9743dWX7X8LYNza4+68+3PZpv6fLHOsdMvsjUxzuzMgvDsHwQ52BEmbsoI6XHUfg5/8AMsftUuvvbGz3L2M49z7HNn2FoLDALYSYNLoCtC3tsgPPUb9AzUDYzV6kCVkPRpV8BVlSSCxoJh8o5rcGkfw0bJmgwD8qLLZNjigVNrfOxolzG1tDuBsxvKuxCuiQLx879JNWRIlOlgDMbzGdzZZ4hm9pTFDt0CaUFcBdsY8qZT1LuSAGhq5REKXFYQIbo5CBy3yExmafgKywqPN1NeO1Bui3uMVYSkItCLaJuE0O3SqNb0mpsOytzeSWiewz1xGrOpuGXwYYYzGxM8/dmzzDYCrS32fUTZeeVeds8eYHdtX3J9Zca8Nto59obkyvmpMHs9Ps+DGWxBP2BaQnEacj+JqtFBj1Py8zD17vfIM3Ovkl0+hMANN4nc9eNQ2QsrH4NjPwlF05t4NkKsMBhAcxM2egyauPaLHtPxxtaEc8eVmcsMu+8A5gL+wNvh2u+HSh3b/hQsfZaNI0c5++R5misDQgBbFVzF8HFjOJIoVyh8TeKYVlhKDet1y0tbjmutctdrxqnu34P4AYQM9QXqMiQfcL7v+ffnhBMdoVEt49Sz3cCOjvLPZpCZcdXGRERtcQfGjlP4LTK3gSQTJPNXE01PInEoOdDWljRbMagdLxMvpoLvbzJYforOqSXdetHRScfwE/uluXxM15q52Nkqn01zEqe8xsOMBHBQr8Hsrhp7Du1lbs80Jl3HLZ3GNAt0HXQroqeLHD1hOH7kLOMTiuSwsJvBwdfErjJfmawu1GFhAmYWYfI6wviNBYO20Wd+VuT8cUzb4FaUtGnVT+3T7pnN6PGHt75BAF56DT93xRvkOxk3eRj4iMUJOPQOmDkA65+B1mPgnIIEJdIylxOMETFUdnD+o32qzXVqs4ZTzypeYNctwsRlARYa+EPfhx54LyIO2/osrH6GwckX2Di6ytqpLi+2cj6SQ0eFhcjwVROwL1HWx+usTChnzg14XQNuXBRUfdm961EfEASsEX4ui/hc25FkQorI5qbqtcC3z8Kb5y3JRB0zPgmDnHBmHV+p0NoV4UMLPwCpxlQX95DMX4GZvhqpzRP5JlH3C/SDJUgFVBmce4zmkTXtNxsyfd3b6DdPsnbkCOvrHiXQdxAHGEtgeqHC/L55dl29yPhsDIMVwvkldDWHJoS24PIx1rtTHHmqy6C5xey80GkqB2+qcO37qobYQ5K4UN8ZdNdXQf2A0N8wcu5PxZx4ADpBQ8dQrKrkXUVr4yGq7zDPPXLixO8+424SBfnYNNfd/BqeWLhZ8MEgqTcagAYwDlK3mLhkB6IKoQxR1QeVSkW8LLDym+fYfajswd06C2unlWTasnCdZ2wvsDhFuOKbCfu+HirTRIMXYPOzsP487eUVzp/bZGOpQ2+1h/FlvqMxKyT1CCseE0OSlJwnk4whSY0gCQbDyvmj/Nslz7GBJc2VXRX4n8eEt02DnYxgeh7fK9DlTUynQHOwBpYstBqGuC4Y61UEMVVIJidIZi/jTEhZ7Z3kVRMJ9XgcV6nTO3uO5vOZ5kVdxvddz/nnHqO3XlBkZbdpY3qM2T0zzB+cZ2rHGMZmsH4af/480lK0DaFtCFnMZqfOyZOwdqZFvR6YnI3otDwmwJ3/YBxvcsgKlUhKMn48JXQ3YKtH6IPvG4oOFB1V7xFQNQsHCrfUrT788PqH3t3iZ+W+u7H33I9/YC//8I5b+DfJZZIXwUjIjA2Z4gslBC3LEhZMDFECcQWsUYJXTMOy9LBqYzHIxNUWUsW1YOMktFbBjhlmDzqm9gOLwM7X43e/A52+BrEWO3gJBiegdQrX7tLZ6NI9v0V/a4t+p4Oqx1QhmTuA2AhfOIJ3mMhSn91PY/chnn3iYR478iRpLrx/UbliB/halTA2g1ntoSc2MQUgFnWKFegE4WhQ7AyYqqgkRuJ60Mb+m/n82LT84hOf5dzpHvti5dvm4NoJ6LdhsAUuB2OgMjlDtVFjesc0E4uTjE0loH3orhM2zqPNLmyAdgQ/MLgU2p2EM+eE5XMZsXimF8eoNBq4fpPl0znX3CB69esVt4VEVYP3UAwCrl/+uz6P8LmivjQpJelNQzQ242wWVR/+wupvvHOZu+8DG91zP17Byhl+/NNCfEWLfzW/XymML5wDV2BchvgCimxIOAtgrTA+Do26ECeqOlDpd4SJCvhY1DS8LE7DzFZE62xg7TnDynOGqT2eyV1/Sm3hT2HWwOTl+Mkr0fo82FnMVMz0uGH6yh2gES5TilaLtNOlt9Um3dqi2GqTFzkiUGycgqTG/FidO9RzbRWmx6CIqhhXwTy+BBseGbYEa/BoUfaMVy1IGzZ6UJlCbNVj2sjG+uOkUkFO9VUVOW8sR03M5UmNiYUx5i+boDYxSXWyQVIzGB1AugW9U4Rjm2i7D12gDTowhFzotwMba4GVVWFrK8WgLMxHVKYWkfoc4gv1W+s4RcZEJH0BAsJGX+m2Ic+lLFwYJYo8YgUbSxApZ5MYU006y3l09MTmL/3+eT6k5YiJsM3Jug/sPeB/p87bDxzkn8/Py2uqY5ApeJXCFRqKAuOKst1GS965TI0L43V0fUUl3gn73mbwQZHx6ZIzs7aM8RC6hu6S0jwLva6lMi6MLzrGF5Ta/NAc1A0hqaKiqrEVqdaQygQmmYK4BrYGGoO3eK/4vMDlOUW/R7fVxmaWyX6GTRQTJ7C0hW5l4AV8IBSBoMPPrkoQw4a3tMeFykyErSfYakxUiak16hAn9OpjTNVjpupxqcU0Az+AtA39LUKniXa70A1IB7QHOhB8KmQDpd0S1jaU9Q2lyCBJoFaHSkWQsTlsYx4TV9C0p60zRzl3PshtVwhjDaGfw3pTMVGpOY1Bo4hgDMFaEYEoVozL4XyTM0ur4Z+9v8vPXFwClj+PLQmY35viaxsTfEetxpum6szEseAFMg8ukAePeIdJLEyPC5trKvXdcOXXWXzhkENfD1d/O7x0P3ry95FBBxMstAryNaW7Dp1NYdA3SKSMzQjj84HarJJMCNQUknLUSTBlx4LGEcQVJKkjSR2SGsYkZRgTVQBLMAmYGhoEjJQN3kFQzcsTmahUaSGAjbDWgHNleC9AyIc7IIe8Vx5FRhh0odtBB2k5bWCg0APJgUzQ3JAPYNBTmpvK1pbSapW97DaCel2oVoe9c0ExxmCndiLVaYhiQtpj88RRPbeuctMutFoTNrtKHhBjCVGEGiGOpWRpOAebqaZpwSPdHr/2qTa/9h+hqWUHz3bH+8soO3I//j6w7xf8u7f4bbb47R+DHfsavL6W6O1xwq1xxE0TiUyHSMm9FIXBREbp9VXjl41OEVQi5LrvgsZe9JF/jZ/bA7e8k2jrFDNLR5hZOUu67hk0he6msvIsOG8wkVKbEOqTQm0SquNKXPdQ8xBlYNqlNA1n3fiyyamcr2HMhcY1E4GJ0FE/sLEIBg3DJjEBrwreDY9SLZH7cicXw96nlNLxK8o6sC8EnxnyVEgHSr+nbDUDvQ4MBuACJBHUEmFyYpgzKcezaFDFGoOxVoSyhVVV8KFk+WRB2UqFeFjydBASiJyHbsGWV30meB4vMh46n/LoD8JLF2th4eW8rD9DursHPIrcB+bue1E5zApdPgJ8BOCfw+4dFf3ayQo/NDuu+10kLjJIZwDjchEXLHgoumUXYFxBYiCpQ303OrYHv/NWGGyRnPhjqisvMJ0a8rYn68CgBb0t2DgVKPLypFEsVKrlKSp1oVKDqApRothohKWWSBh3gRD88ukNOvx9RKW88J5iGBkoaCEEbwhOCE7Js9IG5pmS9pR+CoN+IMvL19GSvZkkwvQMRNF2U7mGsj25DEAsjLwiGTaxqwiq4IPg1ND3geYAIqcUTjTPic4P+Eyv0J88F/j0v4elL+bRfRjsh4eG6C9Lm9V7wHN42BYKZh7kznsJcphzZPzUP8n47esdD85N6OVbHj8oxNRqKKhst/u5rPw+PhtOlfKQb5ZSIjHUFtGpnYT+8zBhiKaVKBfGMmWmr4RUcEMqWNaDtAe9trK1qmgQvNPR0A2MlJxmEzHkWJcX2thSuM2w101DOTgnhOEID8qf3pVq78KhpZ33ivfllTRGEFOet5IIjTrEsWAEDTJqPy/zIsOthAbwQ5B92B4ugaJlv7L3BBFcEFIiWVOvjUKoqHjNSU739df+N6ffMkoRK8gDYB8YzuiS8nl3+JW2rgz1ebkzDm/vmMphWP5Xff6vyPDv6jWKdoqtzwz/wlPmb12/vKphOGHIp6hrltkJDOQFGjrbqhYrEANVMBOCKSByUC2ATAkFaGHwGbhUKVLB5UKeKkVehhBFrhRFSQzwhZbeM0LwimqJwrBXqixTBhAZUmvKkQCIhaQiww0ixHbIr7YgVoYIDr2Ysq8cKdtgt3/3w+lOemEIzfB6CkG1BN05nClwIvQd5JpoyFPWctUqROswOAI/fPd9d8ueHz9TO7t3by733x8A9xXrTRLQe0tzIb85xVarD0tdZNeMMr9bCPlwl2YDKLolmb1Ih/utQPL14RyECEK9rNbYsjRHGF4JMxSFhLK6VFGogwkCXrBOSQpBi5IaEwrQYb9wcCVowcu2yi29ftlWlSFccEPKCy9csC7l+2Qogzokmw5fKSc/DPvwQ0l8LH2yoKVW0GGv8cXADv+NEMrODVUIqhqcp6+FtNt9mr2C5WRMilsX9AmnBB/MVJqn757ZM/jue+73wICHHoJ77zV3Hzpk7r/nnsBfol/pFTWf3TkE+jNjcM1BOFMIN98A8VipNsWC5gPIW2X3vuuXQPsUsqXhKAYLplImBczInAzBBZHRMINhkkWHNk2NisRABcSj4pVIIXgRfKlrdDjFjiCEMHwulBKMVwhoGRMPm3fLGFmGY62GunU46ymgOhzTpqMkrYfgFfHDf0ZLizRsld7+KiEgquWoER1tgKB4VZyq9HopS5t9Xlpc4Om338RLe6ZpFQ6ZGBNfTXwldxN/qtGDd3zXmx7aOTHx8X6n88mPfc/hs/cPcbj7vvvs/XffE5D/ys6Gv+zqZPgbdsC1N5Ub1nuQqFTRUqTlqAWxkPeH1iKHdG2oksvUmBbtEvBh3zC2vMillAyfHP3flG2o2wJlSiDDMOATA8QgYfiegMSj9wchKBdckfJ1LeehSdko5yjn7YUSkBGYWNHgEXw5jKCUcMGIlvtAh76bXpDQiw7RMm9OqbqFIqi0Bsq5ZodP3nKIT7/hRtbTAVG7TRRULEGz8ymdrJDOrpmru113dbPd+XZfsVs3/+wPfXzXzNwvXVnIH/7EPfcMSqDvtveXUv7lBTiyBBWBIOqHQ2629ZPPkKKLYhCflUNUvFd8Z+jBlmJb2mcBM9yHepE7wUUjP+FC2K5a6nRDOYMyDFXq6BxmNBhLS4pXGD6nF1SmjBrRTSmCMhwjrH5bAkcbazSnWEfO9yg7GALbtl1VRYcbZjRdUUNZEBk5WF4FF5Stgeip1SAfu/NmHrrtGrKNLaqVcpCEr0VEvQET1RrRxLiurjWdRv0w8EiYqk6d77a/sZX2v3G5Wjv69l//5//3gcvn/91P3/q9/b8IZPOKkH3zEOAIbyKgIiULxFN6MAq4FLIWkrXADUpJVi8UGRRZ+bpLS47pxRvj4rabsi1eDRc037akj66yNdsucjm/6MIgtO33XXTS0WlVvugfG/p9IkMv3JZvsVJqFKNDg+xLnXsh/Bna1m21f8FzLlU5WvjSacm9Sjs3nDsf5MHXXMtn33Adea+nphJD5lFjib1B4oiuS2XgCyqZl7qNo2TntPWF81FnUJx97qViaWXlimdOnvhXTx85+/jbfvnwO+6/535/771vjr48AD84dIqHtq1MMJReJEOngyxH0w6ataDoISP758pmLbwv4xGvF2JRXzr9Chgd9pIOnaQLPJKL8jQjp0wuknDdHvJ74bFc1ClrzIXBaaONFUYOnmyfV0Z6f/i51ZfqW4cOW/BaOnIKGmQ4jmuYsAilg+c9OA9FQLwX6eZGzyx7HrpyD596x80UzS5SicWoqg0Q5R71jj379xPbmP5WR2oLMzBeIVGrY7lKFrwdn5+2vihc2unlJ5eXru7m7vdu/9cf/JrDhx90XwyyeYVOlg7tUwh+dNGltI8BxAsUOZK1IeuU5HiGRiqU3sc20NsXd3ihvaqE8jx88ZhJYWSgXw7yhb/X4XHhdb1oc+hF8Yr+OcfoswylkCCoE1FXMnlKiSwdtxJkZHjghw7dyAHzpdSKC4groJ3B6rrn2ZkJ+eTbX0PzfBNJYqIg+GqFEKOaWBzCyWPHsXGiyewENolEEPLNlnRCQZJUNIkrWnQHUh2rW+eLfKPTlzHp/MZ9P8R3Hj78KXff3Rca+78kG6yBIgRAjKoGxG0bqDIYTbuIkTLREYbpRD8axDIUqbB9DN1cBKcavjgLtQ2CvPy5cBGAo7D/4lHO+kUS7y/+Oxm6wKPY/YKdkDDyxsvcjZa/q+oFNawjQAN4jwSv6r3gXNkI7nwZj/dyWGkrLxZGHrj7TtozdRrrgaLVw0YJycIUg6oVcYFapgzyPg1rqNfrOFE6J1eoN8aozk9gIyu+nWk0VgeCVCGKohCeyaUyfu3Ez+nH3Jp8df/3RgPpXpEEj9x0taShvOiCL3c6rlS1Wng0T8ujyMvQ3LE92wqPGq9azkYaAuNFL6jFi8GX8vBf9PvF0uv15VFhuOjwQOkhywWgdXg+GX2e7UPL4XioR0qJFYIXHf6UUAInfijVziHOKXmB5E4l9yK5EwqntAfKUheWOspn3n8XL03UyM83MYnVyniNgfXEaSEmlFnWGNEdB/bKZtGTZnMT3+zp7OK8FhWjDZtgimFYYKBmEvq9lJn6uFk9uuRb9Ullcv4n7/s7NLhbgypivhQJ9h4/UmWClKq1vJhIEVSKAhkm8tVLace8yjAMkeDLdtFtlVrmaHTbHm5fdL0Arr8IoGHsuQ26XrRZwhdJLMPPtn0OKQH3bMfPOIGi3KRalOFNcMNjKNGhNJPiy1o5xTCtWRRlp0PmIHdKViibA+FcC1aagc994xv0hSv3YrsDFKHIcrGTdU1qVfXeE+eBeq2m1fEanbUmiUSMSUyjXpNBkVKpVxlsdtH1PnFUIS883Txl1779LC8tw/JZOy5ScNm1+1/3WvNtIqI8gP2SAM4ycleMEgkjKRsCkwcohh6G06GTBeIBLyLeXCSFciGY9VxQl+Xr2516jKTf6YX3uYtsOCNH7iKJdEChMnyf4rbDMX3ZRlApEx9DDRKCEFxpc/3QYfJOcQV4p+qcUjgo8rIQkRVlt0RWCL3csN4TWV0NrHnDg990Jw/ddrX4TpcqEU490/v2UEuFSqUKtYSs1WOr22Iz6+t4paLjcYVOp0tbc+qzUyJeiWpV7YcCCxI7ZW5+UfutFicefkIXZwfcdtm0UD+gjZnKtwydpfCKbPDdw8tpLL2sAIrhOFh3kadrgCJsZ38k2FI03CgdKX9Wpb7M6REMZThCyfZj+7Yc247TRXHxSHJLdf3ymFqlTGiEUTZCLtYGqm44puhlHjJ4L3hXqmLvUOekLER4cE40c1A4pKwuCkWm9DqBThfWjfDSDVfwyNtv5djCJPnJJSqNOvFYVefzirTWN0lMJOOT42z0Ouh0XScllhwv/QjtbrV1ateCWB/Iepnmg1wUT2N2nAI4ePnlsrG0xKmnn0X7Pb7jdU3mdr/e+CxQmYxf/cI/H+wWkXOvCOAPD382WwyKnCLkasVIwKkMkxFlRt5tJ+RRLxcyVEEv8t+30waiXhGRbS94VHwxKmXC4os9YHhZeGOGDvq2I3YBeBHVUkWPwiyHEESHZmGUcWLEew/DYoUvUFeSGyickjskL6DwollAfBZIO0rWh7YRPT49Ky/etIvnb7yapSt20lxeJWl2qFQrREbUVhImrVXfakkeKZutlko/pWIt3UGH6flZXL1Kw3k0zTWq1koChVOd2DEv1fFxHWw0efHJJ6Vz/DTexly744z8g9dNEqqXC4OnXHW2Xp/b1X4VcO5L8qIL6BY5aShoSCJCPkwXmiFmWTmCXYKW9s1f5AmbUeqoLHmXtbyRZy0XVO4wST/8vfTXS4fsQuJ3VETQL7LTL/OgZVijg227qwKFigzvBlCCO5TesmwowaHOKc4hRQGphzSDousl68KGCCcWdvPCa/by3JW75MyuSXIb0U8zwtlzVLJyICmzDS2co1jdJMQVilCoVRGpJlSTBOPhfJ6x0lzTRT9LMtYgHaT4WkIlipmYmCa4gvPPPM/WyTOClP7p/qnT/No9nsUbv5Mi72Kzk0q9hq2ZGyD8/iuVYD0MnIOtLKdNxrgkFs2RIIqJTXnpUy8qUSnQQUrKTD4cHBHJsKRwIX9opCzXEkYFgKEbWEq9DCtBMrSfOhwifVEcXOafX+ZcXVy0CGX+cqSaRxshOJHt+NVte8Z4hxZFCWzuIHVCuuFpdeHUjgWO3Holj+9f5Oi+eTbSFNvrM+GCdlfXmJicFI0r9OOCSGJqlUSybkpvMCCabOh0MkVn0NU8y8Sp0YZaxscaVCYbUrT7tNIuE7W6TtXH6PX7rBw/Kt2zy4RuT3xkFcnlHZef5T+8d4yDN32QwoEdfBZTGS+n1tfMlRBeWRw8yvQdVnpfnbMqme42daOFN0IZMmICMPBgRxPYTSnFogzn9+p2OO4RRDSYi+NbLWXaDR0tlW1O9vZy21Wf8q+cCi9T0aU50DBU/f5CqKQOkSB6cfJilFwLTnGF4gqkcMrAQboV2GrCU3t386n3vIanrtjJujoGW22men2SzRZRLdZIBTNWlWq1QnezS2WyQicdMBnGqEQV2DGP08B6cw1XOKqVhEacoJN1JjLH1laHyckJFmdnabZacuxPH6W/saFoIFQiiAsOTizJP75jwIfeeiN2z7spfA/b+yjaG+A2uxLtn8FE0QK4V57oCO8rCXrpgBO+q6+2U0aDCloExIoQo5IFpDJMcKgBZ4aejgyr8BfIDUOgt++T8TJqTbgo8bZdphmp/O00VxlyedVSUi944qVzVUqvCRCcyqiUOAyDxDvVobcsvihDoDxXUgftlcBLtWl+/57X8/lbr2Arz0hfPEtjcpz6WI2w3mFqelp9LaLX6TEZrLY6PWS6Kr6bUiei3Wxjaglxtaq2l5FMTSKqRAH1Uk7kyiKrs4sLGKPy3Mf/lKzdxWggDAqhMuD66RYfuiHlW197gNkr3kRI9uPSZ7H9hyGuoEstQnNd2DsDYqa/pEzWA/eXF7E34IW05Ul2iSqW4AJ2VOizBdRCmaveBli3U5sExVycfCoLCVqqY7kIvJHeuOA0jWys0VKtD2+DdCEr5i+uTg1LfCW/TgimVAZO8V5kSNkR71HvS+nNMyUtYOt84FO79/Mr3/YOztcqqmubTNlE2uNj2CQiywoWdi5qa6uDiGd+do5qoTjXJ01TrZpIut0Blb3zYEQrWelDbuUZ0/Vx8sGAvsuZrNZ0dqohZ595jo2jJ7FmGKaZHrdd3uSDNwU+8Nr9jB94PVSvIE9PY9sfxfjlYdgYIdN17NwVIAnqi+RLTlUCdFMe22oFGnkQxOJ9UfLsDULfYys5VCtcKBGGMmxxKmLLkFjMdnn9i4oGckFlb9eVdKSCy3x4CbiWNbkhTTEo6mV0X6qhO646ylqFUcXHiQSn6r3KMIFRes25kObQ2fTy2OQs//n7389ya4vpgaedBTYHTZio6WCrSRJXpVnJ6Lg+iUnwTU8LqMYx1UqDdujr4uIiplqVZrvF2vlNosk6Y9UxNpbOEdfGGJuY0NpYgxc/8wj51iYExducm3eu8r+8Ad57+5Uk++8CO0eensFs3E/k1kqNZiolPUoyZHoSpQrFOmUry5ciwUPBWxnw+bVm6C90XU2SKDgnEgJYixIU6eZiJB5GQra8skNwGZLYMCJlPa6sqwpfVGDwX5Rb3k5Uy8vi5qFNvpBA0SELY+iFayijpVGcGxzbKUfvEFeougLyQhnksNWC//yqRQZjYxyKGhzdOCtdl2mtXlOKwNjcPL001bTdZWrPokg319BNWe+1sB6ZnJ5Waw3xZI2TJ0/RqNVlcue8ttM+abvNzL7deG+YGW/I0QcfIltfI6DsmN7kn97R4bvecg2Vva8nRHvJs+OYwaeIsnOllypx6V90ekhiITLQWS+Hm1YElwX3JQF8GMJwotrpP27zebdVvCmarQUNYnwRIDYQGZGBQyRFqpVhWlFUA4Ita66ICPYiqs42N/HiWHaoeuVlFSIZAShhRGEcVrJG1JuLUpRhyJvSYXkvOL1QmPeiwWvZnpMrWaZ0u8qpARxPAmc//nGuuPYQizOz1INIHkelfTQWQbReryPtDImNhPGqTtUjwRiybk+cEe022yQeTZJYfD2ShoypFgNCJ5UdVx/k6GceIWtuElBu23ue//cDCVe96n1QvZ588AK2+1vYrVOlNhqbQIsMMQXFiTa62iS5dg4aEyBD7rAfUORh40tW0Q8cLkkz621+Y2PZvXl+UoJEiXF5WuY7yqyRaLcgDpR3ugiyXUXSYSM9QYbQXkxglgsEt6AyEm4ZOU9DqZVRSnNov0tbPNLfF1V9gqBeNQRkxLYIvnzsnIobZqWKQjV3yrkN5PJvMNx54zo/f6zKC5//PI25Oa6//TXkqaNXq7J+8gzjlTHS2OI6PVzVUE2qmGpVpZdKtT7GoNWjR4/awiwuL/CDHM0cwcDs5AxLjzylzRePC9WIt+9b4b5vnWbyqm8kCxFR8zeJ/DoEi24M0KpFagLOoyZBuz3sjIHqLPgcE0VQeEVz0o6eesUDwUfrF4bx8FWeE7MSPjg3UxmTOFLXL0TDBZI3gLoyjpUgZV569JqKyMuqRduVIi2l8eLnhxkoL4iKlhWs7QyZjpIp6kui8rCUJ9u9VF7woQy2h+Cq8zosHAxDIwetltCZVHn7/3Uzb7luis3NEzzZihk4y9JLx4hqCXPj01TH6njniZJIXC2ibmOKZod6pnSzgbjYMF6tSxoZTD2mbhOiXoGvRdJojInJck5+7lHBeW7bdY7f/uACU9d+E3m6Sdz9Q8S1y74GFGlMIfVpyDrIkPZrJiYxs/vAKJp1cJspYjRIp2/PHSt+4T/+CY9+SQAfHt4R4W3QfVdgx646r4vGG0WROuvzsjg8orWoXmAm6iiLFIbgqqhcFLtqkFLVDsHWIYlAhvlkGQ7d3k5sqAyrVTKkyQqjtKP6kUoe0mcvUGlGrAtxRTmKoygrQbKyqsy+ReTyb7qW6uxX87XXCjcmz/P0cpvVME5/s8X62XNUJyfYvXcfqctkLKoQ+il5kUtloiHOgveeQX/ATFJHk4jU5VK3FanU61gjHH/kMbwL7F1Y4/e+LWHn9d9AkZ4n6n6mTKWFGJzDLa0jmpe5/BAwIvjMlYTevIeQkq30SM80qS3UZe10j+PPhh/8xUdYs3zpSx4Afq/gSCX4D01P1KpiE4p+KkMPd8g8FIJuhzeKDlnGZbK/BH0IiLiXlfUuKu9JWRUagRnkAoBhyI3yF1Ry2L698AXKanAjstx2lWjkZFEUSlbA8hZy2QeqLNxcpXCeMH4zh644wDcf3MT2TvDEckFXKnQ7TZqbG1IzMbXJSaLpBhUba7dIJetnNGwC9Sr9Xo84dfhqjcbCjOA8xz/zCL7VI651+cg9KTe//r3k2QDb/BSkw/SmLwldYbODaYxLSQL3bD3fonesRVz1mDgQ8gIxEcn8ZGHDIH7xicEfvf5/5yf03pK7+iWtB0EPgf1eaL0xJVpMwluTiQnnc2d8Vmx7sWUcWiY4NIy4TKNCxDAFeVHpcBvAbRAvqNlt5uKo+hMuks7t8w1zyhfxo0Y8qhEpznvwQxVeODQrgvRTWC/g0LfVmDg4B6GDkTWc3cvY3O289Zo6b104w0rnPMc7SreZ0Wk3yYOjEVUZa4xLbCxxraLVSg0bGUlqFeJqJPPTs7RX1+XU559AB5l4O5B/feeSfPM730qhE0TtT5M+dQ7damGnG6VrHwrs1HTpMGhO92xG67kuJoa4qkitIj7LsRVbJCavPP/5duuxh3jfbz3LBg8gXw4J5j7gENg/CTw8Xbj3zNWiXVQbrkgHJriA91qq2WFvwMUXOmwT2S5I30iN6pAqw7CPKGy/NgR+SEdVX4Y+I/LbNmdq9JobghvM9mYY9Rz5slKkhVOyXKU7gFYMN3ygQm3nLMQNoMC4MwQJ+Oqr2Lv/1XzgauVK8xLHmy2WQ5XuRpeNk2dotjepj4+ze8cuavWGRJGlVkkk1CucP3lKzj75DEk/J3cDvvfWs/zL999GUb8a2/oE2u5QnG0SzVYwjenyrizOE7I+IU9RhN6ZFHWe6gxUFmZUcA4tjBlk8fOPD849+ijv/Y77efzDlDOjv2z3LrwXzGEI/wJufPWcfejgZTsSDU59Z90YQa0RktgQxVYMqLUGE5kh21VLsiMlZZVh89iFQ4adCSPalm732Y5aT9BR7XhEPt8mZYp61eBLPp7qiIA+bCwLZf45LYL0ssBmB92YUO755Vlp7NuBK8DM7CnthngwY3h7JSbeh/Un6Z79vPz854/pTz6ivNhdxFQmCWlBzVYQGxONj1GEjMHyBqy3iao1XEj5wA2n+cW/dR2y8y508xOYdAlcBd8eYKb3lPdpHGyhYWjDUFDDYBM0d76+c1KNIQntDZbOabZ6LvzyJz7Fj/zIp1kejeX4kr3oL1bV94H927Byc6YvjoX8/WOTU96pEZcNynKsV/yQxLbdqzOSVC1HFg85xuXvo4TEy1TyBfWrQbb5xyOJDEElBBEfEB+Q4FRDuNAlGDw4rxQj5qOHvAhkeSAN0MmQ3hhy490TJK6Df+4UMjGOjE8OO9FzTDgHbhlnr6A283puv2qGuw92mOQMJ9bbbHXAj1XAQNZuEzpZmQcdZARp8n23r/JT33oddsed0HoU0z2OegvqMbUJNB/gB82yfpIW+NSXPkMWgq0SKuP1OGtm9sQzzdWjL/ALTzyi3/t1P8PPfOI03YvB/bLeffQiSY4Og/txw/fdtHPsJ2cX5pxLu2h/0xhTJq1iIxrHZXe9EcqfQ6k1MrqZsw7vRHrxp7zQOKTD4oMy6jsqnx01KgTVC4R0HW2asi9oWz0HKHwgc4HMlbXetS605lW+65cXGVuYwp97EeavRnbs3m7nKBM2CiZGzTQ+vp4kqsPgac4de5SPPnma3zoeeKaV0PEV0nWIbMFtO3r87RuV9731DYSJm9Hmp6H1DGE9xUxOElyGFo7RhuwvZ9i6oCKqwXspNEk7ytlz4YXVc/z000/zy//rw5wvb8zBn3uz6a/IDaI/CdFd4P6N4buvXqj/9MLCPD7t5qG3GRlRrBE1IiSRJY7KGz2bUYOCMSMuwMvvzH1xu95oopPINnDbmU0tqdml51xy8UebIARkCLA6X/oGudeys95D35cDWbozKt/x8w2mLr+aYKtlVs4CLiMcfR7Gd2CuvAHS82VdNJ4myCLBHiRJquDWoXmaM+tLLPc7DNKc2Shw/d79MHd9OWG3+SCmf6qMHAqL+mI4c8QTgqPoONonHPW9sdfg4zBQTpzg6Mo5+dd//xfCL5+FwQjYDx9BD/8Ft7/7it3ifSTJh+E9V89Wfn733Oy0Dy7X3qYlOLFWiAW1AlFkiYzFmvImy6NOEjuSZimbr0eNXsNeQ93OZKpul4UvNIBdbHNLaXY+4PxQike2WJXCl9Lb89DNYb2i8rd+qsqeG3fik0kkicBWoHtWOXGK0EHkNa9DpufL9pvte9wagplHzU5MNI+Nxkuv0FRBHT5dIvSew7SfQLKtsv3VB0IeKHp5mRrIHS73FJkiJna+75Izx113ZZl/c9/P8uO/XE6b5ZP3Et15GP9fuuXdVwzgi0H+frjmhrr5uctmp+6IqhVCv5Vr3jfGIGaohi3l4zgyao1ghy0mRi5uH7q4P16GN0obqedhYVmH7VFhSJwMpd0fOVZB9QI3L5RA5x4GAbIAfaeczpFv+fGI69+yEy9VpF4v52vZGrb1jPq1lnDZG5DJehlAm3iYH++VIwY0oPEkSh28RaNdSL6KtD+BDJoYqeMHEPIC1JFtBnrLKbXdFVyakw9UUULRJX7++fCpx5/m7/zQJzkykli5h79Ub/BXHOCLxzMB0Y8Z/uHCROWHd02OT4H3xaDjgnPWGsQOWZYiZZOgtSJWhMgYNdZsa2nZrv6B6lAFi2xL7naqevjYD1v/vI68bt3mCXhVXFCyAEWAXIWBKqcGyFv+tvA1H5zH2wZSr5RzG+IJiKfRoo9UIwj9YckuYbvXVAwaPJw7joxNwcJOUW0g/TNK50WMD+TNQP+lHpVdNaQWk3dyvLcEX5D2CsVBc0XtS8f4sff+nP4wED55L9Fdhy+iRHwlb075X9kFofeC+RT4P1b+dDL1v24G/XGPuX4sqVTURMb5ULgQcIh4FbxC4VVyr6ROyZ0nd4HMK4ULFF7FedXcK4WCC1r23SrkYRj6UEqmC+V7ikD5+rD/LQ1KHpRchXw04UZLyljfieSR8qo3AFGMWCFkrhznKB6JANcpgc3acPILMLE4bMKLkM4KcvIounYeWdiFVKbRbA3prSIBBmczXNeTLIxTZDk+LygKR9r1ioe1JezTT8v/9E2/pP9KS9sj33n4ld1H+CsO8CiEAuQ+sD8CzT/0/M7uQfHbRZYZH+Tymo0aRrAhqBaKK4JSqIinzEwWQSlC6RBlQ8co9SXgqQ/kQUtvePg4H74390oWlGz43hLQUhWX7wM35MTnKuQqFEMyyZk1kSuudyzsrVL0c9IjZ8AkJFMRWrTKdliXl/Y1mS4nwIgrJdqOQdJFag0YP1Dan/4q2lohZApiiKYm0EjpnuqW3nyhKh5dPq32qSP6ge+4X/8fvZdI7iI8+OAru/PoXxnAXyzN3wfmH8PKH3t+byb3vxIKd2bgdaZQ2VMtq8jWKzhVryqhbEwQvIoUOpLU8memJVB5oARRlXQIbK7D2wAMpbcYbhanF353w/OV5x3y9qzSS5Fjy8pNt0Ftoq7qU1EHyfQ46osL3eRRFapTEAbDAoovHbKpm2DqIGi39OYGa2hrQ4IzqBEwnrwzIGBREfW5hvUl4kcf1w9+92/yS//pe4hv/fG//LCV/2Y2+P9f5usQyD0XzXb6Prh1Xvja8ZivqViunzRUk6FXPWxRKoa5D3zpScuQBsKoVDzyoLcd7hEF+mW8ed3uXP2i9mD1KnhBjYieTFVf9TbMd/6DRjSxb3fwxAqpQRxSqUI+wJ1ew+zbh6lXyymt1pbZExsPDb0DOwFbR/Frp8h6ZpiGVfIU8gxCrq61qskjT+oPfvA+fuw/fQ/x9/40xZfjOtv/VgA/CHr/hag2+hSER2DpAXjgjzw/s+C4b+B5bNOx3guE3FN3QcYMRJES2fJGPBbBlCmRcubJMCIKigSvEgrVUQtvGNX7dXgYY0JkRBNrNLGWxFpbscbGItYotmGJTr2EfeZElh/c140nJ4NRI4WqNWU3dEDbWyLVSaReJ7Ra+JUNzNjYkNY7HE9BhPZWyDY7NF8ISCx4NWSDgM+0GDSpPPwF/v0H7+N//eS9RO/7Mkjuf3MJ/oukGjA/Wvo8L1vvgJ374KoJw6GqcGUkXJYY9lpkMRKmYyP1eDTN8KJgasiX36ZvyUVky1H1MldlEJSB1zwN2sxUz+bKiT4cias89ScDnvoXH+Cqm2+3/+c1r2pcwdSUF2M9JrZSnRRCBkYI506QvdQiumYf8d4dZeoRCKGKX3uR3rk1+psxyVTMoJPiCy1ch8oXntbfuOf/4e7/2hDovzuA/zywD4G+/8Kghz+zrobxa2B2CmZrMBfBlDFMG5gSZTzAGFDRMtIKLhA8pKbk1XUCbKSwlcNqC1ZegrVTsPVnBl0E+Pb9TH3o2/jRvVdVv2/3gYZhfKIQa9FQWBPXyoLH5nmoz2MmqoReF/WCqU+Rnz9ButnEaYW869UX3mVtrTz2pH7sh36Rbzh5LzmHXzaE4m82wH9mmkBpr811w8/8XwL+S70o7wN7HcizQ1Ny393IKIn//34Lr73qWg4fuGrs7fP7J/FR4lUIYmtGqhOCS8F3KVaW8YNAsv9KBiun6W+0KXK8z9T0t4x94hn91W/5Jf0OEfLhoB/9SnyX/96X3Dv8Hs+CXPcKvtOzwwt7Xckx079IRSoI92HknhLo3/5e3rPvoPzDud31Ny3sqaKVBIRCRBSsiLUgSdlWev6s9jcHkWbGnDyu+fHj+qMf/M/8CxH4p1qWWvkKbdZL679Wm9yL4cNlAg3g176Zu3ZfLt81OR+/c24hmW1MxNiKRWyEBsgHOe1zLc6c8n5lhT94+jkOH/4sjw5px8pXQHIvAfzlSMPejb37vgsluh++nsWbX8trxye4PanKtSYyc+pVs35Ybm7yhZOn+YMf/iRPjv724rrtpfXXHGi97y8Xcuq9mHvvxfxVfbZLEvzlVN2K3H8PZv465M5DKHcP7er9mAeOIA9A+IvqtpfWpfU/9JJL2uh/DJAvrS9a5n8QkC+Bf0m6L33xvynfT/9HAtj8DQVRLqnrvzkA61f4/ZfWpXVpXVqX1qV1aV1al9al9fL1/wFErW6emY8LBQAAAABJRU5ErkJggg==", anchor:true},
-{id:"t18", time:"20:30", title:"Dinner", dur:45, cat:"food", icon:"🥗", anchor:true},
-{id:"t19", time:"21:15", title:"Skill practice block", dur:30, cat:"skill", icon:"✍️", anchor:false, desc:"drills / practice questions / exercises"},
-{id:"t20", time:"21:45", title:"Revise today's learning", dur:15, cat:"skill", icon:"🗂️", anchor:false},
-{id:"t21", time:"22:00", title:"Family time", dur:30, cat:"rest", icon:"👨‍👩‍👧", anchor:false},
-{id:"t22", time:"22:30", title:"Read", dur:15, cat:"mind", icon:"📚", anchor:false},
-{id:"t23", time:"22:45", title:"Journal + gratitude, screens off", dur:30, cat:"mind", icon:"🕯️", anchor:true},
-{id:"t24", time:"23:15", title:"Sleep", dur:0, cat:"rest", icon:"💤", anchor:true}
+  {
+    "id": "t1",
+    "time": "07:00",
+    "title": "Wake up",
+    "dur": 0,
+    "cat": "rest",
+    "icon": "neon:sun",
+    "anchor": true,
+    "templateVersion": 3,
+    "plannerRole": "wake",
+    "wakeSplitVersion": 1
+  },
+  {
+    "id": "t1_freshen",
+    "time": "07:00",
+    "title": "Freshen up",
+    "dur": 15,
+    "cat": "rest",
+    "icon": "neon:water",
+    "anchor": false,
+    "templateVersion": 3,
+    "plannerRole": "freshen"
+  },
+  {
+    "id": "t6",
+    "time": "07:15",
+    "title": "Breakfast",
+    "dur": 45,
+    "cat": "food",
+    "icon": "neon:bowl",
+    "anchor": false,
+    "templateVersion": 3
+  },
+  {
+    "id": "t13",
+    "time": "08:00",
+    "title": "Chore round up",
+    "dur": 30,
+    "cat": "home",
+    "icon": "neon:chores",
+    "anchor": false,
+    "templateVersion": 3,
+    "roundupRole": "chore"
+  },
+  {
+    "id": "t25",
+    "time": "08:30",
+    "title": "Shortlist suitable jobs",
+    "dur": 30,
+    "cat": "job",
+    "icon": "neon:search",
+    "anchor": false,
+    "templateVersion": 3
+  },
+  {
+    "id": "t7",
+    "time": "09:00",
+    "title": "5 job applications",
+    "dur": 75,
+    "cat": "job",
+    "icon": "neon:applications",
+    "anchor": false,
+    "templateVersion": 3,
+    "desc": "Five applications · about 15 minutes each. Use a buffer for applications needing more tailoring."
+  },
+  {
+    "id": "t8",
+    "time": "10:15",
+    "title": "Break",
+    "dur": 15,
+    "cat": "rest",
+    "icon": "neon:cup",
+    "anchor": false,
+    "templateVersion": 3
+  },
+  {
+    "id": "t9",
+    "time": "10:30",
+    "title": "Skill learning — 1 hour",
+    "dur": 60,
+    "cat": "skill",
+    "icon": "neon:book",
+    "anchor": false,
+    "templateVersion": 3,
+    "desc": "One focused hour of practical skill learning."
+  },
+  {
+    "id": "t26",
+    "time": "11:30",
+    "title": "Buffer / unfinished chores",
+    "dur": 30,
+    "cat": "home",
+    "icon": "neon:clock",
+    "anchor": false,
+    "templateVersion": 3
+  },
+  {
+    "id": "t10",
+    "time": "12:00",
+    "title": "Lunch preparation",
+    "dur": 45,
+    "cat": "food",
+    "icon": "neon:cooking",
+    "anchor": true,
+    "templateVersion": 3,
+    "plannerRole": "lunchPrep"
+  },
+  {
+    "id": "t4",
+    "time": "12:45",
+    "title": "Bath & self-care",
+    "dur": 45,
+    "cat": "rest",
+    "icon": "neon:water",
+    "anchor": true,
+    "templateVersion": 3,
+    "roundupRole": "beauty"
+  },
+  {
+    "id": "t5",
+    "time": "13:30",
+    "title": "Pooja",
+    "dur": 15,
+    "cat": "mind",
+    "icon": "neon:diya",
+    "anchor": true,
+    "templateVersion": 3
+  },
+  {
+    "id": "t11",
+    "time": "13:45",
+    "title": "Lunch",
+    "dur": 30,
+    "cat": "food",
+    "icon": "neon:plate",
+    "anchor": false,
+    "templateVersion": 3
+  },
+  {
+    "id": "t27",
+    "time": "14:15",
+    "title": "Rest / buffer",
+    "dur": 45,
+    "cat": "rest",
+    "icon": "neon:rest",
+    "anchor": false,
+    "templateVersion": 3
+  },
+  {
+    "id": "t28",
+    "time": "15:00",
+    "title": "5 job applications",
+    "dur": 75,
+    "cat": "job",
+    "icon": "neon:applications",
+    "anchor": false,
+    "templateVersion": 3,
+    "desc": "Five applications · about 15 minutes each. Use a buffer for applications needing more tailoring."
+  },
+  {
+    "id": "t29",
+    "time": "16:15",
+    "title": "Excel side income / hobby",
+    "dur": 30,
+    "cat": "business",
+    "icon": "neon:excel",
+    "anchor": false,
+    "templateVersion": 3
+  },
+  {
+    "id": "t30",
+    "time": "16:45",
+    "title": "Flexible time / remaining chores",
+    "dur": 105,
+    "cat": "home",
+    "icon": "neon:leaf",
+    "anchor": false,
+    "templateVersion": 3
+  },
+  {
+    "id": "t3",
+    "time": "18:30",
+    "title": "5-minute walk",
+    "dur": 5,
+    "cat": "move",
+    "icon": "neon:walk",
+    "anchor": false,
+    "templateVersion": 3
+  },
+  {
+    "id": "t17",
+    "time": "18:45",
+    "title": "Dinner preparation",
+    "dur": 45,
+    "cat": "food",
+    "icon": "neon:cooking",
+    "anchor": true,
+    "templateVersion": 3,
+    "desc": "Prepare dinner for 7:30 pm. Cleanup has its own slot after eating."
+  },
+  {
+    "id": "t18",
+    "time": "19:30",
+    "title": "Dinner",
+    "dur": 30,
+    "cat": "food",
+    "icon": "neon:plate",
+    "anchor": true,
+    "templateVersion": 3
+  },
+  {
+    "id": "t32",
+    "time": "20:00",
+    "title": "Dinner cleanup",
+    "dur": 15,
+    "cat": "home",
+    "icon": "neon:cleanup",
+    "anchor": false,
+    "templateVersion": 3
+  },
+  {
+    "id": "t21",
+    "time": "20:15",
+    "title": "Personal time and self-care",
+    "dur": 135,
+    "cat": "rest",
+    "icon": "neon:heart",
+    "anchor": false,
+    "templateVersion": 3,
+    "roundupRole": "eveningCare"
+  },
+  {
+    "id": "t23",
+    "time": "22:30",
+    "title": "Wind down",
+    "dur": 45,
+    "cat": "mind",
+    "icon": "neon:candle",
+    "anchor": false,
+    "templateVersion": 3,
+    "desc": "Slow down from 10:30 pm; aim for bed between 11 and 11:30 pm."
+  },
+  {
+    "id": "t24",
+    "time": "23:15",
+    "title": "Sleep",
+    "dur": 0,
+    "cat": "rest",
+    "icon": "neon:moon",
+    "anchor": true,
+    "templateVersion": 3
+  }
 ];
 
 const CAT_COLOR = {
@@ -1378,7 +1610,7 @@ try{ localStorage.setItem("dinacharya_profileId", profileId); }catch(e){}
 if(stateRef){ location.reload(); return; } // already listening on a different profile — clean reload avoids a stale, still-attached listener
 profileIdWasRemembered = true;
 hideProfilePicker();
-state = loadState();
+acceptPlannerState(loadState(),'today');
 if(appLocked) showLockScreen(); else render();
 initFirebaseAndStart();
 }
@@ -1475,11 +1707,11 @@ if(remote){
 // newer; otherwise keep the local copy and push it up so the cloud catches up instead.
 const remoteNewer = !local.lastSaved || (remote.lastSaved && new Date(remote.lastSaved) > new Date(local.lastSaved));
 if(remoteNewer){
-state = normalizeStateArrays(Object.assign({}, local, remote));
+acceptPlannerState(normalizeStateArrays(Object.assign({}, local, remote)));
 state.dietPrefs = Object.assign({}, state.dietPrefs, {noEgg:false});
 saveLocalOnly();
 }else{
-state = normalizeStateArrays(local);
+acceptPlannerState(normalizeStateArrays(local));
 state.dietPrefs = Object.assign({}, state.dietPrefs, {noEgg:false});
 pushToFirebase();
 }
@@ -1502,7 +1734,7 @@ setSyncPill("☁️ syncing…");
 stateRef.once("value").then(snap=>{
 const remote = snap.val();
 if(remote && remote.lastSaved && (!state.lastSaved || new Date(remote.lastSaved) > new Date(state.lastSaved))){
-state = normalizeStateArrays(Object.assign({}, state, remote));
+acceptPlannerState(normalizeStateArrays(Object.assign({}, state, remote)));
 state.dietPrefs = Object.assign({}, state.dietPrefs, {noEgg:false});
 saveLocalOnly();
 if(!appLocked) render();
@@ -1529,7 +1761,7 @@ if(json === lastPushedJSON) return; // our own write echoing back
 // just-set start date — moments after it was made. Only accept the remote version
 // when it's actually newer than what we already have.
 if(remote.lastSaved && state.lastSaved && new Date(remote.lastSaved) <= new Date(state.lastSaved)) return;
-state = normalizeStateArrays(Object.assign({}, state, remote));
+acceptPlannerState(normalizeStateArrays(Object.assign({}, state, remote)));
 state.dietPrefs = Object.assign({}, state.dietPrefs, {noEgg:false});
 saveLocalOnly();
 setSyncPill("☁️ updated from another device");
@@ -1710,15 +1942,21 @@ if(changed){ saveLocalOnly(); pushToFirebase(); render(); }
 function fmtLocal(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
 function trackStartDate(){ return (state && state.startDate) || START_DATE; } // resettable via the Account panel — "Day 1" and the calendar count from here
 function dayNumberFor(iso){
-const a = new Date(trackStartDate()+"T00:00:00"), b = new Date(iso+"T00:00:00");
-return Math.round((b-a)/86400000)+1;
+return Math.round((Date.parse(iso+'T12:00:00Z')-Date.parse(trackStartDate()+'T12:00:00Z'))/86400000)+1;
 }
 function dateForDay(n){
 const d = new Date(trackStartDate()+"T00:00:00"); d.setDate(d.getDate()+(n-1)); return fmtLocal(d);
 }
-function todayISO(){ return fmtLocal(new Date()); }
+const PLANNER_TIME_ZONE='Australia/Melbourne';
+function plannerNow(){const parts=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:PLANNER_TIME_ZONE,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date()).filter(p=>p.type!=='literal').map(p=>[p.type,p.value]));return {iso:parts.year+'-'+parts.month+'-'+parts.day,time:parts.hour+':'+parts.minute};}
+function todayISO(){ return plannerNow().iso; }
 function todayDayNum(){ return dayNumberFor(todayISO()); }
-let selectedDay = Math.max(1, todayDayNum());
+let selectedDay = todayDayNum();
+function acceptPlannerState(next,mode='preserve'){
+const date=mode==='today'?todayISO():dateForDay(selectedDay);
+state=next;selectedDay=dayNumberFor(date);
+if(mode==='today')calMonthOffset=0;
+}
 function niceDate(iso, opts){ return new Date(iso+"T00:00:00").toLocaleDateString(undefined, opts||{weekday:"long",day:"numeric",month:"long"}); }
 function addDaysISO(iso, n){ const d = new Date(iso+"T00:00:00"); d.setDate(d.getDate()+n); return fmtLocal(d); }
 function toMin(hhmm){ const [h,m]=hhmm.split(":").map(Number); return h*60+m; }
@@ -1728,6 +1966,7 @@ function fmt12(hhmm){ const m=toMin(hhmm); let h=Math.floor(m/60), mm=m%60; cons
 // supplied). Render either the right way instead of printing a raw data: URI as text.
 function iconHTML(ic, size){
 size = size||20;
+if(typeof ic==='string'&&ic.startsWith('neon:'))return neonScheduleIcon(ic.slice(5),size);
 if(ic && typeof ic==='string' && ic.indexOf('data:image')===0){
 return `<img src="${ic}" style="width:${size}px;height:${size}px;object-fit:contain;vertical-align:middle;border-radius:5px">`;
 }
@@ -1741,6 +1980,43 @@ function dayKey(n){ return "d"+n; }
 // up for a day that already exists. Re-sync each block's icon to the current template on every
 // read, by id, so old saved days pick up new icons automatically without touching anything else
 // the person edited (title, time, duration, skip status, etc).
+const NEON_SCHEDULE_ICONS={
+sun:['#E4C266','<path d="M3 17h18M5 14a7 7 0 0 1 14 0M12 2v3M4 6l2 2m14-2-2 2M2 12h2m16 0h2"/>'],
+water:['#79E7FF','<path d="M12 3C9 8 5 11 5 15a7 7 0 0 0 14 0c0-4-4-7-7-12Z"/><path d="M8 15c0 2 1 3 3 3"/>'],
+bowl:['#E4C266','<path d="M3 11h18a9 9 0 0 1-18 0ZM7 21h10M8 3v4m4-4v4m4-4v4"/>'],
+chores:['#C084FC','<path d="m15 3-6 10m-3-2 9 5-4 6-9-5 4-6Zm1 3-3 4m6-2-3 4M18 9v4m-2-2h4"/>'],
+search:['#FF70C8','<circle cx="10" cy="10" r="6"/><path d="m15 15 6 6M7 8h6M7 11h4"/>'],
+applications:['#C084FC','<rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V3h8v4M3 12c5 3 13 3 18 0M12 12v4"/>'],
+cup:['#E4C266','<path d="M3 8h13v7a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5V8ZM16 9h2a3 3 0 0 1 0 6h-2M2 22h16M6 2v3m4-3v3m4-3v3"/>'],
+book:['#79E7FF','<path d="M12 5C8 2 3 3 2 4v16c5-2 7-1 10 1 3-2 5-3 10-1V4c-1-1-6-2-10 1Zm0 0v16M5 8h4m6 0h4M5 12h4m6 0h4"/>'],
+clock:['#C084FC','<circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/>'],
+cooking:['#FF70C8','<path d="M5 10h14v9a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-9ZM2 13h3m14 0h3M4 7h16M10 4h4M8 1v2m8-2v2"/>'],
+diya:['#E4C266','<path d="M3 14h18c-2 8-16 8-18 0ZM12 12c-6-4 0-6 0-10 6 5 5 8 0 10ZM6 23h12"/>'],
+plate:['#E4C266','<circle cx="12" cy="12" r="6"/><path d="M2 3v7m3-7v7M2 8h3M3.5 10v11M22 3v18m0-18c-3 2-3 6 0 8"/>'],
+rest:['#C084FC','<path d="M3 12h18v9M3 8v13M3 17h18M7 12V9h5v3M14 12v-2h7v2"/><path d="M17 3h4l-4 4h4"/>'],
+excel:['#79E7FF','<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18M9 15h12m-6-6v12M5 5l2 2m0-2L5 7"/>'],
+hobby:['#FF70C8','<path d="M12 3a9 9 0 1 0 0 18h1a2 2 0 0 0 1-4 2 2 0 0 1 1-4h3c5 0 2-10-6-10Z"/><circle cx="7" cy="10" r=".8"/><circle cx="10" cy="6.5" r=".8"/><circle cx="15" cy="7" r=".8"/><circle cx="6.5" cy="15" r=".8"/>'],
+leaf:['#C084FC','<path d="M4 20C1 9 9 3 21 3c0 12-6 19-17 17ZM4 20 17 7M9 15v-5m5 0h5"/>'],
+walk:['#79E7FF','<circle cx="14" cy="4" r="2"/><path d="m10 8 5 3 4-1m-8-3-4 6-4 1m7-3 3 5 5 4m-7-7-4 7"/>'],
+cleanup:['#79E7FF','<path d="M3 12h18l-2 9H5l-2-9ZM7 12V8a3 3 0 0 1 6 0v4M17 3v5m-2-2h4M8 16h8"/>'],
+heart:['#FF70C8','<path d="M12 21 3 12C-2 5 7 0 12 7c5-7 14-2 9 5l-9 9Z"/>'],
+candle:['#E4C266','<path d="M8 12h8v9H8v-9ZM5 22h14M12 10c-6-4 0-6 0-9 5 5 4 7 0 9Z"/>'],
+moon:['#C084FC','<path d="M20 15A9 9 0 0 1 9 3a9 9 0 1 0 11 12ZM18 2v4m-2-2h4M22 8v3m-1.5-1.5h3"/>']
+};
+function neonScheduleIcon(name,size=20){
+const icon=NEON_SCHEDULE_ICONS[name]||NEON_SCHEDULE_ICONS.clock;
+return `<svg class="neon-schedule-icon" xmlns="http://www.w3.org/2000/svg" width="${Number(size)||20}" height="${Number(size)||20}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color:${icon[0]}" aria-hidden="true">${icon[1]}</svg>`;
+}
+function prepareRoutineDefaults(){
+if(state.routineDefaultVersion===ROUTINE_DEFAULT_VERSION)return;
+if(state.routineDefaultVersion===2){
+const old=state.templateOverrides?.t10;if(old){state.previousCombinedLunchOverride={...old};delete old.dur;if(/bath|self.care/i.test(old.title||''))delete old.title;}
+state.routineDefaultVersion=ROUTINE_DEFAULT_VERSION;return;
+}
+if(Object.keys(state.templateOverrides||{}).length||state.wakeTargetTime)state.previousRoutineDefaults={version:state.routineDefaultVersion||1,templateOverrides:state.templateOverrides||{},wakeTargetTime:state.wakeTargetTime||null};
+state.templateOverrides={};state.wakeTargetTime='07:00';state.routineDefaultVersion=ROUTINE_DEFAULT_VERSION;
+}
+
 const TEMPLATE_ICON_BY_ID = Object.fromEntries(DEFAULT_TEMPLATE.map(b=>[b.id, b.icon]));
 // A brief earlier version split "Self-care" (t4) and "Lunch + rest" (t11) each into two blocks
 // (t4/t4b, t11/t11b). That's undone now — merge any day that already has the split pair back
@@ -1784,34 +2060,48 @@ const CHORE_BY_DOW = [
 const KITCHEN_ROTATION = ["Stovetop + appliance surfaces","Check food + clean a fridge section","Microwave + cupboard fronts","Organise one cupboard"];
 const HOME_ROTATION = ["Dust bedroom + living room","Clean shower + bathtub","Entryway, shoe rack + mirrors","Clean shower + bathtub"];
 const FACE_CARE_NOTE = "Face care — ☀️ after bathing: gentle cleanse → Deconstruct niacinamide 10% (if tolerated) → CeraVe → Cancer Council SPF. 🌙 evening: gentle cleanse → Minimalist hyaluronic + PGA serum (if tolerated) → CeraVe.";
-const DYNAMIC_SLOT_IDS = new Set(["t4","t13"]);
+const DYNAMIC_SLOT_IDS = new Set(["t4","t13","t10","t29"]);
 function weekCycleIndex(d){ return Math.floor((d.getDate()-1)/7)%4; }
-function applyDynamicSlots(list, dayNum){
-const d = new Date(dateForDay(dayNum)+"T00:00:00");
-const dow = d.getDay(), wk = weekCycleIndex(d);
-const sc = list.find(b=>b.id==="t4");
-if(sc){
-const info = SELF_CARE_BY_DOW[dow];
-sc.title = info.title; sc.icon = info.icon;
-sc.desc = [info.note, FACE_CARE_NOTE].filter(Boolean).join(" · ");
+function inferRoutineRoundupRole(title){
+const t=String(title||'').toLowerCase().replace(/[—–:_-]+/g,' ').replace(/\s+/g,' ').trim();
+if(/^(?:(?:house|household) )?chores?(?: round ?ups?)?$/.test(t)||/^chore round up /.test(t))return 'chore';
+if(/^(?:beauty(?: care)?(?: round ?up)?|bath(?: &| and)? self ?care(?: routine)?|bath and beauty care)$/.test(t))return 'beauty';
+if(/personal.*self.care|evening.*(?:beauty|self.care|face care)/.test(t))return 'eveningCare';
+return '';
 }
-const ch = list.find(b=>b.id==="t13");
-if(ch){
-const info = CHORE_BY_DOW[dow];
-let note = info.note || "";
-if(info.rotation==="kitchen") note = KITCHEN_ROTATION[wk];
-if(info.rotation==="home") note = HOME_ROTATION[wk];
-if(dow===5 && d.getDate()<=7){
-note = (note? note+" · " : "") + "🪔 Clean pooja mandir (if both run over 40 min, move the rest to Wednesday)";
+function splitCombinedLunchCare(list){
+let changed=false;
+for(let i=0;i<list.length;i++){
+const lunch=list[i];if(lunch.plannerRole!=='lunchBath'&&!(/lunch.*(?:bath|self.care)/i.test(lunch.title||'')&&Number(lunch.dur)>=90))continue;
+const old={...lunch},start=toMin(lunch.time);lunch.title='Lunch preparation';lunch.dur=45;lunch.plannerRole='lunchPrep';lunch.templateVersion=3;lunch.icon='neon:cooking';lunch.desc='';delete lunch.roundupRole;delete lunch.tasks;
+let care=list.find(b=>b!==lunch&&(b.id==='t4'||b.roundupRole==='beauty'));
+if(!care){care={...old,id:list.some(b=>b.id==='t4')?old.id+'_care':'t4'};list.splice(i+1,0,care);}
+Object.assign(care,{time:toHHMM(start+45),dur:45,title:'Bath & self-care',cat:'rest',icon:'neon:water',plannerRole:'beautyCare',roundupRole:'beauty',templateVersion:3,desc:''});
+changed=true;
 }
-ch.title = info.title; ch.icon = info.icon; ch.desc = note;
+return changed;
 }
+function applyDynamicSlots(list,dayNum){
+const data=dailyRoundupData(dayNum),careName=data.care.title.replace(/^Bath\s*(?:&\s*)?/i,'').trim();
+for(const block of list){
+const role=block.roundupRole||(block.id==='t13'?'chore':block.id==='t4'?'beauty':inferRoutineRoundupRole(block.title));
+if(role==='chore'){
+block.roundupRole='chore';block.title='Chore round up — '+data.task;block.icon='neon:chores';block.desc='';block.tasks=data.choreNotes.filter(note=>!/^On head-bath day$/i.test(note));
+}else if(role==='beauty'){
+block.roundupRole='beauty';block.title='Bath & self-care'+(careName?' — '+careName:'');block.icon='neon:water';block.desc='';block.tasks=[data.care.note,'After bathing: '+data.morning].filter(Boolean);
+}else if(role==='eveningCare'){
+block.roundupRole='eveningCare';block.icon='neon:heart';block.desc='';block.tasks=['Evening face care: '+data.evening];
+}
+}
+const side=list.find(b=>b.id==='t29'&&b.templateVersion>=2);
+if(side){const dow=new Date(data.iso+'T12:00:00').getDay(),excel=[1,3,5].includes(dow),hobby=[2,4].includes(dow);side.title=excel?'Excel side income':hobby?'Hobby':'Flexible time / hobby (optional)';side.cat=excel?'business':hobby?'skill':'rest';side.icon=excel?'neon:excel':hobby?'neon:hobby':'neon:leaf';side.desc=excel?'Build one useful Excel sample, refine a service offer, or follow up with a potential client.':hobby?'Thirty minutes for enjoyment and exploration.':'Weekend flexibility — use this slot as you prefer.';}
 return list;
 }
 function getDayBlocks(n){
 state.days = state.days || {};
 state.templateOverrides = state.templateOverrides || {};
 if(!state.days[dayKey(n)]){
+prepareRoutineDefaults();
 const ov = state.templateOverrides;
 const list0 = DEFAULT_TEMPLATE.map(b=>({...b, ...(ov[b.id]||{}), done:false}));
 // A "set as default" time/duration edit can knock this day's blocks out of order or leave
@@ -1822,24 +2112,26 @@ const newBoundary=toMin(findWakeBlock(list0)?.time||'08:00');
 const newDayMinute=time=>{const m=toMin(time);return m<newBoundary?m+1440:m;};
 list0.sort((a,b)=>newDayMinute(a.time)-newDayMinute(b.time));
 let cursor = newDayMinute(list0[0].time) + effDur(list0[0]);
-for(let i=1;i<list0.length;i++){ list0[i].time = toHHMM(cursor); cursor += effDur(list0[i]); }
+for(let i=1;i<list0.length;i++){const start=newDayMinute(list0[i].time);if(start<cursor)list0[i].time=toHHMM(cursor);cursor=Math.max(cursor,start)+effDur(list0[i]);}
 state.days[dayKey(n)] = list0;
 }
+const careSplit=splitCombinedLunchCare(state.days[dayKey(n)]);
 const list = mergeLegacySplits(state.days[dayKey(n)]);
 if(splitWakeAndFreshen(list)){state.days[dayKey(n)]=list;if(!state.wakeTargetTime&&n===selectedDay)state.wakeTargetTime=findWakeBlock(list).time;saveQuiet();}
-list.forEach(b=>{ if(!DYNAMIC_SLOT_IDS.has(b.id) && TEMPLATE_ICON_BY_ID[b.id] && b.icon!==TEMPLATE_ICON_BY_ID[b.id]) b.icon=TEMPLATE_ICON_BY_ID[b.id]; });
+list.forEach(b=>{ if(b.templateVersion>=2 && !DYNAMIC_SLOT_IDS.has(b.id) && TEMPLATE_ICON_BY_ID[b.id] && b.icon!==TEMPLATE_ICON_BY_ID[b.id]) b.icon=TEMPLATE_ICON_BY_ID[b.id]; });
 // A manually-chosen icon replacement (set via the block editor, or baked into an AI-pasted
 // schedule) is remembered by activity title and always wins last, even over the template's
 // own canonical icon above — this is what "store a replacement so I don't see that icon
 // again" means for an activity that recurs by name.
 if(state.iconOverrides){ list.forEach(b=>{ const key=(b.title||'').trim().toLowerCase(); if(key && state.iconOverrides[key]) b.icon=state.iconOverrides[key]; }); }
 applyDynamicSlots(list, n);
+if(careSplit)saveQuiet();
 return list;
 }
 function setDayBlocks(n, list){ state.days[dayKey(n)] = list; }
 
 /* ---- cascade edit logic ---- */
-const DAY_END_TARGET = 23*60; // 11:00pm sleep target
+const DAY_END_TARGET = 23*60+15; // 11:15pm target, within the requested 11–11:30pm window
 function applyBlockEdit(n, id, patch){
 const list = getDayBlocks(n).map(b=>({...b}));
 const idx0 = list.findIndex(b=>b.id===id);
@@ -2030,7 +2322,7 @@ let cells = "";
 for(let i=0;i<lead;i++) cells += `<div class="cell empty"></div>`;
 for(let d=1; d<=dim; d++){
 const iso = y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
-if(iso < trackStartDate()){ cells += `<div class="cell empty locked" title="Before the tracker's start date — not reachable">${d}</div>`; continue; }
+if(iso < trackStartDate() && iso!==todayIso){ cells += `<div class="cell empty locked" title="Before the tracker's start date — not reachable">${d}</div>`; continue; }
 const n = dayNumberFor(iso);
 const act = dayActivity(n);
 cells += `<div class="cell l${act.level} ${iso===todayIso?'today':''} ${iso===selIso?'selected':''}" title="${iso}" onclick="selectDayFromCal(${n})">${d}</div>`;
@@ -2058,7 +2350,7 @@ if(dayActivity(dayNumberFor(iso)).level>0) c++;
 }
 return c;
 }
-function selectDayFromCal(n){ selectedDay=Math.max(1,n); calMonthOffset=0; openSheetId=null; render(); }
+function selectDayFromCal(n){ selectedDay=n; calMonthOffset=0; openSheetId=null; render(); }
 
 /* ============================= TODAY NEST ============================= */
 function changeDay(delta){ selectedDay = Math.max(1, selectedDay+delta); openSheetId=null; lastComposerCategory='Planned'; render(); }
@@ -2078,7 +2370,7 @@ if(decision === "push"){
 displayList = list.map((b,i)=> i===list.length-1 ? {...b, time: toHHMM(DAY_END_TARGET)} : b);
 } else if(!decision){
 gapBanner = `<div class="cascade-alert" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-<span>⏳ You've got about ${gapInfo.gap} min free before your usual 11:00pm sleep. Push Sleep later to fill it, or leave it as free time?</span>
+<span>⏳ You've got about ${gapInfo.gap} min free before your usual 11:15pm sleep. Push Sleep later to fill it, or leave it as free time?</span>
 <span class="row" style="gap:6px">
 <button class="btn ghost" onclick="resolveGap(${selectedDay},'push')">Push sleep</button>
 <button class="btn ghost" onclick="resolveGap(${selectedDay},'leave')">Leave free</button>
@@ -2087,7 +2379,7 @@ gapBanner = `<div class="cascade-alert" style="display:flex;justify-content:spac
 }
 }
 
-const nowMin = (dateForDay(selectedDay)===todayISO()) ? planMinute(toHHMM(new Date().getHours()*60+new Date().getMinutes())) : -1;
+const nowMin = (dateForDay(selectedDay)===todayISO()) ? planMinute(plannerNow().time) : -1;
 let nowId = null;
 if(nowMin>=0) displayList.forEach(b=>{ if(!b.skipped && planMinute(b.time)<=nowMin) nowId=b.id; });
 
@@ -2103,6 +2395,15 @@ ${body}
 ${renderTimetableAIBuilder()}
 
 `;
+}
+function dailyRoundupData(dayNum){
+const iso=dateForDay(dayNum),date=new Date(iso+'T12:00:00'),dow=date.getDay(),week=weekCycleIndex(date);
+const care=SELF_CARE_BY_DOW[dow],chore=CHORE_BY_DOW[dow];
+const task=chore.rotation==='kitchen'?KITCHEN_ROTATION[week]:chore.rotation==='home'?HOME_ROTATION[week]:chore.title;
+const choreNotes=chore.rotation?[]:[chore.note].filter(Boolean);
+if(dow===5&&date.getDate()<=7)choreNotes.push('Clean pooja mandir too; move anything that does not fit into a later chore or flexible block.');
+const face=FACE_CARE_NOTE.split('🌙 evening: ');
+return {iso,care,chore,task,choreNotes,morning:face[0].replace('Face care — ☀️ after bathing: ',''),evening:face[1]||''};
 }
 function renderChecklistFab(){
 const list=getDayBlocks(selectedDay).filter(b=>!b.unscheduled);
@@ -2145,13 +2446,16 @@ snapshotForUndo("Schedule reset to default");
 // one) — nothing re-marks it skipped afterward. Anything you added yourself through the
 // calendar composer isn't part of the recurring template, so it's kept as-is rather than
 // wiped out by the reset.
+prepareRoutineDefaults();
 state.templateOverrides = state.templateOverrides || {};
 const ov = state.templateOverrides;
-const custom = getDayBlocks(dayNum).filter(b=>!/^t\d+$/.test(b.id));
+const custom = getDayBlocks(dayNum).filter(b=>!/^t\d+(?:_freshen)?$/.test(b.id));
 let list = DEFAULT_TEMPLATE.map(b=>({...b, ...(ov[b.id]||{}), done:false, skipped:false})).concat(custom);
-list.sort((a,b)=>planMinute(a.time)-planMinute(b.time));
+const boundary=toMin(findWakeBlock(list)?.time||'07:00');
+const relative=time=>{const m=toMin(time);return m<boundary?m+1440:m;};
+list.sort((a,b)=>relative(a.time)-relative(b.time));
+setDayBlocks(dayNum,list);
 recomputeCascade(list);
-setDayBlocks(dayNum, list);
 save();
 toast("Schedule reset to default ✓");
 render();
@@ -2647,15 +2951,14 @@ function renderTimeline(list, nowId, parallelItems){
 // "Missed": a not-done, not-skipped, not-Unscheduled block whose end time is already behind the
 // actual clock, on today only — a soft yellow flag, not an alarming red one, since it's just
 // informational.
-const isMissed = b => !b.done && !b.skipped && !b.unscheduled && dateForDay(selectedDay)===todayISO() && (planMinute(b.time)+effDur(b)) < planMinute(toHHMM(new Date().getHours()*60+new Date().getMinutes()));
+const isMissed = b => !b.statusReset && !b.done && !b.skipped && !b.unscheduled && dateForDay(selectedDay)===todayISO() && (planMinute(b.time)+effDur(b)) < planMinute(toHHMM(new Date().getHours()*60+new Date().getMinutes()));
 // An Unscheduled block (the conflict resolver's "Find a slot" came up empty) has no meaningful
 // time — sort it to the very end of the Agenda instead of wherever its stale `.time` happens to
 // point, and show a plain "Unscheduled" tag instead of a time range.
 const blockRows = list.map((b,i)=>({t: b.unscheduled ? (100000+i) : planMinute(b.time), html:`
 <div class="tblock ${b.done?'done':''} ${b.id===nowId?'now':''} ${isLockedTime(b)?'anchor':''} ${b.skipped?'skipped':''} ${b.unscheduled?'unscheduled':''} ${isMissed(b)?'missed':''}" id="blk_${b.id}" data-plan-id="${escapeHtml(b.id)}">
 <span class="checkdot ${b.done?'on':''}" onclick="event.stopPropagation();toggleDone('${b.id}')"></span>
-<div class="tbody bar" style="border-left:3px solid ${(b.priority&&BD_COLOR[b.priority])||CAT_COLOR[b.cat]||'var(--line)'}" onclick="openSheetId='${b.id}';sheetDraft=null;render()" title="Tap to edit this task">
-${canReorderBlock(b)?`<button type="button" class="plan-drag-handle" onpointerdown="beginPlanDrag(event,'${b.id}')" onclick="event.stopPropagation()" aria-label="Hold to drag ${escapeHtml(b.title)}. Use the up and down arrows to move without dragging." title="Hold here, then drag to rearrange"><svg width="18" height="14" viewBox="0 0 18 14" fill="currentColor" aria-hidden="true"><circle cx="5" cy="3" r="1.3"/><circle cx="13" cy="3" r="1.3"/><circle cx="5" cy="7" r="1.3"/><circle cx="13" cy="7" r="1.3"/><circle cx="5" cy="11" r="1.3"/><circle cx="13" cy="11" r="1.3"/></svg></button>`:''}
+<div class="tbody bar ${canReorderBlock(b)?'plan-drag-surface':''}" style="border-left:3px solid ${(b.priority&&BD_COLOR[b.priority])||CAT_COLOR[b.cat]||'var(--line)'}" onpointerdown="beginPlanDrag(event,'${b.id}')" onclick="openScheduleBlock(event,'${b.id}')" title="Tap to edit. In expanded view, hold and drag this card to rearrange.">
 <div class="thead">
 <span class="time">${b.unscheduled? 'Unscheduled' : routineTimeRange(b,selectedDay)}</span>
 ${isLockedTime(b)? `<span class="dur" title="Time fixed — won't move when other activities change">🔒</span>` : ""}
@@ -2663,12 +2966,13 @@ ${b.skipped? `<span class="dur skiptag">skipped</span>` : b.unscheduled ? `<span
 </div>
 <div class="nm ${(b.done||b.skipped)?'doneline':''}"><span class="blkicon" onclick="event.stopPropagation();toggleDone('${b.id}')" title="Tap to tick off">${iconHTML(b.icon,18)}</span> ${b.title}</div>
 ${(b.type||b.priority)?`<div class="tt-code">${b.type?`<span class="tt-code-tag" style="color:${BD_TYPE_COLOR[b.type]||'var(--muted)'}">${(BD_TYPES.find(t=>t[0]===b.type)||[,b.type])[1]}</span>`:''}${b.priority?`<span class="tt-code-tag" style="color:${BD_COLOR[b.priority]||'var(--muted)'}">${(BD_PRIORITIES.find(t=>t[0]===b.priority)||[,b.priority])[1]}</span>`:''}</div>`:''}
+${Array.isArray(b.tasks)&&b.tasks.length?`<ul class="schedule-roundup-items" aria-label="Activity steps">${b.tasks.map(task=>`<li>${escapeHtml(task)}</li>`).join('')}</ul>`:''}
 ${b.desc? `<div class="meta">${b.desc}</div>` : ""}
 
 </div>
 <div class="blk-move-col tl-move-col">
-<button class="blk-move" ${i===0||isWakeMilestone(list[i-1])||!canReorderBlock(b)?'disabled':''} onclick="event.stopPropagation();moveBlock('${b.id}',-1)" title="Move earlier">⬆️</button>
-<button class="blk-move" ${i===list.length-1||!canReorderBlock(b)?'disabled':''} onclick="event.stopPropagation();moveBlock('${b.id}',1)" title="Move later">⬇️</button>
+<button class="blk-move" ${i===0||isWakeMilestone(list[i-1])||!canReorderBlock(b)?'disabled':''} onclick="event.stopPropagation();moveBlock('${b.id}',-1)" title="Move earlier">↑</button>
+<button class="blk-move" ${i===list.length-1||!canReorderBlock(b)?'disabled':''} onclick="event.stopPropagation();moveBlock('${b.id}',1)" title="Move later">↓</button>
 <button class="blk-move" onclick="event.stopPropagation();toggleBlockLock('${b.id}')" title="${isLockedTime(b)?'Unlock time':'Lock time (today only)'}">${isLockedTime(b)?'🔒':'🔓'}</button>
 </div>
 ${b.skipped? `<button class="btn ghost" style="font-size:11px;align-self:center" onclick="event.stopPropagation();unskipBlock('${b.id}')">Restore</button>` : ""}
@@ -2737,18 +3041,23 @@ const horizon=Math.max(...routine.map(b=>planMinute(b.time)+(b.skipped?Number(b.
 if(horizon>cursor)rows.push({t:cursor+.001,html:`<div class="plan-free-time" role="note">${fmt12(toHHMM(cursor))} – ${fmt12(toHHMM(horizon))} · Free time · ${horizon-cursor} min</div>`});
 return rows;
 }
-let activePlanDrag=null;
+let activePlanDrag=null,suppressPlanClickUntil=0;
+function openScheduleBlock(ev,id){
+if(Date.now()<suppressPlanClickUntil){ev.preventDefault();ev.stopPropagation();return;}
+openSheetId=id;sheetDraft=null;render();
+}
 function beginPlanDrag(ev,id){
-if((ev.pointerType==='mouse'&&ev.button!==0)||activePlanDrag)return;
+if(!timeplanExpanded||!ev.currentTarget.closest('.today-agenda.timeplan-expanded')||(ev.pointerType==='mouse'&&ev.button!==0)||activePlanDrag)return;
+if(ev.target.closest('.blkicon,button,a,input,select,textarea'))return;
 const block=getDayBlocks(selectedDay).find(b=>b.id===id);if(!canReorderBlock(block))return;
 ev.stopPropagation();
 const handle=ev.currentTarget,row=handle.closest('.tblock'),timeline=row.closest('.timeline'),scroll=row.closest('#timeplanScroll')||timeline.parentElement;
 const d={id,day:selectedDay,pointer:ev.pointerId,x:ev.clientX,y:ev.clientY,startX:ev.clientX,startY:ev.clientY,row,timeline,scroll,started:false,beforeId:null};activePlanDrag=d;
 try{handle.setPointerCapture(ev.pointerId);}catch(_){}
-const cleanup=()=>{clearTimeout(d.timer);cancelAnimationFrame(d.raf);d.ghost?.remove();row.classList.remove('dragging');timeline.classList.remove('plan-drop-end');timeline.querySelectorAll('.plan-drop-before').forEach(e=>e.classList.remove('plan-drop-before'));window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);window.removeEventListener('pointercancel',cancel);window.removeEventListener('keydown',key);window.removeEventListener('blur',cancel);try{handle.releasePointerCapture(d.pointer);}catch(_){}activePlanDrag=null;};
+const cleanup=()=>{if(d.started)suppressPlanClickUntil=Date.now()+600;clearTimeout(d.timer);cancelAnimationFrame(d.raf);d.ghost?.remove();row.classList.remove('dragging');timeline.classList.remove('plan-drop-end');timeline.querySelectorAll('.plan-drop-before').forEach(e=>e.classList.remove('plan-drop-before'));window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);window.removeEventListener('pointercancel',cancel);window.removeEventListener('keydown',key);window.removeEventListener('blur',cancel);try{handle.releasePointerCapture(d.pointer);}catch(_){}activePlanDrag=null;};
 const mark=()=>{if(!row.isConnected||selectedDay!==d.day){cancel();return;}const others=[...timeline.querySelectorAll('.tblock[data-plan-id]')].filter(e=>e!==row);const next=others.find(e=>d.y<e.getBoundingClientRect().top+e.getBoundingClientRect().height/2);d.beforeId=next?.dataset.planId||null;timeline.querySelectorAll('.plan-drop-before').forEach(e=>e.classList.remove('plan-drop-before'));next?.classList.add('plan-drop-before');timeline.classList.toggle('plan-drop-end',!next);};
 const frame=()=>{if(!activePlanDrag||!d.started)return;const r=scroll.getBoundingClientRect();if(d.y<r.top+42)scroll.scrollTop-=9;else if(d.y>r.bottom-42)scroll.scrollTop+=9;mark();if(activePlanDrag===d)d.raf=requestAnimationFrame(frame);};
-const move=e=>{if(e.pointerId!==d.pointer)return;d.x=e.clientX;d.y=e.clientY;if(!d.started){if(Math.hypot(d.x-d.startX,d.y-d.startY)>8)cleanup();return;}e.preventDefault();d.ghost.style.left=(d.x-d.offsetX)+'px';d.ghost.style.top=(d.y-d.offsetY)+'px';mark();};
+const move=e=>{if(e.pointerId!==d.pointer)return;d.x=e.clientX;d.y=e.clientY;if(!d.started){if(Math.hypot(d.x-d.startX,d.y-d.startY)>8){suppressPlanClickUntil=Date.now()+600;cleanup();}return;}e.preventDefault();d.ghost.style.left=(d.x-d.offsetX)+'px';d.ghost.style.top=(d.y-d.offsetY)+'px';mark();};
 const cancel=()=>cleanup();const key=e=>{if(e.key==='Escape'){e.preventDefault();cancel();}};
 const up=e=>{if(e.pointerId!==d.pointer)return;const commit=d.started&&d.day===selectedDay,before=d.beforeId;cleanup();if(commit)reorderPlanBlock(id,before);};
 window.addEventListener('pointermove',move,{passive:false});window.addEventListener('pointerup',up);window.addEventListener('pointercancel',cancel);window.addEventListener('keydown',key);window.addEventListener('blur',cancel);
@@ -2845,33 +3154,52 @@ else if(planMinute(list[i].time) < cursor){ list[i].time = toHHMM(cursor); }
 cursor = Math.max(cursor, planMinute(list[i].time)) + effDur(list[i]);
 }
 }
-function inferSkipped(list, idx){
-let i = idx-1;
-while(i>=0 && !list[i].done){
-if(isLockedTime(list[i])) break; // locked blocks are checkpoints — don't guess past them
-list[i].skipped = true;
+function inferSkipped(list,idx,ownerId){
+const ids=[];let i=idx-1;
+while(i>=0&&!list[i].done){
+const item=list[i];if(isLockedTime(item))break;
+if(!item.skipped){item.skipped=true;item.skipOrigin='automatic';item.autoSkippedBy=[ownerId];delete item.statusReset;ids.push(item.id);}
 i--;
 }
+return ids;
+}
+function clearSkipOwnership(block){delete block.autoSkippedBy;delete block.skipOrigin;}
+function restoreCompletionSkips(list,idx){
+const owner=list[idx],ownedIds=owner.completionAutoSkipIds;
+for(const item of list){
+if(!Array.isArray(item.autoSkippedBy)||!item.autoSkippedBy.includes(owner.id))continue;
+item.autoSkippedBy=item.autoSkippedBy.filter(id=>id!==owner.id);
+if(!item.autoSkippedBy.length&&item.skipOrigin==='automatic'){
+item.skipped=false;item.statusReset=true;clearSkipOwnership(item);
+}
+}
+// Older schedules have no ownership metadata. Limit recovery to the adjacent skipped run;
+// current-version manual skips are explicitly tagged and are always kept.
+if(!owner.completionSkipTracked&&!Array.isArray(ownedIds)&&state.settings?.autoSkipEarlier){
+for(let i=idx-1;i>=0;i--){const item=list[i];if(item.done||item.locked||!item.skipped)break;
+if(!item.skipOrigin&&!item.autoSkippedBy){item.skipped=false;item.statusReset=true;}
+}
+}
+delete owner.completionAutoSkipIds;delete owner.completionSkipTracked;
 }
 function toggleDone(id){
 selectedChakraIcon='block:'+id;
-const list = getDayBlocks(selectedDay);
-const idx = list.findIndex(x=>x.id===id); if(idx<0) return;
-const b = list[idx];
-snapshotForUndo(b.done? "Marked not done" : "Marked done");
-b.done = !b.done;
-if(b.done){
-b.skipped = false;
-// Off by default: completing a later activity must not silently skip earlier unfinished ones
-// unless you've explicitly turned that on (Account panel → Scheduling).
-if(state.settings && state.settings.autoSkipEarlier){
-const skippedBefore=new Set(list.filter(x=>x.skipped).map(x=>x.id));inferSkipped(list,idx);
-for(let i=0;i<list.length;i++)if(list[i].skipped&&!skippedBefore.has(list[i].id))closeSkippedGap(list,i);
-}
+const day=selectedDay,list=getDayBlocks(day).map(b=>({...b,...(Array.isArray(b.autoSkippedBy)?{autoSkippedBy:[...b.autoSkippedBy]}:{})}));
+const idx=list.findIndex(b=>b.id===id);if(idx<0)return;
+const block=list[idx],wasDone=!!block.done;block.done=!wasDone;
+if(block.done){
+block.skipped=false;clearSkipOwnership(block);delete block.statusReset;
+block.completionSkipTracked=true;
+block.completionAutoSkipIds=state.settings?.autoSkipEarlier?inferSkipped(list,idx,id):[];
+for(let i=0;i<list.length;i++)if(block.completionAutoSkipIds.includes(list[i].id))closeSkippedGap(list,i);
+}else{
+block.statusReset=true;restoreCompletionSkips(list,idx);
 }
 recomputeCascade(list);
-save();
-if(document.getElementById('routineChecklistSheet')) renderRoutineChecklistSheet();
+startConflictFlow(day,list,wasDone?'Marked not done; automatic skips restored':'Marked done',finalList=>{
+setDayBlocks(day,finalList);save();
+if(document.getElementById('routineChecklistSheet'))renderRoutineChecklistSheet();
+});
 }
 function openRoutineChecklist(){ renderRoutineChecklistSheet(); }
 function renderRoutineChecklistSheet(){
@@ -2893,24 +3221,26 @@ function getTimetableDraft(){ if(!state.timetableDraft) state.timetableDraft={no
 function setTimetableDraft(key,value){ const d=getTimetableDraft(); if(!(key in d)) return; d[key]=value; saveQuiet(); }
 let timetableImportPreview=null, timetableImportError='';
 function timetableTemplate(){
-return {version:1, blocks:[
-{title:"Wake up",icon:"🌅",time:"08:00",dur:0},
-{title:"Freshen up",icon:"🚿",time:"08:00",dur:60},
-{title:"Example focus block",icon:"💻",time:"09:00",dur:60}
+const data=dailyRoundupData(selectedDay);
+return {version:1,blocks:[
+{title:'Wake up',icon:'neon:sun',time:'07:00',dur:0,tasks:[]},
+{title:'Freshen up',icon:'neon:water',time:'07:00',dur:15,tasks:[]},
+{title:'Breakfast',icon:'neon:bowl',time:'07:15',dur:45,tasks:[]},
+{title:'Chore',icon:'neon:chores',time:'08:00',dur:30,tasks:[data.task,...data.choreNotes]},
+{title:'Lunch preparation',icon:'neon:cooking',time:'12:00',dur:45,tasks:[]},
+{title:'Bath & self-care',icon:'neon:water',time:'12:45',dur:45,tasks:[data.care.title,'After bathing: '+data.morning]}
 ]};
 }
 function routinePromptContext(){
-const iso=dateForDay(selectedDay),date=new Date(iso+'T12:00:00'),dow=date.getDay(),wk=weekCycleIndex(date),care=SELF_CARE_BY_DOW[dow],chore=CHORE_BY_DOW[dow];
-let choreNote=chore.rotation==='kitchen'?KITCHEN_ROTATION[wk]:chore.rotation==='home'?HOME_ROTATION[wk]:chore.note||'';
-if(dow===5&&date.getDate()<=7)choreNote+=' · Clean pooja mandir; if over the available chore time, move the remainder to Wednesday.';
-const blocks=getDayBlocks(selectedDay);
-const fixed=blocks.filter(b=>b.locked||b.anchor).map(b=>({title:b.title,time:b.time,minutes:b.dur,notes:b.desc||''}));
-const careBlock=blocks.find(b=>b.id==='t4'),choreBlock=blocks.find(b=>b.id==='t13');
-return {date:iso,weekday:date.toLocaleDateString('en-AU',{weekday:'long'}),bathAndBodyCare:{title:care.title,notes:[care.note,FACE_CARE_NOTE].filter(Boolean).join(' · '),minutes:careBlock?.dur||DEFAULT_TEMPLATE.find(b=>b.id==='t4')?.dur||30},houseChore:{title:chore.title,notes:choreNote,minutes:choreBlock?.dur||40},fixedActivities:fixed,existingActivities:blocks.map(b=>({title:b.title,time:b.time,minutes:b.dur,notes:b.desc||'',completed:!!b.done}))};
+const blocks=getDayBlocks(selectedDay),data=dailyRoundupData(selectedDay),date=new Date(data.iso+'T12:00:00');
+const choreBlock=blocks.find(b=>b.roundupRole==='chore'||b.id==='t13'),careBlock=blocks.find(b=>b.roundupRole==='beauty'||b.id==='t4');
+const chores={title:'Chore round up — '+data.task,minutes:choreBlock?.dur||30,tasks:[data.task,...data.choreNotes]};
+const beauty={title:'Bath & self-care — '+data.care.title.replace(/^Bath\s*(?:&\s*)?/i,''),minutes:45,tasks:[data.care.title,data.care.note,'After bathing: '+data.morning].filter(Boolean),eveningTasks:['Evening face care: '+data.evening]};
+return {date:data.iso,weekday:date.toLocaleDateString('en-AU',{weekday:'long'}),houseChoreRoundup:chores,beautyCareRoundup:beauty,houseChore:chores,bathAndBodyCare:beauty,fixedActivities:blocks.filter(b=>b.locked||b.anchor).map(b=>({title:b.title,time:b.time,minutes:b.dur,tasks:b.tasks||[]})),existingActivities:blocks.map(b=>({title:b.title,time:b.time,minutes:b.dur,tasks:b.tasks||[],completed:!!b.done}))};
 }
 function buildTimetablePrompt(){
-const d=getTimetableDraft(),context=routinePromptContext();
-return `Act as my daily-schedule planner. Rebuild the routine for the selected date, ${context.date}, as time blocks with icons.\n${d.notes.trim()?('My notes: '+d.notes.trim()+'\n'):''}Selected-day chores, bath/body care and existing schedule:\n${JSON.stringify(context,null,2)}\nInclude the supplied chore and bath/body-care activities explicitly, keeping their details in the title where practical. Include evening face care as a separate block when the care notes specify it. Use the selected date's weekday rotation, not today's date. Preserve fixed activities at their supplied times and durations; move flexible activities around them. Retain existing activities unless my notes explicitly request removing them. Do not duplicate an activity already represented by a fixed block. If constraints conflict or cannot fit, ask me to resolve them before generating JSON.\nWake-up defines the start of the planning day. Make the first block a standalone Wake up milestone with dur:0 and one time, using my requested wake time when supplied. Add a separate Freshen up activity starting at wake-up time with dur:60. Do not combine wake-up and freshening into one block. Put after-midnight activities after the evening blocks. Cover the day from wake time to bedtime. Use flexible breaks or free time between fixed activities. No overlaps unless I explicitly request parallel activities. Each block needs a short but informative title, one emoji icon, a 24-hour time (HH:MM), and duration in minutes.\nWhen ready, return only one valid JSON object in this exact schema. No markdown or explanation.\n${JSON.stringify(timetableTemplate(),null,2)}`;
+const draft=getTimetableDraft(),context=routinePromptContext();
+return `Act as my daily-schedule planner. Rebuild the routine for the selected date, ${context.date}.\n${draft.notes.trim()?'My routine instructions: '+draft.notes.trim()+'\n':''}Selected-day house-chore and beauty-care round ups, fixed activities and existing schedule:\n${JSON.stringify(context,null,2)}\nWhen my text says Chore, Chores, House chores, or Chore round up, pull the actual tasks from houseChoreRoundup for this selected date. When it says Beauty care, Bath & self-care, or Beauty care round up, pull beautyCareRoundup. Do not leave these as generic placeholders. Show the actual chore or care activity in the schedule title and put its remaining steps in the tasks array. All these tasks must appear in the main schedule itself, never as notes, descriptions, separate top cards or side summaries. Keep evening face care as tasks inside the personal-time / evening self-care block. Do not duplicate a task already present in a fixed activity.\nSplit the midday routine into TWO activities: Lunch preparation 12:00–12:45, dur:45; Bath & self-care 12:45–13:30, dur:45. Do not combine them. Pause cooking safely with heat and appliances switched off before leaving for the bath. Preserve Pooja at 13:30 and Lunch at 13:45. Use the selected date's weekday rotation, not today's. Preserve other supplied fixed activities and retain existing activities unless my instructions request removing them. Ask me to resolve conflicting constraints before generating JSON.\nWake-up starts the planning day. Keep Wake up as a standalone milestone with dur:0 and one time. Add separate Freshen up with dur:15 unless I request otherwise. Keep after-midnight activities after the evening activities. Cover the day through bedtime, with no overlaps. Each block needs a short informative title, icon identifier, time in HH:MM, duration in minutes, and a tasks array of concrete activity steps (empty when unnecessary). Use neon icons from the template where possible.\nWhen ready, return only one valid JSON object in this schema, with all required daily blocks. No markdown or explanation.\n${JSON.stringify(timetableTemplate(),null,2)}`;
 }
 
 async function copyTimetablePrompt(){const prompt=buildTimetablePrompt();try{await navigator.clipboard.writeText(prompt);toast('Prompt copied. Paste it into your AI chat.');}catch{showPromptFallback(prompt);}}
@@ -2926,10 +3256,12 @@ if(!b||typeof b!=='object')throw new Error('Block '+(i+1)+' is missing.');
 const title=String(b.title||'').trim();
 if(!title||title.length>150)throw new Error('Block '+(i+1)+' needs a title between 1 and 150 characters.');
 if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(String(b.time||'')))throw new Error('Block '+(i+1)+' ("'+title+'") needs a 24-hour time like 09:30.');
-const dur=Number(b.dur),wakeTitle=/^wake(?:[\s-]*up)?$/i.test(title);if(!Number.isFinite(dur)||(dur<5&&!(wakeTitle&&dur===0))||dur<0||dur>480)throw new Error('Block '+(i+1)+' ("'+title+'") needs 5–480 minutes; a standalone Wake up milestone may use 0.');
+const dur=Number(b.dur),wakeTitle=/^(?:wake(?:[\s-]*up)?|sleep|bedtime)$/i.test(title);if(!Number.isFinite(dur)||(dur<5&&!(wakeTitle&&dur===0))||dur<0||dur>480)throw new Error('Block '+(i+1)+' ("'+title+'") needs 5–480 minutes; a standalone Wake up milestone may use 0.');
 let icon=String(b.icon||'').trim();
-if(!icon||icon.length>8)icon='📌';
-return {title,time:b.time,dur:Math.round(dur),icon};
+if(!(icon.startsWith('neon:')&&NEON_SCHEDULE_ICONS[icon.slice(5)])&&(!icon||icon.length>8))icon='📌';
+if(b.tasks!==undefined&&(!Array.isArray(b.tasks)||b.tasks.length>12))throw new Error('Block '+(i+1)+' may have up to 12 task steps.');
+const tasks=(b.tasks||[]).map(task=>{if(typeof task!=='string'||!task.trim()||task.length>400)throw new Error('Use non-empty text task steps of up to 400 characters.');return task.trim();});
+return {title,time:b.time,dur:Math.round(dur),icon,tasks,roundupRole:inferRoutineRoundupRole(title)};
 });
 return {blocks};
 }
@@ -2943,13 +3275,14 @@ snapshotForUndo('Timetable replaced by AI plan');
 const overrides=state.iconOverrides||{};
 const newList = plan.blocks.map((b,i)=>{
 const key=b.title.trim().toLowerCase();
-return {id:'ai_'+Date.now()+'_'+i, time:b.time, title:b.title, dur:b.dur, cat:'TT', icon:(overrides[key]||b.icon), done:false};
+return {id:'ai_'+Date.now()+'_'+i, time:b.time, title:b.title, dur:b.dur, cat:'TT',icon:(overrides[key]||b.icon),tasks:b.tasks||[],roundupRole:b.roundupRole||inferRoutineRoundupRole(b.title),done:false};
 });
 // Wake-up is the planning day's clock boundary; after-midnight blocks stay after evening activities.
 const wake=findWakeBlock(newList)||newList[0];
 wake.plannerRole='wake';
 splitWakeAndFreshen(newList);
-state.wakeTargetTime=wake.time;
+splitCombinedLunchCare(newList);applyDynamicSlots(newList,selectedDay);
+prepareRoutineDefaults();state.wakeTargetTime=wake.time;
 state.templateOverrides=state.templateOverrides||{};state.templateOverrides.t1={...(state.templateOverrides.t1||{}),time:wake.time};
 const boundary=toMin(wake.time);
 const relative=time=>{const m=toMin(time);return m<boundary?m+1440:m;};
@@ -2965,7 +3298,7 @@ let timetableBuilderOpen=false;
 function toggleTimetableBuilderOpen(){ timetableBuilderOpen=!timetableBuilderOpen; render(); }
 function renderTimetableAIBuilder(){
 const plan=timetableImportPreview;
-const body = `<p class="small">Paste JSON to update today's plan.</p><div class="learning-json-paste"><textarea id="timetablePlanPaste" aria-label="AI timetable plan JSON" placeholder="[ Paste JSON here ]"></textarea></div><div class="learning-ai-actions"><button class="btn secondary" onclick="copyTimetablePrompt()">Copy Prompt</button><label class="btn secondary learning-file-label">Upload<input type="file" accept=".json,application/json" aria-label="Upload AI timetable plan" onchange="uploadTimetablePlan(event)"></label><button class="btn" onclick="previewTimetablePaste()">Preview</button></div>${timetableImportError?`<p class="learning-import-error" role="alert">${escapeHtml(timetableImportError)}</p>`:''}${plan?`<div class="learning-import-preview"><h4>Review · ${plan.blocks.length} blocks</h4><details><summary>See the blocks</summary><ul>${plan.blocks.map(b=>`<li>${b.icon} ${escapeHtml(b.title)} — ${b.time} · ${b.dur} min</li>`).join('')}</ul></details><button class="btn" onclick="installTimetablePlan()">Replace today's schedule</button><small>This replaces every block for today. Other days are untouched.</small></div>`:''}`;
+const body = `<label class="timetable-instructions-label" for="timetableInstructions">Routine instructions</label><textarea class="timetable-instructions" id="timetableInstructions" aria-label="Routine instructions" placeholder="Chore, Beauty care, or describe what you want to change…" oninput="setTimetableDraft('notes',this.value)">${escapeHtml(getTimetableDraft().notes)}</textarea><p class="small">“Chore” pulls the selected day’s house-chore round up. “Beauty care” pulls its bath and self-care steps. Copy the prompt, then paste the AI’s JSON below.</p><div class="learning-json-paste"><textarea id="timetablePlanPaste" aria-label="AI timetable plan JSON" placeholder="[ Paste JSON here ]"></textarea></div><div class="learning-ai-actions"><button class="btn secondary" onclick="copyTimetablePrompt()">Copy Prompt</button><label class="btn secondary learning-file-label">Upload<input type="file" accept=".json,application/json" aria-label="Upload AI timetable plan" onchange="uploadTimetablePlan(event)"></label><button class="btn" onclick="previewTimetablePaste()">Preview</button></div>${timetableImportError?`<p class="learning-import-error" role="alert">${escapeHtml(timetableImportError)}</p>`:''}${plan?`<div class="learning-import-preview"><h4>Review · ${plan.blocks.length} blocks</h4><details><summary>See the blocks</summary><ul>${plan.blocks.map(b=>`<li>${iconHTML(b.icon,16)} ${escapeHtml(b.title)} — ${b.time} · ${b.dur} min${b.tasks?.length?`<ul>${b.tasks.map(task=>`<li>${escapeHtml(task)}</li>`).join('')}</ul>`:''}</li>`).join('')}</ul></details><button class="btn" onclick="installTimetablePlan()">Replace today's schedule</button><small>This replaces every block for today. Other days are untouched.</small></div>`:''}`;
 return `<div class="card learning-ai-builder timetable-ai-builder"><div class="section-title" style="cursor:pointer" onclick="toggleTimetableBuilderOpen()"><h3>${uiIcon('lotus')} Rebuild My Routine with AI</h3><span class="lab-caret">${timetableBuilderOpen?'▴':'▾'}</span></div>${timetableBuilderOpen?body:''}</div>`;
 }
 function toggleBlockLock(id){
@@ -3124,6 +3457,7 @@ const endMin = planMinute(sheetDraft.end||toHHMM(planMinute(sheetDraft.time)+Num
 const duration = Math.max(5, ((endMin-planMinute(sheetDraft.time)+1440)%1440));
 b.title = sheetDraft.title; b.time = sheetDraft.time; b.dur = id==='t24'?0:duration;
 b.locked = !!sheetDraft.locked; b.skipped = !!sheetDraft.skipped; b.desc = sheetDraft.desc;
+clearSkipOwnership(b);delete b.statusReset;if(b.skipped)b.skipOrigin="manual";
 b.unscheduled = false; b._pinned = true;
 if(b.skipped){
 b.done=false; delete b._pinned;
@@ -3187,7 +3521,7 @@ const idx = list.findIndex(x=>x.id===id); if(idx<0) return;
 // (effDur just treats it as zero-length for cascade purposes) — restoring it just flips skipped
 // off and lets the usual reposition-and-ask flow put flexible blocks around it again, the same
 // way moving or editing one does.
-list[idx].skipped = false;
+list[idx].skipped = false;clearSkipOwnership(list[idx]);list[idx].statusReset=true;
 repackSequential(list, idx);
 startConflictFlow(selectedDay, list, "Activity restored", finalList=>{
 setDayBlocks(selectedDay, finalList);
@@ -3375,6 +3709,7 @@ overwriteOpened: !!sheetDraft.overwriteOpened
 const list = getDayBlocks(selectedDay).map(b=>({...b}));
 const idx0 = list.findIndex(b=>b.id===id); if(idx0<0) return;
 Object.assign(list[idx0], patch);
+clearSkipOwnership(list[idx0]);delete list[idx0].statusReset;if(patch.skipped)list[idx0].skipOrigin="manual";
 if(patch.skipped){
 list[idx0].done=false;
 if(!getDayBlocks(selectedDay)[idx0].skipped)closeSkippedGap(list,idx0,planMinute(getDayBlocks(selectedDay)[idx0].time));
@@ -3397,14 +3732,15 @@ function finalizeBlockEdit(id, patch, futureOpts, finalList){
 const sleepIdx = finalList.length-1;
 const overflow = Math.max(0, planMinute(finalList[sleepIdx].time) - DAY_END_TARGET);
 setDayBlocks(selectedDay, finalList);
-cascadeMsg = overflow>0 ? `Today's a bit full — even after trimming flexible blocks, your day runs about ${overflow} min past 11:00pm.` : "";
+cascadeMsg = overflow>0 ? `Today's a bit full — even after trimming flexible blocks, your day runs about ${overflow} min past 11:15pm.` : "";
 // "Apply to this and future occurrences": remember only the fields you chose (time/duration/
 // title) against this block's template id, so any day not yet opened (future days, which only
 // get created from DEFAULT_TEMPLATE the first time they're viewed) starts with them instead of
 // the old default. Already-created days (including today) are untouched by this UNLESS you
 // explicitly ticked "also overwrite days already opened" — that's a separate, deliberate step,
 // never a silent side effect of applying to the future.
-if(futureOpts && futureOpts.setDefault && /^t\d+$/.test(id)){
+if(futureOpts && futureOpts.setDefault && DEFAULT_TEMPLATE.some(b=>b.id===id)){
+prepareRoutineDefaults();
 const ov = {};
 if(futureOpts.carryTime) ov.time = patch.time;
 if(futureOpts.carryDur) ov.dur = patch.dur;
@@ -9267,6 +9603,7 @@ el.innerHTML = `<div class="pc-box">
 <h4 style="margin:16px 0 4px">📅 Start date</h4>
 <input type="date" id="acctStartDate" value="${trackStartDate()}">
 <div class="pc-actions">
+<button type="button" class="btn secondary" onclick="document.getElementById('acctStartDate').value=todayISO()">Use today</button>
 <button type="button" class="btn secondary" onclick="resetTrackStartDate()">Set start date</button>
 </div>
 <p class="small pc-msg" id="startDateMsg"></p>
