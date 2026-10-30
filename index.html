@@ -845,7 +845,7 @@ function updateOverviewClock(){const e=document.getElementById('overviewTime');i
 setInterval(updateOverviewClock,1000);
 function sectionProgress(key,n){
 const k=dayKey(n),iso=dateForDay(n);
-if(key==='today'){const l=(state.days||{})[k]||DEFAULT_TEMPLATE;return {done:l.filter(b=>b.done&&!b.skipped).length,total:l.length};}
+if(key==='today'){const l=((state.days||{})[k]||DEFAULT_TEMPLATE).filter(b=>!isSchedulePause(b));return {done:l.filter(b=>b.done&&!b.skipped).length,total:l.length};}
 if(key==='arogya'){
 const m=(state.meals||{})[k]||{},w=(state.water||{})[k],move=(state.move||{})[k];
 return {done:['breakfast','lunch','dinner'].filter(x=>m[x]?.done).length+Number(Number(w?.glasses||0)>=Number(w?.target||8))+Number(Number(move?.minutes||0)>=Number(move?.target||30)||Object.values(workoutState().completedDates||{}).includes(iso)),total:5};
@@ -885,7 +885,7 @@ return `<div class="summary-head"><h2>Your progress, at a glance</h2><select ari
 const START_DATE = "2026-10-12"; // Dinacharya tracking begins here
 const STORAGE_KEY = "dinacharya_v1";
 
-const ROUTINE_DEFAULT_VERSION=4;
+const ROUTINE_DEFAULT_VERSION=5;
 const DEFAULT_TEMPLATE = [
   {
     "id": "t1",
@@ -895,7 +895,7 @@ const DEFAULT_TEMPLATE = [
     "cat": "rest",
     "icon": "neon:sun",
     "anchor": true,
-    "templateVersion": 4,
+    "templateVersion": 5,
     "plannerRole": "wake",
     "wakeSplitVersion": 1
   },
@@ -907,7 +907,7 @@ const DEFAULT_TEMPLATE = [
     "cat": "rest",
     "icon": "neon:water",
     "anchor": false,
-    "templateVersion": 4,
+    "templateVersion": 5,
     "plannerRole": "freshen"
   },
   {
@@ -918,7 +918,7 @@ const DEFAULT_TEMPLATE = [
     "cat": "food",
     "icon": "neon:bowl",
     "anchor": false,
-    "templateVersion": 4
+    "templateVersion": 5
   },
   {
     "id": "t13",
@@ -928,7 +928,7 @@ const DEFAULT_TEMPLATE = [
     "cat": "home",
     "icon": "neon:chores",
     "anchor": false,
-    "templateVersion": 4,
+    "templateVersion": 5,
     "roundupRole": "chore"
   },
   {
@@ -939,7 +939,7 @@ const DEFAULT_TEMPLATE = [
     "cat": "job",
     "icon": "neon:search",
     "anchor": false,
-    "templateVersion": 4
+    "templateVersion": 5
   },
   {
     "id": "t7",
@@ -949,7 +949,7 @@ const DEFAULT_TEMPLATE = [
     "cat": "job",
     "icon": "neon:applications",
     "anchor": false,
-    "templateVersion": 4,
+    "templateVersion": 5,
     "desc": "Five applications · about 15 minutes each. Use a buffer for applications needing more tailoring."
   },
   {
@@ -960,7 +960,7 @@ const DEFAULT_TEMPLATE = [
     "cat": "rest",
     "icon": "neon:cup",
     "anchor": false,
-    "templateVersion": 4
+    "templateVersion": 5
   },
   {
     "id": "t9",
@@ -970,7 +970,7 @@ const DEFAULT_TEMPLATE = [
     "cat": "skill",
     "icon": "neon:book",
     "anchor": false,
-    "templateVersion": 4,
+    "templateVersion": 5,
     "desc": "One focused hour of practical skill learning."
   },
   {
@@ -981,7 +981,7 @@ const DEFAULT_TEMPLATE = [
     "cat": "food",
     "icon": "neon:cooking",
     "anchor": true,
-    "templateVersion": 4,
+    "templateVersion": 5,
     "plannerRole": "lunchPrep"
   },
   {
@@ -992,7 +992,7 @@ const DEFAULT_TEMPLATE = [
     "cat": "rest",
     "icon": "neon:water",
     "anchor": true,
-    "templateVersion": 4,
+    "templateVersion": 5,
     "roundupRole": "beauty"
   },
   {
@@ -1003,7 +1003,7 @@ const DEFAULT_TEMPLATE = [
     "cat": "mind",
     "icon": "neon:diya",
     "anchor": true,
-    "templateVersion": 4
+    "templateVersion": 5
   },
   {
     "id": "t11",
@@ -1013,7 +1013,7 @@ const DEFAULT_TEMPLATE = [
     "cat": "food",
     "icon": "neon:plate",
     "anchor": false,
-    "templateVersion": 4
+    "templateVersion": 5
   },
   {
     "id": "t27",
@@ -1023,7 +1023,7 @@ const DEFAULT_TEMPLATE = [
     "cat": "rest",
     "icon": "neon:rest",
     "anchor": false,
-    "templateVersion": 4
+    "templateVersion": 5
   },
   {
     "id": "t28",
@@ -1033,7 +1033,7 @@ const DEFAULT_TEMPLATE = [
     "cat": "job",
     "icon": "neon:applications",
     "anchor": false,
-    "templateVersion": 4,
+    "templateVersion": 5,
     "desc": "Five applications · about 15 minutes each. Use a buffer for applications needing more tailoring."
   },
   {
@@ -1044,17 +1044,47 @@ const DEFAULT_TEMPLATE = [
     "cat": "business",
     "icon": "neon:excel",
     "anchor": false,
-    "templateVersion": 4
+    "templateVersion": 5
   },
   {
     "id": "t30",
     "time": "16:45",
-    "title": "Flexible time / remaining chores",
-    "dur": 120,
-    "cat": "home",
+    "title": "Exercise",
+    "dur": 30,
+    "cat": "move",
+    "icon": "neon:walk",
+    "anchor": false,
+    "templateVersion": 5
+  },
+  {
+    "id": "t34",
+    "time": "17:15",
+    "title": "Free time",
+    "dur": 15,
+    "cat": "rest",
     "icon": "neon:leaf",
     "anchor": false,
-    "templateVersion": 4
+    "templateVersion": 5
+  },
+  {
+    "id": "t35",
+    "time": "17:30",
+    "title": "Hobby",
+    "dur": 60,
+    "cat": "skill",
+    "icon": "neon:hobby",
+    "anchor": false,
+    "templateVersion": 5
+  },
+  {
+    "id": "t36",
+    "time": "18:30",
+    "title": "Free time",
+    "dur": 15,
+    "cat": "rest",
+    "icon": "neon:leaf",
+    "anchor": false,
+    "templateVersion": 5
   },
   {
     "id": "t17",
@@ -1064,7 +1094,7 @@ const DEFAULT_TEMPLATE = [
     "cat": "food",
     "icon": "neon:cooking",
     "anchor": true,
-    "templateVersion": 4,
+    "templateVersion": 5,
     "desc": "Prepare dinner for 7:30 pm. Cleanup has its own slot after eating."
   },
   {
@@ -1075,7 +1105,7 @@ const DEFAULT_TEMPLATE = [
     "cat": "food",
     "icon": "neon:plate",
     "anchor": true,
-    "templateVersion": 4
+    "templateVersion": 5
   },
   {
     "id": "t32",
@@ -1085,7 +1115,7 @@ const DEFAULT_TEMPLATE = [
     "cat": "home",
     "icon": "neon:cleanup",
     "anchor": false,
-    "templateVersion": 4
+    "templateVersion": 5
   },
   {
     "id": "t21",
@@ -1095,7 +1125,7 @@ const DEFAULT_TEMPLATE = [
     "cat": "rest",
     "icon": "neon:heart",
     "anchor": false,
-    "templateVersion": 4
+    "templateVersion": 5
   },
   {
     "id": "t33",
@@ -1106,7 +1136,7 @@ const DEFAULT_TEMPLATE = [
     "icon": "neon:heart",
     "anchor": false,
     "roundupRole": "eveningCare",
-    "templateVersion": 4
+    "templateVersion": 5
   },
   {
     "id": "t23",
@@ -1116,7 +1146,7 @@ const DEFAULT_TEMPLATE = [
     "cat": "mind",
     "icon": "neon:candle",
     "anchor": false,
-    "templateVersion": 4,
+    "templateVersion": 5,
     "desc": "Wind down and journal before the 11–11:30 pm bedtime window."
   },
   {
@@ -1127,7 +1157,7 @@ const DEFAULT_TEMPLATE = [
     "cat": "rest",
     "icon": "neon:moon",
     "anchor": true,
-    "templateVersion": 4
+    "templateVersion": 5
   }
 ];
 
@@ -1999,6 +2029,10 @@ return `<svg class="neon-schedule-icon" xmlns="http://www.w3.org/2000/svg" width
 }
 function prepareRoutineDefaults(){
 if(state.routineDefaultVersion===ROUTINE_DEFAULT_VERSION)return;
+if(state.routineDefaultVersion===4){
+const old=state.templateOverrides?.t30;if(old){state.previousAfternoonOverride={...old};delete state.templateOverrides.t30;}
+state.routineDefaultVersion=ROUTINE_DEFAULT_VERSION;return;
+}
 if(Object.keys(state.templateOverrides||{}).length||state.wakeTargetTime)state.previousRoutineDefaults={version:state.routineDefaultVersion||1,templateOverrides:structuredClone(state.templateOverrides||{}),wakeTargetTime:state.wakeTargetTime||null};
 state.templateOverrides={};state.wakeTargetTime='07:30';state.routineDefaultVersion=ROUTINE_DEFAULT_VERSION;
 }
@@ -2149,7 +2183,8 @@ return {list, overflow};
 
 /* ---- streak / activity ---- */
 function dayActivity(n){
-const list = state.days && state.days[dayKey(n)];
+const stored = state.days && state.days[dayKey(n)];
+const list = stored?.filter(b=>!isSchedulePause(b));
 if(!list) return {frac:0, level:0, done:0, total:0};
 const done = list.filter(b=>b.done).length;
 const total = list.length;
@@ -2392,7 +2427,7 @@ const face=FACE_CARE_NOTE.split('🌙 evening: ');
 return {iso,care,chore,task,choreNotes,morning:face[0].replace('Face care — ☀️ after bathing: ',''),evening:face[1]||''};
 }
 function renderChecklistFab(){
-const list=getDayBlocks(selectedDay).filter(b=>!b.unscheduled);
+const list=getDayBlocks(selectedDay).filter(b=>!b.unscheduled&&!isSchedulePause(b));
 if(!list.length) return '';
 const items=list.map(b=>{
 const state=b.done?'is-done':(b.skipped?'is-skipped':'');
@@ -2457,7 +2492,7 @@ function renderStrip(list, nowId, parallelItems){
 // anything added as a 🗓️ Schedule/➕ Spontaneous activity (parallelItems), merged and sorted by
 // time, the same way renderTimeline does for the full Schedule view. A bead for a parallel item
 // taps through to its own editor (parallelTap) rather than toggleDone, since it isn't a real block.
-const blockBeads = list.map(b=>({t:planMinute(b.time), html:`
+const blockBeads = list.filter(b=>!isSchedulePause(b)).map(b=>({t:planMinute(b.time), html:`
 <div data-chakra-icon="block:${escapeHtml(b.id)}" class="bead ${selectedChakraIcon==='block:'+b.id?'selected':''} ${b.done?'done':''} ${b.id===nowId?'now':''} ${b.skipped?'skipped':''}" onclick="${b.skipped?`unskipBlock('${b.id}')`:`toggleDone('${b.id}')`}" title="${b.title.replace(/"/g,'&quot;')}${b.skipped?' — skipped, tap to restore':''}">
 <div class="circ">${b.icon?iconHTML(b.icon,18):"•"}</div>
 <div class="t">${plannerTimeLabel(b.time)}</div>
@@ -2928,6 +2963,13 @@ if(b.id==='t24'&&!b.dur)return plannerTimeLabel(b.time,dayNum)+' – '+fmt12(sle
 return plannerTimeLabel(b.time,dayNum)+((b.dur&&!b.skipped)?' – '+fmt12(toHHMM(planMinute(b.time,dayNum)+b.dur)):'');
 }
 
+function isSchedulePause(block){
+const title=String(block?.title||'').trim();
+return block?.scheduleKind==='pause'||/^free\s*time(?:\s*[/—–:-].*)?$/i.test(title)||/\bbreaks?\b/i.test(title);
+}
+function renderSchedulePause(block){
+return `<div class="plan-free-time" id="blk_${escapeHtml(block.id)}" role="note">${routineTimeRange(block,selectedDay)} · ${escapeHtml(block.title)} · ${Number(block.dur)||0} min</div>`;
+}
 function renderTimeline(list, nowId, parallelItems){
 // Parallel/Unplanned activities (including anything you chose "keep the existing block, make
 // mine parallel instead" for) are interleaved into the Schedule view by time too now, instead
@@ -2941,7 +2983,7 @@ const isMissed = b => !b.statusReset && !b.done && !b.skipped && !b.unscheduled 
 // An Unscheduled block (the conflict resolver's "Find a slot" came up empty) has no meaningful
 // time — sort it to the very end of the Agenda instead of wherever its stale `.time` happens to
 // point, and show a plain "Unscheduled" tag instead of a time range.
-const blockRows = list.map((b,i)=>({t: b.unscheduled ? (100000+i) : planMinute(b.time), html:`
+const blockRows = list.map((b,i)=>isSchedulePause(b)?{t:planMinute(b.time),html:b.skipped?'':renderSchedulePause(b)}:({t: b.unscheduled ? (100000+i) : planMinute(b.time), html:`
 <div class="tblock ${b.done?'done':''} ${b.id===nowId?'now':''} ${isLockedTime(b)?'anchor':''} ${b.skipped?'skipped':''} ${b.unscheduled?'unscheduled':''} ${isMissed(b)?'missed':''}" id="blk_${b.id}" data-plan-id="${escapeHtml(b.id)}">
 <span class="checkdot ${b.done?'on':''}" onclick="event.stopPropagation();toggleDone('${b.id}')"></span>
 <div class="tbody bar ${canReorderBlock(b)?'plan-drag-surface':''}" style="border-left:3px solid ${(b.priority&&BD_COLOR[b.priority])||CAT_COLOR[b.cat]||'var(--line)'}" onpointerdown="beginPlanDrag(event,'${b.id}')" onclick="openScheduleBlock(event,'${b.id}')" title="Tap to edit. In expanded view, hold and drag this card to rearrange.">
@@ -3143,7 +3185,7 @@ cursor = Math.max(cursor, planMinute(list[i].time)) + effDur(list[i]);
 function inferSkipped(list,idx,ownerId){
 const ids=[];let i=idx-1;
 while(i>=0&&!list[i].done){
-const item=list[i];if(isLockedTime(item))break;
+const item=list[i];if(isSchedulePause(item)){i--;continue;}if(isLockedTime(item))break;
 if(!item.skipped){item.skipped=true;item.skipOrigin='automatic';item.autoSkippedBy=[ownerId];delete item.statusReset;ids.push(item.id);}
 i--;
 }
@@ -3172,7 +3214,7 @@ function toggleDone(id){
 selectedChakraIcon='block:'+id;
 const day=selectedDay,list=getDayBlocks(day).map(b=>({...b,...(Array.isArray(b.autoSkippedBy)?{autoSkippedBy:[...b.autoSkippedBy]}:{})}));
 const idx=list.findIndex(b=>b.id===id);if(idx<0)return;
-const block=list[idx],wasDone=!!block.done;block.done=!wasDone;
+const block=list[idx];if(isSchedulePause(block))return;const wasDone=!!block.done;block.done=!wasDone;
 if(block.done){
 block.skipped=false;clearSkipOwnership(block);delete block.statusReset;
 block.completionSkipTracked=true;
@@ -3191,7 +3233,7 @@ function openRoutineChecklist(){ renderRoutineChecklistSheet(); }
 function renderRoutineChecklistSheet(){
 let wrap = document.getElementById('routineChecklistSheet');
 if(!wrap){ wrap=document.createElement('div'); wrap.id='routineChecklistSheet'; wrap.className='sheet-overlay'; wrap.onclick=(e)=>{if(e.target===wrap)closeRoutineChecklist();}; document.body.appendChild(wrap); }
-const list=getDayBlocks(selectedDay).filter(b=>!b.unscheduled);
+const list=getDayBlocks(selectedDay).filter(b=>!b.unscheduled&&!isSchedulePause(b));
 const rows=list.map(b=>`<label class="learning-plan-task" style="padding:6px 0;display:flex;align-items:center;gap:8px"><input type="checkbox" ${b.done?'checked':''} ${b.skipped?'disabled':''} onchange="toggleDone('${b.id}')"><span class="${(b.done||b.skipped)?'is-kept':''}" style="${b.skipped?'opacity:.5;text-decoration:line-through':''}">${iconHTML(b.icon||'📌',16)} ${escapeHtml(b.title||'Untitled')}</span><small style="margin-left:auto;color:var(--muted)">${plannerTimeLabel(b.time)}</small></label>`).join('');
 const done=list.filter(b=>b.done).length;
 wrap.innerHTML = `<div class="sheet sheet-thin"><h3>✅ Today's checklist</h3><p class="small">${done} / ${list.length} done</p><div style="display:flex;flex-direction:column;gap:2px;max-height:60vh;overflow-y:auto">${rows||'<p class="small">Nothing scheduled yet.</p>'}</div><div class="sheetactions"><button class="btn secondary" onclick="closeRoutineChecklist()">Close</button></div></div>`;
@@ -3219,7 +3261,7 @@ return {date:data.iso,weekday:date.toLocaleDateString('en-AU',{weekday:'long'}),
 }
 function buildTimetablePrompt(){
 const draft=getTimetableDraft(),context=routinePromptContext();
-return `Act as my daily-schedule planner. Rebuild the routine for the selected date, ${context.date}.\n${draft.notes.trim()?'My routine instructions: '+draft.notes.trim()+'\n':''}Selected-day house-chore and beauty-care round ups, fixed activities and existing schedule:\n${JSON.stringify(context,null,2)}\nWhen my text says Chore, Chores, House chores, or Chore round up, pull the actual tasks from houseChoreRoundup for this selected date. When it says Beauty care, Bath & self-care, or Beauty care round up, pull beautyCareRoundup. Do not leave these as generic placeholders. Show the actual chore or care activity in the schedule title and put its remaining steps in the tasks array. All these tasks must appear in the main schedule itself, never as notes, descriptions, separate top cards or side summaries. Keep Personal / family time at 20:15–22:15 and Evening face care as its own 15-minute main-schedule activity at 22:15–22:30, with its actual steps in the tasks array. Do not duplicate a task already present in a fixed activity.\nSplit the midday routine into TWO activities: Lunch preparation 12:00–12:45, dur:45; Bath & self-care 12:45–13:30, dur:45. Do not combine them. Pause cooking safely with heat and appliances switched off before leaving for the bath. Preserve Pooja at 13:30 and Lunch at 13:45. Use the selected date's weekday rotation, not today's. Preserve other supplied fixed activities and retain existing activities unless my instructions request removing them. Ask me to resolve conflicting constraints before generating JSON.\nWake-up starts the planning day. Use Wake up 07:30–07:45, dur:15; Freshen up 07:45–08:30, dur:45; Breakfast & coffee 08:30–09:00, dur:30 unless I request otherwise. Keep Wind down / Journal at 22:30–23:00 and Bedtime window at 23:00–23:30, dur:30. Keep after-midnight activities after the evening activities. Cover the day through bedtime, with no overlaps. Each block needs a short informative title, icon identifier, time in HH:MM, duration in minutes, and a tasks array of concrete activity steps (empty when unnecessary). Use neon icons from the template where possible.\nWhen ready, return only one valid JSON object in this schema, with all required daily blocks. No markdown or explanation.\n${JSON.stringify(timetableTemplate(),null,2)}`;
+return `Act as my daily-schedule planner. Rebuild the routine for the selected date, ${context.date}.\n${draft.notes.trim()?'My routine instructions: '+draft.notes.trim()+'\n':''}Selected-day house-chore and beauty-care round ups, fixed activities and existing schedule:\n${JSON.stringify(context,null,2)}\nWhen my text says Chore, Chores, House chores, or Chore round up, pull the actual tasks from houseChoreRoundup for this selected date. When it says Beauty care, Bath & self-care, or Beauty care round up, pull beautyCareRoundup. Do not leave these as generic placeholders. Show the actual chore or care activity in the schedule title and put its remaining steps in the tasks array. All these tasks must appear in the main schedule itself, never as notes, descriptions, separate top cards or side summaries. Keep Personal / family time at 20:15–22:15 and Evening face care as its own 15-minute main-schedule activity at 22:15–22:30, with its actual steps in the tasks array. Do not duplicate a task already present in a fixed activity.\nSplit the midday routine into TWO activities: Lunch preparation 12:00–12:45, dur:45; Bath & self-care 12:45–13:30, dur:45. Do not combine them. Pause cooking safely with heat and appliances switched off before leaving for the bath. Preserve Pooja at 13:30 and Lunch at 13:45. Use the selected date's weekday rotation, not today's. Preserve other supplied fixed activities and retain existing activities unless my instructions request removing them. Ask me to resolve conflicting constraints before generating JSON.\nWake-up starts the planning day. Use Wake up 07:30–07:45, dur:15; Freshen up 07:45–08:30, dur:45; Breakfast & coffee 08:30–09:00, dur:30 unless I request otherwise. Keep Exercise at 16:45–17:15, Free time at 17:15–17:30, Hobby at 17:30–18:30 and Free time at 18:30–18:45. Dinner preparation starts at 18:45. Keep Wind down / Journal at 22:30–23:00 and Bedtime window at 23:00–23:30, dur:30. Keep after-midnight activities after the evening activities. Cover the day through bedtime, with no overlaps. Free time and Breaks are non-checkable pause rows in the main schedule, with their durations retained. Each block needs a short informative title, icon identifier, time in HH:MM, duration in minutes, and a tasks array of concrete activity steps (empty when unnecessary). Use neon icons from the template where possible.\nWhen ready, return only one valid JSON object in this schema, with all required daily blocks. No markdown or explanation.\n${JSON.stringify(timetableTemplate(),null,2)}`;
 }
 
 async function copyTimetablePrompt(){const prompt=buildTimetablePrompt();try{await navigator.clipboard.writeText(prompt);toast('Prompt copied. Paste it into your AI chat.');}catch{showPromptFallback(prompt);}}
