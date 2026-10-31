@@ -745,6 +745,10 @@ html .nestbtn:after,html .todaytabs button:after,html .ltabs button:after,html .
 
 .genie-popup-panel{transform-origin:50% 100%;backface-visibility:hidden}
 .genie-exit-layer,.genie-exit-layer *{pointer-events:none!important}
+
+.custom-food-layout{grid-template-columns:1fr!important}.custom-food-item>details>summary{display:flex;flex-direction:column;gap:5px;cursor:pointer;font-size:13px;padding:9px 0}.custom-food-item>details>summary .small{font-size:11px;color:var(--muted);font-weight:400}.custom-food-bucket-label{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:var(--muted);padding:6px 0}.custom-food-item select{max-width:100%;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px;font:inherit}.custom-food-edit{padding:8px 0}.custom-food-edit>label{font-size:11px;display:flex;gap:8px;align-items:center}.custom-food-ai{border-bottom:1px solid var(--line);padding:10px 0}.custom-food-ai>summary{cursor:pointer;font-size:12px}.custom-food-ai textarea{width:100%;min-height:90px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:9px;margin:8px 0}.custom-food-buckets h3 small{color:var(--muted);font-weight:400}
+
+.thin-food-row{display:flex;align-items:flex-start;gap:8px;padding:5px 7px!important;margin:0!important;border-bottom:1px solid var(--line);border-radius:0!important}.thin-food-row>details{flex:1;min-width:0}.thin-food-row>details>summary{display:flex;align-items:center;gap:8px;padding:6px 0!important;cursor:pointer;font-size:12px;min-height:28px}.thin-food-row summary strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}.thin-food-row summary small{font-size:10px;color:var(--muted);white-space:nowrap}.thin-food-row .recipe-inline-add{display:flex;align-items:center;gap:4px;margin:0;padding:0;border:0;flex:none}.thin-food-row select{max-width:100px;font-size:11px;padding:5px}.thin-food-row button{padding:5px 8px;min-height:28px}.food-row-details{font-size:12px;line-height:1.5}.food-row-details p{margin:6px 0}.custom-food-buckets{grid-template-columns:1fr!important}.food-portion-sheet{width:min(560px,calc(100vw - 24px));max-height:88vh;overflow:auto}.food-portion-sheet label{display:block;font-size:12px;margin:8px 0}.food-portion-sheet input,.food-portion-sheet select,.food-portion-sheet textarea{display:block;width:100%;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px;margin-top:4px;box-sizing:border-box}.food-portion-sheet textarea{min-height:90px}.food-portion-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.food-portion-sheet summary{cursor:pointer;font-size:12px;margin:8px 0}.meal-food-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:4px 0;border-bottom:1px solid var(--line);font-size:12px}.meal-food-line>span{flex:1}.portion-note{flex-basis:100%;font-size:10px;color:var(--muted)}#foodPortion_error{color:#ffb6c9}@media(max-width:650px){.recipe-meal-grid{grid-template-columns:1fr}.thin-food-row{gap:4px}.thin-food-row summary small{display:none}.thin-food-row select{max-width:82px}.thin-food-row .recipe-inline-add{gap:2px}}
 </style>
 </head>
 <body>
@@ -1264,7 +1268,7 @@ weightGoal:{start:null, target:null, targetDate:null}, exercisePlanDone:{},
 dietPrefs:{noEgg:false, southIndianLean:true},
 profile:{age:30, heightCm:155, sex:"female", activity:"sedentary"},
 gapDecisions:{}, adhocTasks:[], adhocDone:{}, parallelActivities:[], customFoods:[], templateOverrides:{},
-foodLog:{}, macroTargets:{protein:null, carbs:null, fat:null, sugar:null, calories:null}, recipeCalLimit:null, customRecipes:[], coffeeLog:{}, heroArt:"mandala", startDate:START_DATE,
+foodLog:{}, macroTargets:{protein:null, carbs:null, fat:null, sugar:null, calories:null}, recipeCalLimit:null, customRecipes:[], removedRecipeIds:[], hiddenFoodNames:[], recipeNutrition:{}, coffeeLog:{}, heroArt:"mandala", startDate:START_DATE,
 myPlan:{text:"", phases:null, useCustom:false},
 opsTasks:[], marketing:[], goals:[], bizPlanEffort:{}, customExpenseTypes:[],
 bizChecklistTemplate:null, bizChecklistDone:{}, bizChecklistVersion:1,
@@ -1282,9 +1286,30 @@ item leaves a hole) — snap.val() then hands back an object where the app expec
 remote/imported data so "X.filter is not a function" can't recur from a bad round trip. */
 const ARRAY_STATE_KEYS = ["brainDump","pantry","shopping","weight","pipeline","income","reading",
 "adhocTasks","parallelActivities","customFoods","customRecipes","opsTasks","marketing","goals",
-"clients","projects","invoices","expenses","savedSubstackLinks","savedYoutubeLinks","sankalps","learningSkills","importRepairArchive"];
+"clients","projects","invoices","expenses","savedSubstackLinks","savedYoutubeLinks","sankalps","learningSkills","importRepairArchive","removedRecipeIds","hiddenFoodNames"];
+// Food names are display data, never Firebase keys. Keep legacy name-keyed maps readable.
+function normalizeFoodFrequency(value){
+const counts=new Map();
+if(value&&typeof value==='object')for(const [key,item] of Object.entries(value)){
+const record=item&&typeof item==='object'&&typeof item.name==='string';
+const name=record?item.name:key,count=Number(record?item.count:item);
+if(name&&Number.isFinite(count)&&count>=0)counts.set(name,(counts.get(name)||0)+count);
+}
+return Object.fromEntries(counts);
+}
+function firebaseStatePayload(source){
+const payload=JSON.parse(JSON.stringify(source));
+payload.foodFreq=Object.fromEntries(Object.entries(normalizeFoodFrequency(source.foodFreq)).map(([name,count],i)=>['food_'+i,{name,count}]));
+return payload;
+}
+async function writePlannerStateToCloud(){
+const payload=firebaseStatePayload(state),json=JSON.stringify(payload);
+await stateRef.set(payload); // async wrapper also catches synchronous SDK validation errors
+lastPushedJSON=json;
+}
 function normalizeStateArrays(s){
 if(!s) return s;
+s.foodFreq=normalizeFoodFrequency(s.foodFreq);
 ARRAY_STATE_KEYS.forEach(k=>{
 const v = s[k];
 if(Array.isArray(v)) return;
@@ -1754,13 +1779,15 @@ if(!appLocked) render();
 function cloudResyncNow(manual){
 if(!fbReady || !stateRef){ if(manual) acctMsg("You're offline — nothing to sync right now.", true); return; }
 setSyncPill("☁️ syncing…");
-stateRef.once("value").then(snap=>{
+stateRef.once("value").then(async snap=>{
 const remote = snap.val();
 if(remote && remote.lastSaved && (!state.lastSaved || new Date(remote.lastSaved) > new Date(state.lastSaved))){
 acceptPlannerState(normalizeStateArrays(Object.assign({}, state, remote)));
 state.dietPrefs = Object.assign({}, state.dietPrefs, {noEgg:false});
 saveLocalOnly();
 if(!appLocked) render();
+}else if(manual){
+clearTimeout(syncTimer);await writePlannerStateToCloud();
 }
 setSyncPill("☁️ synced");
 updateSavedLabel();
@@ -1795,17 +1822,19 @@ if(!appLocked) render();
 function pushToFirebase(){
 if(!fbReady || !stateRef) return;
 clearTimeout(syncTimer);
-syncTimer = setTimeout(()=>{
+syncTimer = setTimeout(async()=>{
+try{
 normalizeStateArrays(state);
-const json = JSON.stringify(state);
-lastPushedJSON = json;
 setSyncPill("☁️ saving…");
-stateRef.set(state).then(()=>{ setSyncPill("☁️ synced"); updateSavedLabel(); }).catch(err=>{
-console.error("Firebase push failed:", err);
+await writePlannerStateToCloud();
+setSyncPill("☁️ synced");updateSavedLabel();
+}catch(err){
+console.error("Firebase push failed:",err);
 setSyncPill("⚠️ sync error — saved on device");
-});
-}, 400);
 }
+},400);
+}
+
 function saveLocalOnly(){ localStorage.setItem(storageKey(), JSON.stringify(state)); }
 function save(){
 state.lastSaved = new Date().toISOString();
@@ -6517,7 +6546,7 @@ return `<svg class="ui-icon" width="${size}" height="${size}" viewBox="0 0 24 24
 }
 function renderArogya(){
 ensurePantrySeed();
-const tabs = [["meals",uiIcon("plate"),"Ahara"],["watermove",uiIcon("movement"),"Training"],["pantry",uiIcon("basket"),"Supplies"],["recipes",uiIcon("book"),"Recipes"],["weight",uiIcon("balance"),"Stats"]];
+const tabs = [["meals",uiIcon("plate"),"Ahara"],["recipes",uiIcon("book"),"Recipes"],["watermove",uiIcon("movement"),"Training"],["pantry",uiIcon("basket"),"Supplies"],["weight",uiIcon("balance"),"Stats"]];
 let body = "";
 if(arogyaTab==="meals") body = renderMeals();
 else if(arogyaTab==="watermove") body = renderWaterMove();
@@ -6546,42 +6575,2232 @@ if(/\b(?:breakfast|tiffin|idli|dosa|upma|poha|pancake|porridge|omelette|omelet|c
 if(/snack|chutney|soup & sides|sweet|dessert|pakora|vada|cutlet|chaat/.test(g+" "+n)) return "snack";
 return "lunch";
 }
-function allRecipes(){ return RECIPES.map(r=>({...r,meal:inferRecipeMeal(r)})).concat(state.customRecipes||[]); }
-function useRecipeForMeal(id,meal){
-if(!['breakfast','lunch','snack','dinner'].includes(meal))return;
-const r=allRecipes().find(x=>x.id===id);if(!r)return;
-snapshotForUndo('Recipe added to meal');
-const m=getMeals(selectedDay)[meal];
-m.text=m.text?m.text+', '+r.name:r.name;
-logFoodEntry(meal,r.name);
-const row=state.foodLog[dayKey(selectedDay)].at(-1);
-if(r.macros)Object.assign(row,{k:r.macros.kcal||0,p:r.macros.protein||0,c:r.macros.carbs||0,f:r.macros.fat||0,s:r.macros.sugar||0,nutritionEstimate:true});
-row.recipeId=r.id;save();
-toast('Added to '+meal+' · '+niceDate(dateForDay(selectedDay),{day:'numeric',month:'short'}));
-}
+const BUILTIN_RECIPE_NUTRITION = {
+  "r1": {
+    "macros": {
+      "kcal": 235,
+      "protein": 13.5,
+      "carbs": 32.0,
+      "fat": 5.7,
+      "sugar": 4.2,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 145 g cooked lentils; 20 g onion; 30 g tomato; 5 g oil/ghee; 50 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "145 g cooked lentils; 20 g onion; 30 g tomato; 5 g oil/ghee; 50 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r2": {
+    "macros": {
+      "kcal": 235,
+      "protein": 13.5,
+      "carbs": 32.0,
+      "fat": 5.7,
+      "sugar": 4.2,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 145 g cooked lentils; 20 g onion; 30 g tomato; 5 g oil/ghee; 50 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "145 g cooked lentils; 20 g onion; 30 g tomato; 5 g oil/ghee; 50 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r3": {
+    "macros": {
+      "kcal": 235,
+      "protein": 13.5,
+      "carbs": 32.0,
+      "fat": 5.7,
+      "sugar": 4.2,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 145 g cooked lentils; 20 g onion; 30 g tomato; 5 g oil/ghee; 50 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "145 g cooked lentils; 20 g onion; 30 g tomato; 5 g oil/ghee; 50 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r4": {
+    "macros": {
+      "kcal": 235,
+      "protein": 13.5,
+      "carbs": 32.0,
+      "fat": 5.7,
+      "sugar": 4.2,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 145 g cooked lentils; 20 g onion; 30 g tomato; 5 g oil/ghee; 50 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "145 g cooked lentils; 20 g onion; 30 g tomato; 5 g oil/ghee; 50 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r5": {
+    "macros": {
+      "kcal": 235,
+      "protein": 13.5,
+      "carbs": 32.0,
+      "fat": 5.7,
+      "sugar": 4.2,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 145 g cooked lentils; 20 g onion; 30 g tomato; 5 g oil/ghee; 50 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "145 g cooked lentils; 20 g onion; 30 g tomato; 5 g oil/ghee; 50 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r6": {
+    "macros": {
+      "kcal": 230,
+      "protein": 11.7,
+      "carbs": 33.4,
+      "fat": 5.7,
+      "sugar": 4.8,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 160 g cooked moong; 20 g onion; 30 g tomato; 5 g oil/ghee; 35 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "160 g cooked moong; 20 g onion; 30 g tomato; 5 g oil/ghee; 35 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r7": {
+    "macros": {
+      "kcal": 235,
+      "protein": 14.7,
+      "carbs": 30.7,
+      "fat": 5.8,
+      "sugar": 2.8,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 140 g cooked lentils; 70 g spinach; 5 g oil/ghee; 35 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "140 g cooked lentils; 70 g spinach; 5 g oil/ghee; 35 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r8": {
+    "macros": {
+      "kcal": 170,
+      "protein": 7.8,
+      "carbs": 22.6,
+      "fat": 5.6,
+      "sugar": 5.8,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 70 g cooked lentils; 65 g mixed vegetables; 25 g tomato; 5 g tamarind; 5 g oil/ghee; 80 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "70 g cooked lentils; 65 g mixed vegetables; 25 g tomato; 5 g tamarind; 5 g oil/ghee; 80 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r9": {
+    "macros": {
+      "kcal": 235,
+      "protein": 13.5,
+      "carbs": 32.0,
+      "fat": 5.7,
+      "sugar": 4.2,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 145 g cooked lentils; 20 g onion; 30 g tomato; 5 g oil/ghee; 50 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "145 g cooked lentils; 20 g onion; 30 g tomato; 5 g oil/ghee; 50 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r10": {
+    "macros": {
+      "kcal": 240,
+      "protein": 8.2,
+      "carbs": 18.6,
+      "fat": 14.5,
+      "sugar": 7.8,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 100 g yoghurt; 20 g besan; 25 g onion; 10 g oil/ghee; 95 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "100 g yoghurt; 20 g besan; 25 g onion; 10 g oil/ghee; 95 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r11": {
+    "macros": {
+      "kcal": 260,
+      "protein": 13.7,
+      "carbs": 38.1,
+      "fat": 5.9,
+      "sugar": 2.5,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 150 g cooked rajma; 25 g onion; 40 g tomato; 5 g oil/ghee; 30 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "150 g cooked rajma; 25 g onion; 40 g tomato; 5 g oil/ghee; 30 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r12": {
+    "macros": {
+      "kcal": 315,
+      "protein": 14.0,
+      "carbs": 45.0,
+      "fat": 9.0,
+      "sugar": 9.3,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 150 g cooked chickpeas; 25 g onion; 40 g tomato; 5 g oil/ghee; 30 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "150 g cooked chickpeas; 25 g onion; 40 g tomato; 5 g oil/ghee; 30 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r13": {
+    "macros": {
+      "kcal": 185,
+      "protein": 4.1,
+      "carbs": 30.4,
+      "fat": 5.4,
+      "sugar": 3.9,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 120 g cooked potato; 75 g cauliflower; 20 g onion; 20 g tomato; 5 g oil/ghee; 10 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "120 g cooked potato; 75 g cauliflower; 20 g onion; 20 g tomato; 5 g oil/ghee; 10 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r14": {
+    "macros": {
+      "kcal": 260,
+      "protein": 4.0,
+      "carbs": 42.0,
+      "fat": 8.2,
+      "sugar": 1.9,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 210 g cooked potato; 8 g oil/ghee; 32 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "210 g cooked potato; 8 g oil/ghee; 32 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r15": {
+    "macros": {
+      "kcal": 135,
+      "protein": 2.3,
+      "carbs": 14.4,
+      "fat": 7.4,
+      "sugar": 8.1,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 170 g brinjal; 30 g onion; 35 g tomato; 7 g oil/ghee; 8 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "170 g brinjal; 30 g onion; 35 g tomato; 7 g oil/ghee; 8 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r16": {
+    "macros": {
+      "kcal": 220,
+      "protein": 13.5,
+      "carbs": 6.4,
+      "fat": 15.8,
+      "sugar": 4.0,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 100 g egg; 30 g onion; 65 g tomato; 5 g oil/ghee; 50 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "100 g egg; 30 g onion; 65 g tomato; 5 g oil/ghee; 50 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r17": {
+    "macros": {
+      "kcal": 320,
+      "protein": 18.7,
+      "carbs": 9.2,
+      "fat": 23.2,
+      "sugar": 4.0,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 85 g paneer; 100 g spinach; 20 g onion; 25 g tomato; 5 g oil/ghee; 15 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "85 g paneer; 100 g spinach; 20 g onion; 25 g tomato; 5 g oil/ghee; 15 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r18": {
+    "macros": {
+      "kcal": 340,
+      "protein": 18.6,
+      "carbs": 16.6,
+      "fat": 22.2,
+      "sugar": 8.1,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 80 g paneer; 65 g peas; 25 g onion; 45 g tomato; 5 g oil/ghee; 30 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "80 g paneer; 65 g peas; 25 g onion; 45 g tomato; 5 g oil/ghee; 30 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r19": {
+    "macros": {
+      "kcal": 335,
+      "protein": 18.0,
+      "carbs": 11.0,
+      "fat": 24.2,
+      "sugar": 6.3,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 90 g paneer; 60 g mixed vegetables; 25 g onion; 45 g tomato; 5 g oil/ghee; 25 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "90 g paneer; 60 g mixed vegetables; 25 g onion; 45 g tomato; 5 g oil/ghee; 25 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r20": {
+    "macros": {
+      "kcal": 400,
+      "protein": 22.6,
+      "carbs": 9.4,
+      "fat": 30.4,
+      "sugar": 6.2,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 120 g paneer; 35 g onion; 65 g tomato; 5 g oil/ghee; 25 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "120 g paneer; 35 g onion; 65 g tomato; 5 g oil/ghee; 25 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r21": {
+    "macros": {
+      "kcal": 395,
+      "protein": 17.4,
+      "carbs": 7.5,
+      "fat": 33.0,
+      "sugar": 5.2,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 90 g paneer; 60 g tomato; 20 g onion; 20 g cream; 8 g oil/ghee; 52 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "90 g paneer; 60 g tomato; 20 g onion; 20 g cream; 8 g oil/ghee; 52 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r22": {
+    "macros": {
+      "kcal": 445,
+      "protein": 21.3,
+      "carbs": 19.9,
+      "fat": 31.3,
+      "sugar": 6.0,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 110 g paneer; 60 g mixed vegetables; 35 g onion; 10 g cornflour; 8 g oil/ghee; 27 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "110 g paneer; 60 g mixed vegetables; 35 g onion; 10 g cornflour; 8 g oil/ghee; 27 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r23": {
+    "macros": {
+      "kcal": 235,
+      "protein": 3.6,
+      "carbs": 27.2,
+      "fat": 12.6,
+      "sugar": 4.3,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 170 g cauliflower; 18 g cornflour; 25 g onion; 12 g oil/ghee; 25 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "170 g cauliflower; 18 g cornflour; 25 g onion; 12 g oil/ghee; 25 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r24": {
+    "macros": {
+      "kcal": 305,
+      "protein": 5.8,
+      "carbs": 58.0,
+      "fat": 5.7,
+      "sugar": 1.8,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion (your rice cup) — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 195 g cooked rice; 30 g tomato; 20 g onion; 5 g oil/ghee. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "195 g cooked rice; 30 g tomato; 20 g onion; 5 g oil/ghee. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r25": {
+    "macros": {
+      "kcal": 405,
+      "protein": 9.7,
+      "carbs": 62.5,
+      "fat": 13.0,
+      "sugar": 1.2,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion (your rice cup) — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 210 g cooked rice; 10 g lemon; 15 g peanuts; 5 g oil/ghee; 10 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "210 g cooked rice; 10 g lemon; 15 g peanuts; 5 g oil/ghee; 10 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r26": {
+    "macros": {
+      "kcal": 270,
+      "protein": 7.2,
+      "carbs": 46.5,
+      "fat": 6.4,
+      "sugar": 4.4,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion (your rice cup) — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 150 g cooked rice; 90 g yoghurt; 3 g oil/ghee; 7 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "150 g cooked rice; 90 g yoghurt; 3 g oil/ghee; 7 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r27": {
+    "macros": {
+      "kcal": 350,
+      "protein": 6.5,
+      "carbs": 68.2,
+      "fat": 5.7,
+      "sugar": 0.2,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion (your rice cup) — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 242 g cooked rice; 5 g oil/ghee; 3 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "242 g cooked rice; 5 g oil/ghee; 3 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r28": {
+    "macros": {
+      "kcal": 360,
+      "protein": 6.2,
+      "carbs": 63.9,
+      "fat": 8.7,
+      "sugar": 1.1,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion (your rice cup) — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 220 g cooked rice; 20 g onion; 8 g oil/ghee; 2 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "220 g cooked rice; 20 g onion; 8 g oil/ghee; 2 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r29": {
+    "macros": {
+      "kcal": 325,
+      "protein": 12.1,
+      "carbs": 55.7,
+      "fat": 5.8,
+      "sugar": 1.8,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion (your rice cup) — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 130 g cooked rice; 95 g cooked lentils; 5 g oil/ghee; 20 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "130 g cooked rice; 95 g cooked lentils; 5 g oil/ghee; 20 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r30": {
+    "macros": {
+      "kcal": 300,
+      "protein": 5.9,
+      "carbs": 55.7,
+      "fat": 5.7,
+      "sugar": 2.3,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion (your rice cup) — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 180 g cooked rice; 50 g mixed vegetables; 15 g onion; 5 g oil/ghee. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "180 g cooked rice; 50 g mixed vegetables; 15 g onion; 5 g oil/ghee. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r31": {
+    "macros": {
+      "kcal": 320,
+      "protein": 6.1,
+      "carbs": 52.6,
+      "fat": 9.3,
+      "sugar": 2.7,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion (your rice cup) — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 170 g cooked rice; 40 g mixed vegetables; 20 g yoghurt; 10 g onion; 8 g oil/ghee; 2 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "170 g cooked rice; 40 g mixed vegetables; 20 g yoghurt; 10 g onion; 8 g oil/ghee; 2 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r32": {
+    "macros": {
+      "kcal": 325,
+      "protein": 5.9,
+      "carbs": 55.7,
+      "fat": 8.7,
+      "sugar": 1.7,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion (your rice cup) — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 185 g cooked rice; 50 g mixed vegetables; 8 g oil/ghee; 7 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "185 g cooked rice; 50 g mixed vegetables; 8 g oil/ghee; 7 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r33": {
+    "macros": {
+      "kcal": 250,
+      "protein": 7.3,
+      "carbs": 42.5,
+      "fat": 5.6,
+      "sugar": 1.3,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 55 g semolina; 25 g onion; 5 g oil/ghee; 165 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "55 g semolina; 25 g onion; 5 g oil/ghee; 165 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r34": {
+    "macros": {
+      "kcal": 295,
+      "protein": 6.2,
+      "carbs": 46.0,
+      "fat": 9.5,
+      "sugar": 1.7,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 55 g poha; 25 g onion; 8 g peanuts; 5 g oil/ghee; 157 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "55 g poha; 25 g onion; 8 g peanuts; 5 g oil/ghee; 157 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r35": {
+    "macros": {
+      "kcal": 270,
+      "protein": 15.6,
+      "carbs": 39.0,
+      "fat": 5.7,
+      "sugar": 1.3,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 65 g dry dal; 5 g oil/ghee; 180 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "65 g dry dal; 5 g oil/ghee; 180 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r36": {
+    "macros": {
+      "kcal": 280,
+      "protein": 13.6,
+      "carbs": 37.4,
+      "fat": 8.7,
+      "sugar": 7.4,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 60 g besan; 20 g onion; 20 g tomato; 5 g oil/ghee; 145 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "60 g besan; 20 g onion; 20 g tomato; 5 g oil/ghee; 145 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r37": {
+    "macros": {
+      "kcal": 225,
+      "protein": 7.6,
+      "carbs": 38.1,
+      "fat": 4.7,
+      "sugar": 1.9,
+      "estimate": true
+    },
+    "portionGrams": 150,
+    "portionDescription": "3 medium rava idli",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 50 g semolina; 35 g yoghurt; 3 g oil/ghee; 62 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "50 g semolina; 35 g yoghurt; 3 g oil/ghee; 62 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r38": {
+    "macros": {
+      "kcal": 290,
+      "protein": 6.2,
+      "carbs": 49.5,
+      "fat": 7.7,
+      "sugar": 0.2,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 35 g semolina; 30 g rice flour; 7 g oil/ghee; 178 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "35 g semolina; 30 g rice flour; 7 g oil/ghee; 178 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r39": {
+    "macros": {
+      "kcal": 165,
+      "protein": 5.3,
+      "carbs": 35.2,
+      "fat": 0.5,
+      "sugar": 0.3,
+      "estimate": true
+    },
+    "portionGrams": 150,
+    "portionDescription": "3 medium idli",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 35 g dry rice; 12 g dry dal; 0 g oil/ghee; 103 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "35 g dry rice; 12 g dry dal; 0 g oil/ghee; 103 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r40": {
+    "macros": {
+      "kcal": 335,
+      "protein": 7.5,
+      "carbs": 58.6,
+      "fat": 7.7,
+      "sugar": 1.5,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 45 g dry rice; 12 g dry dal; 70 g cooked potato; 15 g onion; 7 g oil/ghee; 101 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "45 g dry rice; 12 g dry dal; 70 g cooked potato; 15 g onion; 7 g oil/ghee; 101 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r41": {
+    "macros": {
+      "kcal": 385,
+      "protein": 15.0,
+      "carbs": 44.7,
+      "fat": 16.1,
+      "sugar": 1.5,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 45 g dry rice; 12 g dry dal; 50 g paneer; 5 g oil/ghee; 138 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "45 g dry rice; 12 g dry dal; 50 g paneer; 5 g oil/ghee; 138 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r42": {
+    "macros": {
+      "kcal": 355,
+      "protein": 9.4,
+      "carbs": 60.2,
+      "fat": 8.6,
+      "sugar": 1.0,
+      "estimate": true
+    },
+    "portionGrams": 180,
+    "portionDescription": "1 medium stuffed paratha",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 60 g atta; 85 g cooked potato; 7 g oil/ghee; 28 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "60 g atta; 85 g cooked potato; 7 g oil/ghee; 28 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r43": {
+    "macros": {
+      "kcal": 85,
+      "protein": 1.9,
+      "carbs": 9.3,
+      "fat": 4.4,
+      "sugar": 5.7,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 180 g tomato; 25 g onion; 4 g oil/ghee; 41 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "180 g tomato; 25 g onion; 4 g oil/ghee; 41 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r44": {
+    "macros": {
+      "kcal": 120,
+      "protein": 5.8,
+      "carbs": 8.7,
+      "fat": 7.1,
+      "sugar": 6.7,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 100 g mushroom; 80 g milk; 20 g onion; 4 g oil/ghee; 46 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "100 g mushroom; 80 g milk; 20 g onion; 4 g oil/ghee; 46 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r45": {
+    "macros": {
+      "kcal": 110,
+      "protein": 3.8,
+      "carbs": 11.8,
+      "fat": 5.1,
+      "sugar": 2.1,
+      "estimate": true
+    },
+    "portionGrams": 60,
+    "portionDescription": "4 tbsp hummus",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 42 g cooked chickpeas; 3 g lemon; 4 g oil/ghee; 11 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "42 g cooked chickpeas; 3 g lemon; 4 g oil/ghee; 11 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r46": {
+    "macros": {
+      "kcal": 290,
+      "protein": 5.9,
+      "carbs": 48.7,
+      "fat": 7.7,
+      "sugar": 1.4,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 30 g semolina; 30 g rice flour; 30 g onion; 7 g oil/ghee; 153 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "30 g semolina; 30 g rice flour; 30 g onion; 7 g oil/ghee; 153 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r47": {
+    "macros": {
+      "kcal": 280,
+      "protein": 12.0,
+      "carbs": 30.0,
+      "fat": 12.5,
+      "sugar": 1.0,
+      "estimate": true
+    },
+    "portionGrams": 100,
+    "portionDescription": "2 medium medu vada",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 50 g dry dal; 12 g oil/ghee; 38 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "50 g dry dal; 12 g oil/ghee; 38 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r48": {
+    "macros": {
+      "kcal": 270,
+      "protein": 15.6,
+      "carbs": 39.0,
+      "fat": 5.7,
+      "sugar": 1.3,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 65 g dry dal; 5 g oil/ghee; 180 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "65 g dry dal; 5 g oil/ghee; 180 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r49": {
+    "macros": {
+      "kcal": 275,
+      "protein": 4.6,
+      "carbs": 49.8,
+      "fat": 6.6,
+      "sugar": 0.8,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 60 g dry rice; 12 g coconut; 2 g oil/ghee; 176 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "60 g dry rice; 12 g coconut; 2 g oil/ghee; 176 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r50": {
+    "macros": {
+      "kcal": 290,
+      "protein": 9.3,
+      "carbs": 48.0,
+      "fat": 7.0,
+      "sugar": 3.2,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 60 g semolina; 40 g yoghurt; 25 g onion; 5 g oil/ghee; 120 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "60 g semolina; 40 g yoghurt; 25 g onion; 5 g oil/ghee; 120 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r51": {
+    "macros": {
+      "kcal": 295,
+      "protein": 8.8,
+      "carbs": 45.8,
+      "fat": 8.3,
+      "sugar": 0.4,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 45 g oats; 20 g rice flour; 5 g oil/ghee; 180 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "45 g oats; 20 g rice flour; 5 g oil/ghee; 180 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r52": {
+    "macros": {
+      "kcal": 250,
+      "protein": 9.8,
+      "carbs": 35.0,
+      "fat": 7.8,
+      "sugar": 2.3,
+      "estimate": true
+    },
+    "portionGrams": 150,
+    "portionDescription": "3 medium oats idli",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 50 g oats; 40 g yoghurt; 3 g oil/ghee; 57 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "50 g oats; 40 g yoghurt; 3 g oil/ghee; 57 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r53": {
+    "macros": {
+      "kcal": 275,
+      "protein": 9.6,
+      "carbs": 39.3,
+      "fat": 8.8,
+      "sugar": 1.8,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 55 g oats; 30 g onion; 5 g oil/ghee; 160 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "55 g oats; 30 g onion; 5 g oil/ghee; 160 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r54": {
+    "macros": {
+      "kcal": 315,
+      "protein": 11.6,
+      "carbs": 43.8,
+      "fat": 10.3,
+      "sugar": 3.2,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 60 g oats; 35 g yoghurt; 25 g onion; 5 g oil/ghee; 125 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "60 g oats; 35 g yoghurt; 25 g onion; 5 g oil/ghee; 125 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r55": {
+    "macros": {
+      "kcal": 275,
+      "protein": 4.6,
+      "carbs": 51.1,
+      "fat": 5.7,
+      "sugar": 0.2,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 30 g poha; 35 g dry rice; 5 g oil/ghee; 180 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "30 g poha; 35 g dry rice; 5 g oil/ghee; 180 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r56": {
+    "macros": {
+      "kcal": 230,
+      "protein": 6.2,
+      "carbs": 49.2,
+      "fat": 0.7,
+      "sugar": 0.4,
+      "estimate": true
+    },
+    "portionGrams": 150,
+    "portionDescription": "3 medium poha idli",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 25 g poha; 30 g dry rice; 10 g dry dal; 0 g oil/ghee; 85 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "25 g poha; 30 g dry rice; 10 g dry dal; 0 g oil/ghee; 85 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r57": {
+    "macros": {
+      "kcal": 250,
+      "protein": 4.2,
+      "carbs": 45.1,
+      "fat": 5.6,
+      "sugar": 1.5,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 55 g poha; 30 g onion; 5 g oil/ghee; 160 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "55 g poha; 30 g onion; 5 g oil/ghee; 160 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r58": {
+    "macros": {
+      "kcal": 280,
+      "protein": 6.7,
+      "carbs": 50.8,
+      "fat": 5.7,
+      "sugar": 0.4,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 40 g dry rice; 15 g poha; 12 g dry dal; 5 g oil/ghee; 178 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "40 g dry rice; 15 g poha; 12 g dry dal; 5 g oil/ghee; 178 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r59": {
+    "macros": {
+      "kcal": 250,
+      "protein": 6.0,
+      "carbs": 41.5,
+      "fat": 6.5,
+      "sugar": 1.3,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 40 g dry rice; 12 g dry dal; 25 g onion; 6 g oil/ghee; 167 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "40 g dry rice; 12 g dry dal; 25 g onion; 6 g oil/ghee; 167 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r60": {
+    "macros": {
+      "kcal": 225,
+      "protein": 5.7,
+      "carbs": 37.8,
+      "fat": 5.5,
+      "sugar": 1.6,
+      "estimate": true
+    },
+    "portionGrams": 180,
+    "portionDescription": "3 medium idli with masala",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 35 g dry rice; 12 g dry dal; 20 g onion; 20 g tomato; 5 g oil/ghee; 88 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "35 g dry rice; 12 g dry dal; 20 g onion; 20 g tomato; 5 g oil/ghee; 88 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r61": {
+    "macros": {
+      "kcal": 265,
+      "protein": 9.3,
+      "carbs": 37.9,
+      "fat": 8.3,
+      "sugar": 5.8,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 80 g bread; 25 g onion; 30 g tomato; 5 g oil/ghee; 110 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "80 g bread; 25 g onion; 30 g tomato; 5 g oil/ghee; 110 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r62": {
+    "macros": {
+      "kcal": 270,
+      "protein": 8.0,
+      "carbs": 46.6,
+      "fat": 5.7,
+      "sugar": 1.6,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 60 g semolina; 30 g onion; 5 g oil/ghee; 155 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "60 g semolina; 30 g onion; 5 g oil/ghee; 155 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r63": {
+    "macros": {
+      "kcal": 260,
+      "protein": 7.7,
+      "carbs": 44.0,
+      "fat": 5.7,
+      "sugar": 2.4,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 55 g semolina; 50 g tomato; 20 g onion; 5 g oil/ghee; 120 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "55 g semolina; 50 g tomato; 20 g onion; 5 g oil/ghee; 120 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r64": {
+    "macros": {
+      "kcal": 355,
+      "protein": 11.9,
+      "carbs": 57.5,
+      "fat": 8.8,
+      "sugar": 1.8,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion (your rice cup) — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 140 g cooked rice; 90 g cooked lentils; 8 g oil/ghee; 12 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "140 g cooked rice; 90 g cooked lentils; 8 g oil/ghee; 12 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r65": {
+    "macros": {
+      "kcal": 265,
+      "protein": 4.3,
+      "carbs": 48.8,
+      "fat": 5.8,
+      "sugar": 0.4,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 40 g ragi flour; 25 g rice flour; 5 g oil/ghee; 180 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "40 g ragi flour; 25 g rice flour; 5 g oil/ghee; 180 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r66": {
+    "macros": {
+      "kcal": 210,
+      "protein": 7.1,
+      "carbs": 39.6,
+      "fat": 2.8,
+      "sugar": 0.8,
+      "estimate": true
+    },
+    "portionGrams": 150,
+    "portionDescription": "3 medium ragi idli",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 40 g ragi flour; 18 g dry dal; 2 g oil/ghee; 90 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "40 g ragi flour; 18 g dry dal; 2 g oil/ghee; 90 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r67": {
+    "macros": {
+      "kcal": 290,
+      "protein": 12.6,
+      "carbs": 47.0,
+      "fat": 5.7,
+      "sugar": 0.9,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 45 g dry dal; 25 g dry rice; 5 g oil/ghee; 175 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "45 g dry dal; 25 g dry rice; 5 g oil/ghee; 175 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r68": {
+    "macros": {
+      "kcal": 310,
+      "protein": 12.9,
+      "carbs": 51.0,
+      "fat": 5.8,
+      "sugar": 0.9,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 30 g dry rice; 45 g dry dal; 5 g oil/ghee; 170 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "30 g dry rice; 45 g dry dal; 5 g oil/ghee; 170 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r69": {
+    "macros": {
+      "kcal": 70,
+      "protein": 1.9,
+      "carbs": 7.9,
+      "fat": 3.2,
+      "sugar": 3.4,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 15 g cooked lentils; 45 g tomato; 5 g tamarind; 3 g oil/ghee; 182 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "15 g cooked lentils; 45 g tomato; 5 g tamarind; 3 g oil/ghee; 182 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r70": {
+    "macros": {
+      "kcal": 70,
+      "protein": 1.9,
+      "carbs": 7.9,
+      "fat": 3.2,
+      "sugar": 3.4,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 15 g cooked lentils; 45 g tomato; 5 g tamarind; 3 g oil/ghee; 182 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "15 g cooked lentils; 45 g tomato; 5 g tamarind; 3 g oil/ghee; 182 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r71": {
+    "macros": {
+      "kcal": 70,
+      "protein": 1.9,
+      "carbs": 7.9,
+      "fat": 3.2,
+      "sugar": 3.4,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 15 g cooked lentils; 45 g tomato; 5 g tamarind; 3 g oil/ghee; 182 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "15 g cooked lentils; 45 g tomato; 5 g tamarind; 3 g oil/ghee; 182 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r72": {
+    "macros": {
+      "kcal": 70,
+      "protein": 1.9,
+      "carbs": 7.9,
+      "fat": 3.2,
+      "sugar": 3.4,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 15 g cooked lentils; 45 g tomato; 5 g tamarind; 3 g oil/ghee; 182 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "15 g cooked lentils; 45 g tomato; 5 g tamarind; 3 g oil/ghee; 182 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r73": {
+    "macros": {
+      "kcal": 170,
+      "protein": 7.8,
+      "carbs": 22.6,
+      "fat": 5.6,
+      "sugar": 5.8,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 70 g cooked lentils; 65 g mixed vegetables; 25 g tomato; 5 g tamarind; 5 g oil/ghee; 80 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "70 g cooked lentils; 65 g mixed vegetables; 25 g tomato; 5 g tamarind; 5 g oil/ghee; 80 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r74": {
+    "macros": {
+      "kcal": 170,
+      "protein": 7.8,
+      "carbs": 22.6,
+      "fat": 5.6,
+      "sugar": 5.8,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 70 g cooked lentils; 65 g mixed vegetables; 25 g tomato; 5 g tamarind; 5 g oil/ghee; 80 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "70 g cooked lentils; 65 g mixed vegetables; 25 g tomato; 5 g tamarind; 5 g oil/ghee; 80 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r75": {
+    "macros": {
+      "kcal": 215,
+      "protein": 8.2,
+      "carbs": 24.5,
+      "fat": 9.6,
+      "sugar": 6.5,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 70 g cooked lentils; 65 g mixed vegetables; 25 g tomato; 5 g tamarind; 5 g oil/ghee; 12 g coconut; 68 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "70 g cooked lentils; 65 g mixed vegetables; 25 g tomato; 5 g tamarind; 5 g oil/ghee; 12 g coconut; 68 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r76": {
+    "macros": {
+      "kcal": 215,
+      "protein": 8.2,
+      "carbs": 24.5,
+      "fat": 9.6,
+      "sugar": 6.5,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 70 g cooked lentils; 65 g mixed vegetables; 25 g tomato; 5 g tamarind; 5 g oil/ghee; 12 g coconut; 68 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "70 g cooked lentils; 65 g mixed vegetables; 25 g tomato; 5 g tamarind; 5 g oil/ghee; 12 g coconut; 68 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r77": {
+    "macros": {
+      "kcal": 170,
+      "protein": 7.8,
+      "carbs": 22.6,
+      "fat": 5.6,
+      "sugar": 5.8,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 70 g cooked lentils; 65 g mixed vegetables; 25 g tomato; 5 g tamarind; 5 g oil/ghee; 80 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "70 g cooked lentils; 65 g mixed vegetables; 25 g tomato; 5 g tamarind; 5 g oil/ghee; 80 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r78": {
+    "macros": {
+      "kcal": 170,
+      "protein": 7.8,
+      "carbs": 22.6,
+      "fat": 5.6,
+      "sugar": 5.8,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 70 g cooked lentils; 65 g mixed vegetables; 25 g tomato; 5 g tamarind; 5 g oil/ghee; 80 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "70 g cooked lentils; 65 g mixed vegetables; 25 g tomato; 5 g tamarind; 5 g oil/ghee; 80 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r79": {
+    "macros": {
+      "kcal": 170,
+      "protein": 7.8,
+      "carbs": 22.6,
+      "fat": 5.6,
+      "sugar": 5.8,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 70 g cooked lentils; 65 g mixed vegetables; 25 g tomato; 5 g tamarind; 5 g oil/ghee; 80 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "70 g cooked lentils; 65 g mixed vegetables; 25 g tomato; 5 g tamarind; 5 g oil/ghee; 80 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r80": {
+    "macros": {
+      "kcal": 170,
+      "protein": 7.8,
+      "carbs": 22.6,
+      "fat": 5.6,
+      "sugar": 5.8,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 70 g cooked lentils; 65 g mixed vegetables; 25 g tomato; 5 g tamarind; 5 g oil/ghee; 80 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "70 g cooked lentils; 65 g mixed vegetables; 25 g tomato; 5 g tamarind; 5 g oil/ghee; 80 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r81": {
+    "macros": {
+      "kcal": 330,
+      "protein": 10.5,
+      "carbs": 56.9,
+      "fat": 6.8,
+      "sugar": 4.1,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion (your rice cup) — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 135 g cooked rice; 70 g cooked lentils; 25 g mixed vegetables; 5 g tamarind; 6 g oil/ghee; 9 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "135 g cooked rice; 70 g cooked lentils; 25 g mixed vegetables; 5 g tamarind; 6 g oil/ghee; 9 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r82": {
+    "macros": {
+      "kcal": 370,
+      "protein": 13.5,
+      "carbs": 44.2,
+      "fat": 15.4,
+      "sugar": 9.2,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 140 g cooked chickpeas; 20 g coconut; 30 g onion; 5 g oil/ghee; 55 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "140 g cooked chickpeas; 20 g coconut; 30 g onion; 5 g oil/ghee; 55 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r83": {
+    "macros": {
+      "kcal": 370,
+      "protein": 13.6,
+      "carbs": 43.1,
+      "fat": 16.1,
+      "sugar": 8.3,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 145 g cooked chickpeas; 22 g coconut; 5 g oil/ghee; 78 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "145 g cooked chickpeas; 22 g coconut; 5 g oil/ghee; 78 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r84": {
+    "macros": {
+      "kcal": 195,
+      "protein": 3.7,
+      "carbs": 16.2,
+      "fat": 12.8,
+      "sugar": 6.9,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 150 g mixed vegetables; 22 g coconut; 25 g onion; 5 g oil/ghee; 48 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "150 g mixed vegetables; 22 g coconut; 25 g onion; 5 g oil/ghee; 48 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r85": {
+    "macros": {
+      "kcal": 275,
+      "protein": 4.0,
+      "carbs": 37.4,
+      "fat": 11.9,
+      "sugar": 3.7,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 160 g cooked potato; 20 g coconut; 25 g onion; 5 g oil/ghee; 40 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "160 g cooked potato; 20 g coconut; 25 g onion; 5 g oil/ghee; 40 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r86": {
+    "macros": {
+      "kcal": 265,
+      "protein": 7.1,
+      "carbs": 31.9,
+      "fat": 12.2,
+      "sugar": 7.5,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 95 g peas; 70 g cooked potato; 20 g coconut; 5 g oil/ghee; 60 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "95 g peas; 70 g cooked potato; 20 g coconut; 5 g oil/ghee; 60 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r87": {
+    "macros": {
+      "kcal": 175,
+      "protein": 5.6,
+      "carbs": 10.5,
+      "fat": 12.2,
+      "sugar": 5.6,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 155 g mushroom; 20 g coconut; 30 g onion; 5 g oil/ghee; 40 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "155 g mushroom; 20 g coconut; 30 g onion; 5 g oil/ghee; 40 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r88": {
+    "macros": {
+      "kcal": 215,
+      "protein": 7.7,
+      "carbs": 18.2,
+      "fat": 12.3,
+      "sugar": 7.8,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 90 g mushroom; 80 g peas; 20 g coconut; 5 g oil/ghee; 55 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "90 g mushroom; 80 g peas; 20 g coconut; 5 g oil/ghee; 55 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r89": {
+    "macros": {
+      "kcal": 130,
+      "protein": 6.3,
+      "carbs": 8.8,
+      "fat": 7.6,
+      "sugar": 5.3,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 200 g mushroom; 30 g onion; 7 g oil/ghee; 13 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "200 g mushroom; 30 g onion; 7 g oil/ghee; 13 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r90": {
+    "macros": {
+      "kcal": 280,
+      "protein": 4.3,
+      "carbs": 24.4,
+      "fat": 18.3,
+      "sugar": 4.9,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 90 g cooked potato; 60 g mixed vegetables; 75 g coconut milk; 3 g oil/ghee; 22 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "90 g cooked potato; 60 g mixed vegetables; 75 g coconut milk; 3 g oil/ghee; 22 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r91": {
+    "macros": {
+      "kcal": 240,
+      "protein": 7.6,
+      "carbs": 15.6,
+      "fat": 16.3,
+      "sugar": 8.8,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 155 g capsicum; 22 g peanuts; 30 g onion; 5 g oil/ghee; 38 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "155 g capsicum; 22 g peanuts; 30 g onion; 5 g oil/ghee; 38 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r92": {
+    "macros": {
+      "kcal": 250,
+      "protein": 7.0,
+      "carbs": 16.2,
+      "fat": 17.2,
+      "sugar": 8.7,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 165 g brinjal; 20 g peanuts; 5 g tamarind; 7 g oil/ghee; 53 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "165 g brinjal; 20 g peanuts; 5 g tamarind; 7 g oil/ghee; 53 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r93": {
+    "macros": {
+      "kcal": 215,
+      "protein": 3.7,
+      "carbs": 38.3,
+      "fat": 5.2,
+      "sugar": 3.0,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 175 g cooked potato; 35 g onion; 5 g oil/ghee; 35 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "175 g cooked potato; 35 g onion; 5 g oil/ghee; 35 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r94": {
+    "macros": {
+      "kcal": 290,
+      "protein": 4.3,
+      "carbs": 45.0,
+      "fat": 10.2,
+      "sugar": 2.0,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 225 g cooked potato; 10 g oil/ghee; 15 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "225 g cooked potato; 10 g oil/ghee; 15 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r95": {
+    "macros": {
+      "kcal": 190,
+      "protein": 5.1,
+      "carbs": 15.9,
+      "fat": 11.8,
+      "sugar": 8.1,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 150 g mixed vegetables; 20 g coconut; 50 g yoghurt; 3 g oil/ghee; 27 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "150 g mixed vegetables; 20 g coconut; 50 g yoghurt; 3 g oil/ghee; 27 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r96": {
+    "macros": {
+      "kcal": 150,
+      "protein": 4.2,
+      "carbs": 16.5,
+      "fat": 7.4,
+      "sugar": 3.3,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 220 g okra; 7 g oil/ghee; 23 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "220 g okra; 7 g oil/ghee; 23 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r97": {
+    "macros": {
+      "kcal": 180,
+      "protein": 4.7,
+      "carbs": 17.0,
+      "fat": 10.4,
+      "sugar": 7.9,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 210 g green beans; 15 g coconut; 5 g oil/ghee; 20 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "210 g green beans; 15 g coconut; 5 g oil/ghee; 20 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r98": {
+    "macros": {
+      "kcal": 380,
+      "protein": 3.2,
+      "carbs": 67.5,
+      "fat": 10.8,
+      "sugar": 7.2,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 220 g cooked raw banana; 10 g coconut; 7 g oil/ghee; 13 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "220 g cooked raw banana; 10 g coconut; 7 g oil/ghee; 13 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r99": {
+    "macros": {
+      "kcal": 220,
+      "protein": 4.0,
+      "carbs": 23.2,
+      "fat": 12.1,
+      "sugar": 15.5,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 210 g beetroot; 20 g coconut; 5 g oil/ghee; 15 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "210 g beetroot; 20 g coconut; 5 g oil/ghee; 15 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r100": {
+    "macros": {
+      "kcal": 180,
+      "protein": 3.4,
+      "carbs": 15.2,
+      "fat": 11.9,
+      "sugar": 8.0,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 210 g cabbage; 20 g coconut; 5 g oil/ghee; 15 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "210 g cabbage; 20 g coconut; 5 g oil/ghee; 15 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r101": {
+    "macros": {
+      "kcal": 585,
+      "protein": 27.6,
+      "carbs": 20.2,
+      "fat": 43.6,
+      "sugar": 4.7,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 150 g paneer; 15 g cornflour; 12 g oil/ghee; 30 g mixed vegetables; 43 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "150 g paneer; 15 g cornflour; 12 g oil/ghee; 30 g mixed vegetables; 43 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r102": {
+    "macros": {
+      "kcal": 265,
+      "protein": 3.6,
+      "carbs": 27.4,
+      "fat": 15.6,
+      "sugar": 3.5,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 185 g cauliflower; 20 g cornflour; 15 g oil/ghee; 30 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "185 g cauliflower; 20 g cornflour; 15 g oil/ghee; 30 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r103": {
+    "macros": {
+      "kcal": 430,
+      "protein": 9.1,
+      "carbs": 67.5,
+      "fat": 13.6,
+      "sugar": 3.9,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion (your rice cup) — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 215 g cooked rice; 8 g tamarind; 12 g peanuts; 7 g oil/ghee; 8 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "215 g cooked rice; 8 g tamarind; 12 g peanuts; 7 g oil/ghee; 8 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r104": {
+    "macros": {
+      "kcal": 400,
+      "protein": 8.8,
+      "carbs": 62.7,
+      "fat": 12.6,
+      "sugar": 2.8,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion (your rice cup) — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 205 g cooked rice; 20 g raw mango; 12 g peanuts; 6 g oil/ghee; 7 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "205 g cooked rice; 20 g raw mango; 12 g peanuts; 6 g oil/ghee; 7 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r105": {
+    "macros": {
+      "kcal": 315,
+      "protein": 5.7,
+      "carbs": 59.7,
+      "fat": 5.7,
+      "sugar": 2.5,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion (your rice cup) — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 195 g cooked rice; 35 g carrot; 15 g onion; 5 g oil/ghee. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "195 g cooked rice; 35 g carrot; 15 g onion; 5 g oil/ghee. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r106": {
+    "macros": {
+      "kcal": 315,
+      "protein": 6.0,
+      "carbs": 59.7,
+      "fat": 5.7,
+      "sugar": 3.2,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion (your rice cup) — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 195 g cooked rice; 35 g beetroot; 15 g onion; 5 g oil/ghee. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "195 g cooked rice; 35 g beetroot; 15 g onion; 5 g oil/ghee. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r107": {
+    "macros": {
+      "kcal": 370,
+      "protein": 5.9,
+      "carbs": 53.5,
+      "fat": 14.6,
+      "sugar": 2.2,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion (your rice cup) — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 180 g cooked rice; 45 g coconut milk; 15 g onion; 5 g oil/ghee; 5 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "180 g cooked rice; 45 g coconut milk; 15 g onion; 5 g oil/ghee; 5 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r108": {
+    "macros": {
+      "kcal": 370,
+      "protein": 10.4,
+      "carbs": 60.8,
+      "fat": 9.6,
+      "sugar": 4.6,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion (your rice cup) — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 145 g cooked rice; 65 g cooked chickpeas; 15 g onion; 15 g yoghurt; 7 g oil/ghee; 3 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "145 g cooked rice; 65 g cooked chickpeas; 15 g onion; 15 g yoghurt; 7 g oil/ghee; 3 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r109": {
+    "macros": {
+      "kcal": 345,
+      "protein": 6.5,
+      "carbs": 51.6,
+      "fat": 12.7,
+      "sugar": 2.6,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion (your rice cup) — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 165 g cooked rice; 45 g mushroom; 15 g coconut; 15 g onion; 7 g oil/ghee; 3 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "165 g cooked rice; 45 g mushroom; 15 g coconut; 15 g onion; 7 g oil/ghee; 3 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r110": {
+    "macros": {
+      "kcal": 85,
+      "protein": 1.3,
+      "carbs": 4.4,
+      "fat": 6.7,
+      "sugar": 1.1,
+      "estimate": true
+    },
+    "portionGrams": 30,
+    "portionDescription": "2 tbsp coconut chutney",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 17 g coconut; 3 g dry dal; 1 g oil/ghee; 9 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "17 g coconut; 3 g dry dal; 1 g oil/ghee; 9 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r111": {
+    "macros": {
+      "kcal": 25,
+      "protein": 0.2,
+      "carbs": 1.2,
+      "fat": 2.0,
+      "sugar": 0.7,
+      "estimate": true
+    },
+    "portionGrams": 30,
+    "portionDescription": "2 tbsp tomato chutney",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 20 g tomato; 5 g onion; 2 g oil/ghee; 3 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "20 g tomato; 5 g onion; 2 g oil/ghee; 3 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r112": {
+    "macros": {
+      "kcal": 105,
+      "protein": 4.0,
+      "carbs": 3.6,
+      "fat": 8.4,
+      "sugar": 1.5,
+      "estimate": true
+    },
+    "portionGrams": 30,
+    "portionDescription": "2 tbsp peanut chutney",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 15 g peanuts; 2 g tamarind; 1 g oil/ghee; 12 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "15 g peanuts; 2 g tamarind; 1 g oil/ghee; 12 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r113": {
+    "macros": {
+      "kcal": 30,
+      "protein": 0.3,
+      "carbs": 3.3,
+      "fat": 2.0,
+      "sugar": 1.7,
+      "estimate": true
+    },
+    "portionGrams": 30,
+    "portionDescription": "2 tbsp onion chutney",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 22 g onion; 2 g tamarind; 2 g oil/ghee; 4 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "22 g onion; 2 g tamarind; 2 g oil/ghee; 4 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r114": {
+    "macros": {
+      "kcal": 260,
+      "protein": 13.3,
+      "carbs": 38.5,
+      "fat": 5.9,
+      "sugar": 9.5,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 140 g cooked lentils; 65 g raw mango; 20 g tomato; 5 g oil/ghee; 20 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "140 g cooked lentils; 65 g raw mango; 20 g tomato; 5 g oil/ghee; 20 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r115": {
+    "macros": {
+      "kcal": 230,
+      "protein": 13.4,
+      "carbs": 31.4,
+      "fat": 5.7,
+      "sugar": 4.3,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 140 g cooked lentils; 65 g gourd; 20 g tomato; 5 g oil/ghee; 20 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "140 g cooked lentils; 65 g gourd; 20 g tomato; 5 g oil/ghee; 20 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r116": {
+    "macros": {
+      "kcal": 230,
+      "protein": 13.4,
+      "carbs": 31.4,
+      "fat": 5.7,
+      "sugar": 4.3,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 140 g cooked lentils; 65 g gourd; 20 g tomato; 5 g oil/ghee; 20 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "140 g cooked lentils; 65 g gourd; 20 g tomato; 5 g oil/ghee; 20 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r117": {
+    "macros": {
+      "kcal": 235,
+      "protein": 14.7,
+      "carbs": 31.2,
+      "fat": 5.8,
+      "sugar": 3.3,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 140 g cooked lentils; 65 g spinach; 20 g tomato; 5 g oil/ghee; 20 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "140 g cooked lentils; 65 g spinach; 20 g tomato; 5 g oil/ghee; 20 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r118": {
+    "macros": {
+      "kcal": 230,
+      "protein": 13.4,
+      "carbs": 31.4,
+      "fat": 5.7,
+      "sugar": 4.3,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 140 g cooked lentils; 65 g gourd; 20 g tomato; 5 g oil/ghee; 20 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "140 g cooked lentils; 65 g gourd; 20 g tomato; 5 g oil/ghee; 20 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r119": {
+    "macros": {
+      "kcal": 235,
+      "protein": 14.7,
+      "carbs": 31.2,
+      "fat": 5.8,
+      "sugar": 3.3,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 140 g cooked lentils; 65 g spinach; 20 g tomato; 5 g oil/ghee; 20 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "140 g cooked lentils; 65 g spinach; 20 g tomato; 5 g oil/ghee; 20 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r120": {
+    "macros": {
+      "kcal": 240,
+      "protein": 13.9,
+      "carbs": 33.3,
+      "fat": 5.8,
+      "sugar": 5.0,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 140 g cooked lentils; 65 g mixed vegetables; 20 g tomato; 5 g oil/ghee; 20 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "140 g cooked lentils; 65 g mixed vegetables; 20 g tomato; 5 g oil/ghee; 20 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r121": {
+    "macros": {
+      "kcal": 260,
+      "protein": 7.4,
+      "carbs": 19.1,
+      "fat": 17.2,
+      "sugar": 10.1,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 175 g brinjal; 20 g peanuts; 25 g onion; 5 g tamarind; 7 g oil/ghee; 18 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "175 g brinjal; 20 g peanuts; 25 g onion; 5 g tamarind; 7 g oil/ghee; 18 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r122": {
+    "macros": {
+      "kcal": 155,
+      "protein": 3.7,
+      "carbs": 23.2,
+      "fat": 5.4,
+      "sugar": 10.1,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 170 g okra; 30 g onion; 6 g tamarind; 4 g jaggery; 5 g oil/ghee; 35 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "170 g okra; 30 g onion; 6 g tamarind; 4 g jaggery; 5 g oil/ghee; 35 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r123": {
+    "macros": {
+      "kcal": 255,
+      "protein": 12.9,
+      "carbs": 37.0,
+      "fat": 5.9,
+      "sugar": 6.8,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 160 g cooked black-eyed peas; 25 g onion; 35 g tomato; 5 g oil/ghee; 25 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "160 g cooked black-eyed peas; 25 g onion; 35 g tomato; 5 g oil/ghee; 25 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r124": {
+    "macros": {
+      "kcal": 235,
+      "protein": 11.8,
+      "carbs": 34.1,
+      "fat": 5.7,
+      "sugar": 5.2,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 160 g cooked moong; 25 g onion; 35 g tomato; 5 g oil/ghee; 25 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "160 g cooked moong; 25 g onion; 35 g tomato; 5 g oil/ghee; 25 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r125": {
+    "macros": {
+      "kcal": 220,
+      "protein": 16.5,
+      "carbs": 8.0,
+      "fat": 13.3,
+      "sugar": 2.4,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 115 g firm tofu; 75 g spinach; 20 g onion; 25 g tomato; 5 g oil/ghee; 10 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "115 g firm tofu; 75 g spinach; 20 g onion; 25 g tomato; 5 g oil/ghee; 10 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r126": {
+    "macros": {
+      "kcal": 250,
+      "protein": 18.8,
+      "carbs": 8.0,
+      "fat": 15.6,
+      "sugar": 3.4,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 150 g firm tofu; 35 g onion; 45 g tomato; 5 g oil/ghee; 15 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "150 g firm tofu; 35 g onion; 45 g tomato; 5 g oil/ghee; 15 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r127": {
+    "macros": {
+      "kcal": 235,
+      "protein": 15.5,
+      "carbs": 6.4,
+      "fat": 16.2,
+      "sugar": 3.8,
+      "estimate": true
+    },
+    "portionGrams": 250,
+    "portionDescription": "1 portion — 250 g cooked food",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 115 g firm tofu; 30 g yoghurt; 70 g tomato; 7 g oil/ghee; 28 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "115 g firm tofu; 30 g yoghurt; 70 g tomato; 7 g oil/ghee; 28 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r128": {
+    "macros": {
+      "kcal": 290,
+      "protein": 9.1,
+      "carbs": 37.0,
+      "fat": 11.7,
+      "sugar": 4.7,
+      "estimate": true
+    },
+    "portionGrams": 150,
+    "portionDescription": "2 slices avocado toast",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 70 g bread; 60 g avocado; 15 g onion; 5 g lemon; 0 g oil/ghee. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "70 g bread; 60 g avocado; 15 g onion; 5 g lemon; 0 g oil/ghee. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r129": {
+    "macros": {
+      "kcal": 400,
+      "protein": 19.1,
+      "carbs": 35.0,
+      "fat": 20.5,
+      "sugar": 6.4,
+      "estimate": true
+    },
+    "portionGrams": 180,
+    "portionDescription": "1 sandwich (2 bread slices)",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 70 g bread; 60 g paneer; 15 g onion; 25 g mixed vegetables; 5 g oil/ghee; 5 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "70 g bread; 60 g paneer; 15 g onion; 25 g mixed vegetables; 5 g oil/ghee; 5 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r130": {
+    "macros": {
+      "kcal": 250,
+      "protein": 9.1,
+      "carbs": 35.7,
+      "fat": 8.0,
+      "sugar": 5.9,
+      "estimate": true
+    },
+    "portionGrams": 170,
+    "portionDescription": "1 sandwich (2 bread slices)",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 70 g bread; 80 g mixed vegetables; 5 g oil/ghee; 15 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "70 g bread; 80 g mixed vegetables; 5 g oil/ghee; 15 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r131": {
+    "macros": {
+      "kcal": 215,
+      "protein": 13.3,
+      "carbs": 5.5,
+      "fat": 15.7,
+      "sugar": 3.4,
+      "estimate": true
+    },
+    "portionGrams": 175,
+    "portionDescription": "2-egg bhurji",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 100 g egg; 30 g onion; 40 g tomato; 5 g oil/ghee. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "100 g egg; 30 g onion; 40 g tomato; 5 g oil/ghee. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r132": {
+    "macros": {
+      "kcal": 250,
+      "protein": 3.9,
+      "carbs": 49.5,
+      "fat": 4.0,
+      "sugar": 0.7,
+      "estimate": true
+    },
+    "portionGrams": 160,
+    "portionDescription": "3 medium idiyappam",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 60 g rice flour; 10 g coconut; 0 g oil/ghee; 90 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "60 g rice flour; 10 g coconut; 0 g oil/ghee; 90 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  },
+  "r133": {
+    "macros": {
+      "kcal": 220,
+      "protein": 6.4,
+      "carbs": 41.0,
+      "fat": 3.5,
+      "sugar": 0.3,
+      "estimate": true
+    },
+    "portionGrams": 150,
+    "portionDescription": "3 medium Kanchipuram idli",
+    "nutritionSource": "AI estimate from explicit ingredient-weight assumptions; not laboratory or restaurant nutrition. 40 g dry rice; 15 g dry dal; 3 g oil/ghee; 92 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal.",
+    "nutritionReviewed": true,
+    "nutritionEstimated": true,
+    "nutritionAssumptions": "40 g dry rice; 15 g dry dal; 3 g oil/ghee; 92 g water. Seasoning/spices not quantified; no extra accompaniments. Oil/ghee shown is total allocated to this portion. Calories use approximate 4 kcal/g protein and carbs, 9 kcal/g fat, rounded to 5 kcal."
+  }
+};
+function allRecipes(){return RECIPES.map(r=>({...r,...BUILTIN_RECIPE_NUTRITION[r.id],meal:inferRecipeMeal(r)})).concat(state.customRecipes||[]).filter(r=>!(state.removedRecipeIds||[]).includes(r.id)).map(r=>({...r,...(state.recipeNutrition?.[r.id]||{})}));}
+function useRecipeForMeal(id,meal){if(!['breakfast','lunch','snack','dinner'].includes(meal))return;const recipe=allRecipes().find(r=>r.id===id);if(recipe)openFoodPortionPopup(meal,recipeFoodNutrition(recipe),id);}
+
 const EGG_RE = /egg|omelette|omelet|frittata/i;
 const SI_RE = /idli|dosa|sambar|rasam|uttapam|pongal|upma|poriyal|vada|pesarattu|adai|chutney|bisi bele|avial|thoran|kootu|rava|semiya|kadhi/i;
 function dietAllowed(f){const p=state.dietPrefs||{noEgg:true};return !(p.noEgg&&EGG_RE.test(f.n));}
 function allFoodsForMeal(meal){
 // unsegregated: the full catalog is searchable from every meal card, not just items tagged for that meal
-return FOOD_CATALOG.concat(state.customFoods||[]).concat(BRANDED_FOODS);
+return FOOD_CATALOG.concat(state.customFoods||[]).concat(BRANDED_FOODS).filter(food=>!(state.hiddenFoodNames||[]).includes(food.n));
 }
 function brandedFoodFor(name){
 const n = (name||"").toLowerCase();
 return BRANDED_FOODS.find(f=>f.n.toLowerCase()===n) || null;
 }
 /* ---- daily macro log (protein/carbs/fat/sugar/caffeine consumed vs target) ---- */
-function foodMacroLookup(name){
-const n = (name||"").toLowerCase();
-const hit = FOOD_CATALOG.concat(state.customFoods||[]).concat(BRANDED_FOODS).find(f=>f.n.toLowerCase()===n);
-return hit ? {k:hit.k||0, p:hit.p||0, c:hit.c||0, f:hit.f||0, s:hit.s||0, caf:hit.caf||0} : null;
+function hasCompleteFoodMacros(food){return !!food&&['k','p','c','f'].every(key=>food[key]!==null&&food[key]!==undefined&&food[key]!==''&&Number.isFinite(Number(food[key]))&&Number(food[key])>=0)&&Number(food.k)>0&&!food.needsNutritionReview;}
+function recipeFoodNutrition(recipe){const m=recipe.macros||{};return {n:recipe.name,k:m.kcal,p:m.protein,c:m.carbs,f:m.fat,s:m.sugar,caf:0,portionDescription:recipe.portionDescription,portionGrams:recipe.portionGrams,cupGrams:recipe.cupGrams,nutritionSource:recipe.nutritionSource,nutritionEstimated:!!recipe.nutritionEstimated||!!m.estimate,needsNutritionReview:!!m.estimate&&!recipe.nutritionReviewed};}
+function foodNutritionFor(name){return (state.customFoods||[]).concat(FOOD_CATALOG,BRANDED_FOODS).find(food=>food.n.toLowerCase()===String(name).toLowerCase())||{n:name};}
+function foodPortionFactor(quantity,unit,portionGrams,cupGrams){
+const amount=Number(quantity),grams=Number(portionGrams),cup=Number(cupGrams);
+if(!Number.isFinite(amount)||amount<=0)throw new Error('Enter an amount greater than zero.');
+if(unit==='portion')return amount;
+if(!(grams>0))throw new Error('Enter the gram weight of ONE portion first.');
+if(unit==='grams')return amount/grams;
+if(unit==='cups'){if(!(cup>0))throw new Error('Enter the measured grams in ONE cup of this food.');return amount*cup/grams;}
+throw new Error('Choose portions, grams or cups.');
 }
-function logFoodEntry(meal, name){
-state.foodLog = state.foodLog || {};
-const key = dayKey(selectedDay);
-state.foodLog[key] = state.foodLog[key] || [];
-const macro = foodMacroLookup(name) || {k:0,p:0,c:0,f:0,s:0,caf:0};
-state.foodLog[key].push({id:"fl"+Date.now()+Math.random().toString(36).slice(2,5), name, meal, ...macro, ts:Date.now()});
+let pendingFoodPortion=null;
+function closeFoodPortionPopup(){pendingFoodPortion=null;document.getElementById('foodPortionPopup')?.remove();}
+function defaultFoodPortionGrams(food){return /rice|curry|dal|dhal|pappu|sambar|rasam|sabzi|kurma|kura|pulusu|pongal|biryani|pulao|khichdi/i.test(food?.n||food?.name||'')?250:null;}
+let pendingNutritionAI=null;
+function closeNutritionAI(){pendingNutritionAI=null;document.getElementById('nutritionAIPopup')?.remove();}
+function nutritionAIPrompt(context){
+const food=context.food||{},recipe=context.recipeDraft||(context.recipeId?allRecipes().find(r=>r.id===context.recipeId):null),grams=Number(food.portionGrams)||defaultFoodPortionGrams(food);
+return `Give estimated nutrition for exactly ONE portion of ${food.n||recipe?.name||'this food'}. ${grams?'ONE portion is '+grams+' g cooked edible food.':'Define ONE normal portion and give its cooked edible weight in grams.'} My default for rice, curry, dal, sambar and similar dishes is 250 g per portion. For my rice tracking convention, 1 cup means my chosen 250 g portion; do not present this as a universal cup conversion. ${recipe?'Recipe ingredients: '+(recipe.ingredients||[]).join('; ')+'. Method: '+(recipe.instructions||[]).join('; ')+'. Source link (if any): '+(recipe.url||'none')+'.':''} Include cooking oil, ghee, butter, coconut and accompaniments actually included. Ask me if essential ingredients, quantities or recipe details are missing. State the assumed ingredient weights and oil per portion in nutrition_source. Do not invent a precise or verified value. All macros must be for ONE portion, never the whole batch. Reply only with JSON: {"name":"","calories":0,"protein_g":0,"carbs_g":0,"fat_g":0,"sugar_g":0,"portion_description":"","portion_grams":${grams||0},"nutrition_source":"AI estimate; exact ingredient and oil assumptions"}.`;
+}
+function openNutritionAI(context){
+closeFoodPortionPopup();closeNutritionAI();pendingNutritionAI=context;const prompt=nutritionAIPrompt(context);
+const wrap=document.createElement('div');wrap.id='nutritionAIPopup';wrap.className='sheet-overlay';wrap.style.zIndex='1160';
+wrap.innerHTML=`<section class="sheet food-portion-sheet" role="dialog" aria-modal="true" aria-labelledby="nutritionAIHeading"><h3 id="nutritionAIHeading">Get macros with AI first</h3><p class="small">${escapeHtml(context.food?.n||context.recipeDraft?.name||'Food')} · Complete macros and one portion weight are required before saving.</p><ol class="small"><li>Copy the prompt into your AI chat.</li><li>Answer any ingredient/portion questions.</li><li>Paste the nutrition JSON below.</li></ol><textarea id="nutritionAI_prompt" readonly aria-label="Recipe nutrition AI prompt">${escapeHtml(prompt)}</textarea><button class="btn secondary sm" onclick="copyNutritionAIPrompt()">Copy AI prompt</button><textarea id="nutritionAI_reply" aria-label="AI nutrition reply" placeholder="Paste complete one-portion nutrition JSON"></textarea><p id="nutritionAI_error" class="small" role="alert"></p><div class="sheetactions"><button class="btn secondary" onclick="closeNutritionAI()">Cancel</button><button class="btn" onclick="saveNutritionAIReply()">Save macros</button></div></section>`;
+wrap.addEventListener('keydown',event=>{if(event.key==='Escape')closeNutritionAI();});document.body.appendChild(wrap);
+}
+function copyNutritionAIPrompt(){const box=document.getElementById('nutritionAI_prompt');if(navigator.clipboard?.writeText)navigator.clipboard.writeText(box.value).then(()=>toast('AI prompt copied'),()=>box.select());else box.select();}
+function validateNutritionReply(data,food){
+if(!data||typeof data!=='object'||Array.isArray(data))throw new Error('Paste one nutrition JSON object.');
+for(const key of ['calories','protein_g','carbs_g','fat_g'])if(data[key]===null||data[key]===undefined||data[key]===''||!Number.isFinite(Number(data[key]))||Number(data[key])<0)throw new Error('Calories, protein, carbs and fat are all required.');
+if(!(Number(data.calories)>0))throw new Error('Calories must be greater than zero.');
+const grams=Number(data.portion_grams)||defaultFoodPortionGrams(food);if(!Number.isFinite(grams)||!(grams>0))throw new Error('The AI reply must define ONE portion in grams.');
+if(!String(data.nutrition_source||'').trim())throw new Error('Include nutrition_source with the ingredient and oil assumptions.');
+const sugar=Number(data.sugar_g)||0;if(!Number.isFinite(sugar)||sugar<0)throw new Error('Sugar must be a non-negative number.');
+return {n:food.n,k:Number(data.calories),p:Number(data.protein_g),c:Number(data.carbs_g),f:Number(data.fat_g),s:sugar,portionGrams:grams,portionDescription:String(data.portion_description||'1 portion — '+grams+' g cooked food'),nutritionSource:String(data.nutrition_source||'AI estimate; ingredient assumptions not supplied'),nutritionEstimated:true,needsNutritionReview:false};
+}
+function saveNutritionAIReply(){
+const context=pendingNutritionAI;if(!context)return;
+try{const food=validateNutritionReply(JSON.parse(document.getElementById('nutritionAI_reply').value),context.food);snapshotForUndo('Nutrition saved from AI');
+const recipeData={macros:{kcal:food.k,protein:food.p,carbs:food.c,fat:food.f,sugar:food.s,estimate:true},portionGrams:food.portionGrams,portionDescription:food.portionDescription,nutritionSource:food.nutritionSource,nutritionReviewed:true,nutritionEstimated:true};
+if(context.recipeDraft){state.customRecipes=state.customRecipes||[];state.customRecipes.unshift({...context.recipeDraft,...recipeData,bookmarkOnly:false});}
+else if(context.recipeId){state.recipeNutrition=state.recipeNutrition||{};state.recipeNutrition[context.recipeId]=recipeData;}
+else{state.customFoods=state.customFoods||[];const existing=state.customFoods.find(f=>f.n.toLowerCase()===food.n.toLowerCase());if(existing)Object.assign(existing,food);else state.customFoods.push({...food,bucket:'custom',meal:context.meal||'lunch',src:'homemade'});}
+closeNutritionAI();save();if(context.addAfter)openFoodPortionPopup(context.meal||'lunch',food,context.recipeId||context.recipeDraft?.id);else toast('Nutrition and portion saved');
+}catch(error){document.getElementById('nutritionAI_error').textContent=error instanceof SyntaxError?'Paste valid JSON from the AI reply.':error.message;}
+}
+
+function openFoodPortionPopup(meal,food,recipeId=null){
+closeFoodPortionPopup();
+if(!Number(food.portionGrams)&&defaultFoodPortionGrams(food)){food={...food,portionGrams:250,portionDescription:/rice|biryani|pulao|pongal|khichdi/i.test(food.n)?'1 portion (your rice cup) — 250 g cooked food':'1 portion — 250 g cooked food'};}
+if(!hasCompleteFoodMacros(food)||!Number(food.portionGrams)){openNutritionAI({meal,food,recipeId,addAfter:true});return;}
+pendingFoodPortion={meal,food:{...food},recipeId,day:selectedDay};
+const wrap=document.createElement('div');wrap.id='foodPortionPopup';wrap.className='sheet-overlay';wrap.style.zIndex='1150';
+wrap.innerHTML=`<section class="sheet food-portion-sheet" style="max-width:380px" role="dialog" aria-modal="true" aria-labelledby="foodPortionHeading"><h3 id="foodPortionHeading">${escapeHtml(food.n)}</h3><p class="small">${food.k} kcal · P ${food.p} g · C ${food.c} g · F ${food.f} g per ${food.portionGrams} g${food.nutritionEstimated?' · Estimated':''}</p><label>1. One portion size (g)<input id="foodPortion_grams" type="number" min="0.1" step="any" value="${food.portionGrams}" aria-label="One portion size in grams"></label><label>2. Number of portions<input id="foodPortion_amount" type="number" min="0.1" step="0.1" value="1" aria-label="Number of portions"></label><label>3. Meal type<select id="foodPortion_meal" aria-label="Meal type">${recipeMealOptions(meal)}</select></label><details><summary>Portion and macro notes</summary><p class="small">${escapeHtml(food.portionDescription||'1 portion — '+food.portionGrams+' g')}</p><p class="small">${escapeHtml(food.nutritionSource||'Saved nutrition values')}</p><button class="btn secondary sm" onclick="openNutritionAI({food:pendingFoodPortion.food,recipeId:pendingFoodPortion.recipeId,meal:pendingFoodPortion.meal,addAfter:false})">Update with AI</button></details><p id="foodPortion_error" class="small" role="alert"></p><div class="sheetactions"><button class="btn secondary" onclick="closeFoodPortionPopup()">Cancel</button><button class="btn" onclick="confirmFoodPortion()">Add to Ahara</button></div></section>`;
+wrap.addEventListener('keydown',event=>{if(event.key==='Escape')closeFoodPortionPopup();});document.body.appendChild(wrap);
+}
+function confirmFoodPortion(){
+const context=pendingFoodPortion;if(!context)return;
+try{const grams=Number(document.getElementById('foodPortion_grams').value),count=Number(document.getElementById('foodPortion_amount').value),meal=document.getElementById('foodPortion_meal').value;
+if(!(grams>0)||!Number.isFinite(grams)||!(count>0)||!Number.isFinite(count))throw new Error('Enter a positive portion weight and number of portions.');
+if(!['breakfast','lunch','snack','dinner'].includes(meal))throw new Error('Choose a meal type.');
+if(context.day!==selectedDay)throw new Error('The day changed. Cancel and add again.');
+const food=context.food;if(!hasCompleteFoodMacros(food)||!(food.portionGrams>0))throw new Error('Complete the one-portion nutrition using AI first.');
+const factor=grams*count/food.portionGrams;snapshotForUndo('Food portion added');
+logFoodEntry(meal,food.n,{food,factor,count,quantity:count,unit:'portion',portionSizeGrams:grams,recipeId:context.recipeId});
+state.foodFreq=state.foodFreq||{};state.foodFreq[food.n]=(state.foodFreq[food.n]||0)+1;getMeals(selectedDay)[meal].text=mealSummaryText(meal);closeFoodPortionPopup();save();toast('Added to '+meal);
+}catch(error){document.getElementById('foodPortion_error').textContent=error.message;}
+}
+
+function groupedMealItems(meal){const groups=new Map();for(const entry of mealItemsForMeal(meal)){const key=(entry.name||'').toLowerCase();if(!groups.has(key))groups.set(key,{name:entry.name,ids:[],count:0,k:0,notes:new Set()});const group=groups.get(key);group.ids.push(entry.id);group.count+=Number(entry.portionCount)||1;group.k+=Number(entry.k)||0;if(entry.eatenGrams)group.notes.add('Eaten: '+entry.quantity+' × '+entry.portionSizeGrams+' g = '+Number(entry.eatenGrams.toFixed(1))+' g');if(entry.quantity&&entry.unit&&entry.unit!=='portion')group.notes.add('Eaten: '+entry.quantity+' '+entry.unit);if(entry.portionDescription)group.notes.add(entry.portionDescription+(entry.portionGrams?' ('+entry.portionGrams+' g)':''));}return [...groups.values()];}
+function removeMealFoodGroup(name,meal){snapshotForUndo('Food removed from meal');const key=dayKey(selectedDay);state.foodLog[key]=(state.foodLog[key]||[]).filter(e=>!(e.meal===meal&&e.name.toLowerCase()===name.toLowerCase()));getMeals(selectedDay)[meal].text=mealSummaryText(meal);save();}
+function deleteRecipeFromLibrary(id){snapshotForUndo('Recipe deleted');state.removedRecipeIds=[...new Set([...(state.removedRecipeIds||[]),id])];state.customRecipes=(state.customRecipes||[]).filter(r=>r.id!==id);if(recipeOpenId===id)recipeOpenId=null;save();toast('Recipe removed — Undo available');}
+
+function foodMacroLookup(name){const food=foodNutritionFor(name);if(!hasCompleteFoodMacros(food))return null;return Object.fromEntries(['k','p','c','f','s','caf'].map(key=>[key,Number(food[key])||0]));}
+function logFoodEntry(meal,name,options={}){
+const food=options.food||foodNutritionFor(name);if(!hasCompleteFoodMacros(food))return null;
+const factor=options.factor??1;if(!(factor>0)||!Number.isFinite(factor))return null;
+state.foodLog=state.foodLog||{};const key=dayKey(selectedDay);state.foodLog[key]=state.foodLog[key]||[];
+const macro=Object.fromEntries(['k','p','c','f','s','caf'].map(key=>[key,(Number(food[key])||0)*factor]));
+const row={id:'fl'+Date.now()+Math.random().toString(36).slice(2,7),name,meal,...macro,ts:Date.now(),portionCount:options.count??factor,portionSizeGrams:options.portionSizeGrams||food.portionGrams||null,eatenGrams:options.portionSizeGrams?options.portionSizeGrams*(options.count??1):null,quantity:options.quantity??1,unit:options.unit||'portion',portionDescription:food.portionDescription||'1 listed portion; gram weight not specified',portionGrams:food.portionGrams||null,nutritionSource:food.nutritionSource||'Saved nutrition values'};if(options.recipeId)row.recipeId=options.recipeId;state.foodLog[key].push(row);return row;
 }
 /* ---- frequency nudges: how often has this item been logged recently ---- */
 function foodFrequencyCount(name, days){
@@ -6839,12 +9058,8 @@ if(!p) return;
 if(matchedName){ lastAddedFoodName = matchedName; addFoodToMeal(p.meal, matchedName); }
 else createAndAddNewFood(p.meal, p.name, p.src);
 }
-function createAndAddNewFood(meal, name, src){
-state.customFoods = state.customFoods || [];
-state.customFoods.push({n:name, k:0, p:0, c:0, f:0, s:0, meal, src: src||"homemade"});
-lastAddedFoodName = name;
-addFoodToMeal(meal, name);
-}
+function createAndAddNewFood(meal,name,src){addFoodToMeal(meal,name);}
+
 function addNewFood(meal, rawName, src){
 const name = (rawName||"").trim();
 if(!name) return;
@@ -6862,12 +9077,9 @@ function macroLineFor(f){
 return [f.k?f.k+" kcal":null, (f.p!=null&&f.p!=="")?f.p+"g protein":null, (f.c!=null&&f.c!=="")?f.c+"g carbs":null, (f.f!=null&&f.f!=="")?f.f+"g fat":null, (f.s!=null&&f.s!=="")?f.s+"g sugar":null].filter(Boolean).join(" · ") || "tap to add";
 }
 const FIT_TAG_ICON = {good:"✅", okay:"⚠️", bad:"🚫"};
-function quickFoodListHtml(pool){
-return pool.map(f=>{
-const tagIcon = f.tag ? FIT_TAG_ICON[f.tag]+" " : "";
-return `<div class="food-row" onclick="quickAddFood('${f.n.replace(/'/g,"\\'")}')"><span class="fname">${tagIcon}${f.n}${f.place?` <span class="small">(${f.place})</span>`:""}</span><span class="fmacro">${macroLineFor(f)}</span></div>`;
-}).join("");
-}
+function removeFoodFromLibrary(name){snapshotForUndo('Food deleted');state.hiddenFoodNames=[...new Set([...(state.hiddenFoodNames||[]),name])];state.customFoods=(state.customFoods||[]).filter(f=>f.n!==name);save();}
+function quickFoodListHtml(pool){return pool.map(food=>`<div class="food-row" onclick="quickAddFood(${escRecipe(JSON.stringify(food.n))})"><span class="fname">${escapeHtml(food.n)}</span><span class="fmacro">${hasCompleteFoodMacros(food)?escRecipe(macroLineFor(food)):'Needs macros'}</span><button class="btn ghost sm" aria-label="Delete ${escRecipe(food.n)}" onclick="event.stopPropagation();removeFoodFromLibrary(${escRecipe(JSON.stringify(food.n))})">×</button></div>`).join('');}
+
 function quickAddFood(name){ addFoodToMeal(quickAddMeal, name); }
 function addNewFoodQuick(rawName, src){ addNewFood(quickAddMeal, rawName, src); updateQuickFoodResults(""); }
 function recipeResultsHtml(recipePool){
@@ -6891,12 +9103,12 @@ el.innerHTML = html;
 }
 function aiPromptText(){
 const noEgg = (state.dietPrefs||{}).noEgg;
-return `I'm following a vegetarian${noEgg?"":" (eggs OK)"} Indian weight-loss plan. Please analyse this meal for one normal home portion and tell me its nutrition.
+return `I'm following a vegetarian${noEgg?"":" (eggs OK)"} Indian weight-loss plan. Please analyse exactly ONE clearly defined portion and tell me its nutrition. State cooked edible weight and assumptions, including oil/ghee/butter. My chosen rice or curry portion is 250 g cooked food. A cup is not universally 250 g. Ask me if quantities or the portion are unclear. Values must be for ONE portion, not the whole recipe.
 
 Meal / dish: [paste the recipe name, link, ingredients, or restaurant dish + place here]
 
 Reply ONLY with JSON in this exact shape, no other text:
-{"name":"","calories":0,"protein_g":0,"carbs_g":0,"fat_g":0,"sugar_g":0}`;
+{"name":"","calories":0,"protein_g":0,"carbs_g":0,"fat_g":0,"sugar_g":0,"portion_description":"","portion_grams":0,"cup_grams":null,"nutrition_source":"AI estimate; list assumptions"}`;
 }
 function copyAiPrompt(){
 const t = aiPromptText();
@@ -6911,7 +9123,7 @@ function showAiPromptFallback(t){
 const box = document.getElementById("aiPromptBox");
 if(box){ box.style.display = ""; box.value = t; box.select(); }
 }
-function parseAiPaste(){
+function parseAiPaste(addToMeal=true){
 const el = document.getElementById("aiPasteInput");
 const statusEl = document.getElementById("aiPromptStatus");
 if(!el) return;
@@ -6919,17 +9131,19 @@ let obj;
 try{ obj = JSON.parse(el.value); }catch(e){ if(statusEl) statusEl.textContent = "Couldn't read that — make sure you pasted just the JSON the AI gave you."; return; }
 const name = (obj.name||"").trim();
 if(!name){ if(statusEl) statusEl.textContent = "No name in that reply — ask the AI to include one."; return; }
-const k = Math.round(Number(obj.calories))||0;
-const p = Math.round(Number(obj.protein_g))||0;
-const c = Math.round(Number(obj.carbs_g))||0;
-const f = Math.round(Number(obj.fat_g))||0;
-const s = Math.round(Number(obj.sugar_g))||0;
+if(!['calories','protein_g','carbs_g','fat_g'].every(key=>obj[key]!==null&&obj[key]!==undefined&&obj[key]!==''&&Number.isFinite(Number(obj[key]))&&Number(obj[key])>=0)||Number(obj.calories)<=0){if(statusEl)statusEl.textContent='Complete calories, protein, carbs and fat for ONE portion are required. Nothing added.';return;}
+const portionFields={portionDescription:String(obj.portion_description||'1 portion — size must be checked before logging'),portionGrams:Number(obj.portion_grams)||null,cupGrams:Number(obj.cup_grams)||null,nutritionSource:String(obj.nutrition_source||'AI estimate; verify one-portion values')};
+const k = Number(obj.calories)||0;
+const p = Number(obj.protein_g)||0;
+const c = Number(obj.carbs_g)||0;
+const f = Number(obj.fat_g)||0;
+const s = Number(obj.sugar_g)||0;
 state.customFoods = state.customFoods || [];
 const existing = state.customFoods.find(x=>x.n.toLowerCase()===name.toLowerCase());
-if(existing) Object.assign(existing, {k,p,c,f,s});
-else state.customFoods.push({n:name, k, p, c, f, s, meal:quickAddMeal, src:"homemade"});
+if(existing) Object.assign(existing, {k,p,c,f,s,...portionFields});
+else state.customFoods.push({n:name, k, p, c, f, s, ...portionFields, meal:quickAddMeal, bucket:"custom", src:"homemade"});
 lastAddedFoodName = name;
-addFoodToMeal(quickAddMeal, name);
+if(addToMeal){saveQuiet();addFoodToMeal(quickAddMeal,name);}else{save();toast("Saved in Your custom foods");}
 el.value = "";
 if(statusEl) statusEl.textContent = `Saved "${name}" — ${k} kcal, ${p}g protein, ${c}g carbs, ${f}g fat, ${s}g sugar.`;
 }
@@ -6980,18 +9194,8 @@ ${suggestionRowHtml(quickAddMeal)}
 </details>
 </div>`;
 }
-function addFoodToMeal(meal, name){
-const m = getMeals(selectedDay)[meal];
-m.text = m.text ? m.text+", "+name : name;
-state.foodFreq = state.foodFreq || {};
-state.foodFreq[name] = (state.foodFreq[name]||0) + 1;
-logFoodEntry(meal, name);
-noteForLoggedFood(name);
-const qEl = document.getElementById("fsearch_quick");
-if(qEl) qEl.value = "";
-save();
-updateQuickFoodResults("");
-}
+function addFoodToMeal(meal,name){if(!['breakfast','lunch','snack','dinner'].includes(meal))return;openFoodPortionPopup(meal,foodNutritionFor(name));}
+
 const RECIPE_GROUP_MEALS = {
 "Breakfast & tiffin":["breakfast","snack"],
 "South Indian tiffin":["breakfast","snack"],
@@ -7012,12 +9216,12 @@ return ((state.foodLog||{})[key]||[]).filter(e=>e.meal===meal);
 }
 function mealSummaryText(meal){
 const items = mealItemsForMeal(meal);
-return items.length? items.map(e=>e.name).join(", ") : "";
+return groupedMealItems(meal).map(e=>e.name+(e.count!==1?" - "+Number(e.count.toFixed(2)):"")).join(", ");
 }
 function removeMealItem(id){ removeFoodLogEntry(id); }
 function mealCard(meal, label, icon){
 const m = getMeals(selectedDay)[meal];
-const items = mealItemsForMeal(meal);
+const items = groupedMealItems(meal);
 if(m.done && !mealExpanded[meal]){
 const summary = mealSummaryText(meal);
 return `<div class="mealcard done" style="cursor:pointer" onclick="mealExpanded['${meal}']=true;render()">
@@ -7032,7 +9236,7 @@ return `<div class="mealcard ${m.done?'done':''}">
 <span class="checkdot ${m.done?'on':''}" onclick="toggleMealDone('${meal}')" style="width:20px;height:20px"></span>
 </div>
 ${m.done? `<p class="small" style="margin:4px 0 0;cursor:pointer;text-decoration:underline" onclick="mealExpanded['${meal}']=false;render()">Hide ▲</p>` : ""}
-${items.length? `<div class="mealitems">${items.map(e=>`<span class="mealitem-chip">${e.name.replace(/</g,"&lt;")}<a onclick="removeMealItem('${e.id}')">✕</a></span>`).join("")}</div>` : `<p class="small" style="margin-top:8px;color:var(--muted)">Your food story hasn't started.—Quick-add or Recipes?</p>`}
+${items.length? `<div class="mealitems">${items.map(e=>`<div class="meal-food-line"><span>${escapeHtml(e.name)}${e.count!==1?' - '+Number(e.count.toFixed(2)):''}</span><small>${Math.round(e.k)} kcal</small><button class="btn ghost sm" aria-label="Remove ${escRecipe(e.name)} from meal" onclick="removeMealFoodGroup(${escRecipe(JSON.stringify(e.name))},'${meal}')">×</button>${e.notes.size?`<small class="portion-note">Portion / amount: ${escapeHtml([...e.notes].join('; '))}</small>`:''}</div>`).join('')}</div>` : `<p class="small">Add food from Quick-add or Recipes. Macros are required.</p>`}
 </div>`;
 }
 function removeAllCustomFoods(){ snapshotForUndo("All custom foods removed"); state.customFoods = []; save(); }
@@ -7056,45 +9260,30 @@ save();
 }
 let customFoodExpanded = {};
 function toggleCustomFoodExpand(key){ customFoodExpanded[key] = !customFoodExpanded[key]; render(); }
-function renderCustomFoodsList(){
-const list = state.customFoods||[];
-if(!list.length) return "";
-return `<div class="card" style="margin-bottom:14px"><details class="custom-foods-fold" ${state.settings?.customFoodsOpen!==false?'open':''} ontoggle="state.settings=state.settings||{};state.settings.customFoodsOpen=this.open;saveQuiet()"><summary>📋 Your custom foods <span>Expand / minimise</span></summary>
-<div class="row" style="justify-content:space-between;align-items:center">
-
-<button class="btn ghost" onclick="removeAllCustomFoods()">Remove all</button>
-</div>
-<label class="custom-food-meal-target">Add food to <select aria-label="Meal for custom foods" onchange="customFoodsMealTarget=this.value">${recipeMealOptions(customFoodsMealTarget)}</select></label>
-<p class="small" style="margin-top:4px">Foods you've added that weren't in the catalog. Tap one to fill in or fix its numbers, or use the "Ask an AI" helper in Meals → Quick-add.</p>
-<div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">
-${list.map(f=>{
-const key = (f.n+"__"+f.meal).replace(/'/g,"\\'");
-const safeKey = key.replace(/"/g,"&quot;");
-const open = !!customFoodExpanded[key];
-return `
-<div class="cf-row ${open?'open':''}" style="border:1px solid var(--line);border-radius:10px;padding:7px 10px">
-<div class="row" style="justify-content:space-between;align-items:center;gap:8px;cursor:pointer" onclick="toggleCustomFoodExpand('${safeKey}')">
-<span style="font-weight:700;flex:1 1 140px;font-size:13px">${f.n.replace(/</g,"&lt;")}</span>
-<span class="small" style="color:var(--muted);white-space:nowrap">${macroLineFor(f)}</span>
-<button class="btn secondary sm" onclick="event.stopPropagation();addFoodToMeal(customFoodsMealTarget,${escRecipe(JSON.stringify(f.n))});toast('Added to '+customFoodsMealTarget)">＋ Add</button><span class="small">${open?'▲':'▼'}</span>
-</div>
-${open? `<div class="row" style="gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px">
-<button class="chip mini" onclick="toggleCustomFoodSrc('${f.n.replace(/'/g,"\\'")}','${f.meal}')">${f.src==="restaurant"?"🍴 Restaurant":"🏠 Homemade"}</button>
-<input type="number" value="${f.k||0}" style="width:56px" onchange="updateCustomFoodMacro('${f.n.replace(/'/g,"\\'")}','${f.meal}','k',this.value)" title="kcal">
-<span class="small">kcal</span>
-<input type="number" value="${f.p||0}" style="width:52px" onchange="updateCustomFoodMacro('${f.n.replace(/'/g,"\\'")}','${f.meal}','p',this.value)" title="protein g">
-<span class="small">g protein</span>
-<input type="number" value="${f.c||0}" style="width:52px" onchange="updateCustomFoodMacro('${f.n.replace(/'/g,"\\'")}','${f.meal}','c',this.value)" title="carbs g">
-<span class="small">g carbs</span>
-<input type="number" value="${f.f||0}" style="width:52px" onchange="updateCustomFoodMacro('${f.n.replace(/'/g,"\\'")}','${f.meal}','f',this.value)" title="fat g">
-<span class="small">g fat</span>
-<button class="btn ghost" onclick="removeCustomFood('${f.n.replace(/'/g,"\\'")}','${f.meal}')">✕</button>
-</div>` : ""}
-</div>`;
-}).join("")}
-</div>
-</details></div>`;
+const CUSTOM_FOOD_BUCKETS=[['custom','Custom'],['breakfast','Morning'],['lunch','Midday'],['snack','Snack'],['dinner','Dinner']];
+function customFoodBucket(food){return CUSTOM_FOOD_BUCKETS.some(([key])=>key===food.bucket)?food.bucket:CUSTOM_FOOD_BUCKETS.some(([key])=>key===food.meal)?food.meal:'custom';}
+function moveCustomFoodBucket(index,bucket){
+const food=state.customFoods?.[index];if(!food||!CUSTOM_FOOD_BUCKETS.some(([key])=>key===bucket)||customFoodBucket(food)===bucket)return;
+snapshotForUndo('Custom food category changed');food.bucket=bucket;save();
 }
+function editCustomFoodAt(index,field,value){
+const food=state.customFoods?.[index];if(!food)return;
+if(field==='src')food.src=value==='restaurant'?'restaurant':'homemade';
+else if(['k','p','c','f','s'].includes(field))food[field]=Math.max(0,Number(value)||0);else return;
+save();
+}
+function removeCustomFoodAt(index){if(!state.customFoods?.[index])return;snapshotForUndo('Custom food removed');state.customFoods.splice(index,1);save();}
+function addSavedCustomFood(index,button){const food=state.customFoods?.[index];if(!food)return;const meal=button.closest('.custom-food-item').querySelector('[data-custom-meal]').value;addFoodToMeal(meal,food.n);}
+function customFoodCard(food,index){
+const bucket=customFoodBucket(food),target=bucket==='custom'?quickAddMeal:bucket;
+return `<article class="recipe-row-shell custom-food-item thin-food-row" id="custom-food-${index}"><details><summary><strong>${escRecipe(food.n)}</strong><small>${hasCompleteFoodMacros(food)?Math.round(food.k)+' kcal':'Needs macros'}</small></summary><div class="food-row-details"><p class="small">${escRecipe(macroLineFor(food))}</p><p class="small">Per ONE portion: ${escRecipe(food.portionDescription||'Portion size needs review')}${food.portionGrams?' · '+food.portionGrams+' g':''}</p><p class="small">${escRecipe(food.nutritionSource||'AI nutrition needed')}</p><label>Move to bucket<select aria-label="Category for ${escRecipe(food.n)}" onchange="moveCustomFoodBucket(${index},this.value)">${CUSTOM_FOOD_BUCKETS.map(([value,label])=>`<option value="${value}" ${bucket===value?'selected':''}>${label}</option>`).join('')}</select></label><button class="btn secondary sm" onclick="openNutritionAI({food:foodNutritionFor(${escRecipe(JSON.stringify(food.n))}),addAfter:false})">Update macros with AI</button></div></details><div class="recipe-inline-add"><select data-custom-meal aria-label="Meal for ${escRecipe(food.n)}">${recipeMealOptions(target)}</select><button class="btn secondary sm" onclick="addSavedCustomFood(${index},this)" aria-label="Add ${escRecipe(food.n)} to Ahara">Add</button><button class="btn ghost sm" onclick="removeCustomFoodAt(${index})" aria-label="Delete ${escRecipe(food.n)}">×</button></div></article>`;
+}
+
+function renderCustomFoodsList(){
+const list=state.customFoods||[];
+return `<section class="card custom-food-panel"><details class="custom-foods-fold" ${state.settings?.customFoodsOpen!==false?'open':''} ontoggle="state.settings=state.settings||{};if(state.settings.customFoodsOpen!==this.open){state.settings.customFoodsOpen=this.open;saveQuiet();}"><summary>📋 Your custom foods <span>Expand / minimise</span></summary><p class="small">AI-added foods start in Custom. Change a food's Category to move it into another bucket.</p><details class="custom-food-ai"><summary>Ask AI / save nutrition</summary><p class="small">Copy the prompt, ask AI about your food, then paste its JSON reply. Saving here adds it to your food library.</p><button class="btn secondary sm" onclick="copyAiPrompt()">Copy AI prompt</button><textarea id="aiPromptBox" readonly style="display:none" aria-label="Food nutrition prompt"></textarea><textarea id="aiPasteInput" aria-label="AI food nutrition JSON" placeholder='{"name":"Sourdough with butter","calories":200,"protein_g":5,"carbs_g":25,"fat_g":8,"sugar_g":2}'></textarea><button class="btn sm" onclick="parseAiPaste(false)">Save to Custom</button><p class="small" id="aiPromptStatus" role="status"></p></details><div class="recipe-meal-grid custom-food-buckets">${CUSTOM_FOOD_BUCKETS.map(([key,label])=>{const foods=list.map((food,index)=>({food,index})).filter(({food})=>customFoodBucket(food)===key);return `<section class="recipe-meal-card" data-food-bucket="${key}"><h3>${uiIcon(key==='custom'?'book':key==='dinner'?'plate':'bowl',17)} ${label} <small>${foods.length}</small></h3><div class="recipe-scroll">${foods.length?foods.map(({food,index})=>customFoodCard(food,index)).join(''):'<p class="small">No foods in this bucket yet.</p>'}</div></section>`;}).join('')}</div></details></section>`;
+}
+
 function mealGlanceRow(){
 const defs = [["breakfast","🍳","Morning"],["lunch","🍲","Midday"],["snack","🍵","Snack"],["dinner","🍽️","Evening"]];
 const meals = getMeals(selectedDay);
@@ -7331,7 +9520,7 @@ const RECIPE_KCAL_BY_GROUP = {
 "Soup & sides":140, "South Indian tiffin":200, "Sambar & rasam":110,
 "South Indian curries":220, "South Indian rice":290, "Chutneys":70
 };
-function recipeKcal(r){ if(r.bookmarkOnly) return null; return Number(r.macros?.kcal || r.kcal) || RECIPE_KCAL_BY_GROUP[r.group] || 220; }
+function recipeKcal(r){return hasCompleteFoodMacros(recipeFoodNutrition(r))?Number(r.macros.kcal):null;}
 function setRecipeCalLimit(v){
 const n = parseInt(v,10);
 state.recipeCalLimit = (n && n>0) ? n : null;
@@ -7397,7 +9586,7 @@ if(url && !raw){
 let name0=(document.getElementById("recipeName")?.value||"").trim();
 if(!name0) name0=(url.split("/").filter(Boolean).pop()||"Saved recipe").replace(/[-_]/g," ").replace(/\.html?.*$/i,"");
 const bookmark={id:"custom_recipe_"+Date.now(),name:name0,icon:"🔖",group:meal0,meal:meal0,url,bookmarkOnly:true,need:[],ingredients:[],instructions:[],macros:null,sourceText:""};
-state.customRecipes=state.customRecipes||[]; state.customRecipes.unshift(bookmark); recipeOpenId=bookmark.id; save();
+openNutritionAI({recipeDraft:bookmark,food:{n:bookmark.name,portionGrams:defaultFoodPortionGrams({n:bookmark.name})},addAfter:false});
 return;
 }
 const lines=raw.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
@@ -7418,15 +9607,10 @@ if(section) ingredientLines.push(...section[1].split(/\n/).map(x=>x.replace(/^[-
 }
 if(!steps.length){ const section=raw.match(/(?:method|instructions|directions|steps|how to make)\s*:?([\s\S]*)/i); if(section) steps.push(...section[1].split(/\n/).map(x=>x.replace(/^[-*•\d.)\s]+/,"").trim()).filter(Boolean)); }
 const ing=ingredientLines.filter(Boolean);
-// Transparent, editable rough estimates: use common ingredient keywords, never present these as verified nutrition.
-let kcal=220, protein=8, carbs=28, fat=8;
-const nutrition=[[/paneer|cheese/,120,8,2,9],[/tofu/,80,9,2,5],[/egg/,72,6,0,5],[/dal|lentil|chickpea|chana|rajma|beans/,110,7,18,1],[/rice|roti|wheat|atta|oats|bread|pasta|noodle/,140,4,27,2],[/oil|ghee|butter/,45,0,0,5],[/milk|yoghurt|curd/,60,4,6,2],[/vegetable|spinach|tomato|onion|carrot|broccoli|potato/,35,2,7,0]];
-kcal=0; protein=0; carbs=0; fat=0;
-for(const ingLine of (ing.length?ing:[raw])){ let hit=false; for(const [re,k,pr,ca,fa] of nutrition){ if(re.test(ingLine)){kcal+=k;protein+=pr;carbs+=ca;fat+=fa;hit=true;break;} } if(!hit){kcal+=45;protein+=1;carbs+=6;fat+=1;} }
-kcal=Math.round(kcal||220); protein=Math.round(protein); carbs=Math.round(carbs); fat=Math.round(fat);
+// Nutrition must be supplied for one defined portion; ingredient keywords are insufficient.
 const meal=document.getElementById("recipeMeal")?.value||"lunch";
-const custom={id:"custom_recipe_"+Date.now(),name,icon:"📖",group:meal,meal,url,need:ing.map(recipeNeedFromIngredient).filter(Boolean),ingredients:ing,instructions:steps,macros:{kcal,protein,carbs,fat,estimate:true},sourceText:raw};
-state.customRecipes=state.customRecipes||[]; state.customRecipes.unshift(custom); recipeOpenId=custom.id; save();
+const custom={id:"custom_recipe_"+Date.now(),name,icon:"📖",group:meal,meal,url,need:ing.map(recipeNeedFromIngredient).filter(Boolean),ingredients:ing,instructions:steps,macros:null,sourceText:raw};
+openNutritionAI({recipeDraft:custom,food:{n:custom.name,portionGrams:defaultFoodPortionGrams({n:custom.name})},addAfter:false});
 }
 function updateCustomRecipeMacro(id,key,value){ const r=(state.customRecipes||[]).find(x=>x.id===id); if(!r)return; r.macros=r.macros||{}; r.macros[key]=Math.max(0,Number(value)||0); saveQuiet(); }
 function deleteCustomRecipe(id){ if(!confirm("Delete this recipe?"))return; state.customRecipes=(state.customRecipes||[]).filter(r=>r.id!==id); if(recipeOpenId===id)recipeOpenId=null; save(); }
@@ -7453,12 +9637,13 @@ function updateRecipeSearch(value){recipeSearch=value;const e=document.getElemen
 function recipeMealOptions(selected){return ['breakfast','lunch','snack','dinner'].map(m=>`<option value="${m}" ${m===selected?'selected':''}>${m[0].toUpperCase()+m.slice(1)}</option>`).join('');}
 function addRecipeFromList(id,button){const meal=button.closest('.recipe-row-shell').querySelector('select').value;useRecipeForMeal(id,meal);}
 function recipeCard(r,targetMeal=null){
-const suggested=['breakfast','lunch','snack','dinner'].includes(targetMeal)?targetMeal:inferRecipeMeal(r);
-return `<article class="recipe-row-shell">${recipeDetailsCard(r)}<div class="recipe-inline-add"><select aria-label="Meal for ${escRecipe(r.name)}">${recipeMealOptions(suggested)}</select><button class="btn secondary sm" onclick="addRecipeFromList('${r.id}',this)" aria-label="Add ${escRecipe(r.name)} to selected day's meal">＋ Add to meals</button></div></article>`;
+const meal=['breakfast','lunch','snack','dinner'].includes(targetMeal)?targetMeal:inferRecipeMeal(r),food=recipeFoodNutrition(r),valid=hasCompleteFoodMacros(food);
+return `<article class="recipe-row-shell thin-food-row"><details><summary><strong>${escRecipe(r.name)}</strong><small>${valid?(food.nutritionEstimated?'~':'')+Math.round(food.k)+' kcal':'Needs macros'}</small></summary><div class="food-row-details"><p class="small">${valid?'Estimated macros · P '+food.p+' g · C '+food.c+' g · F '+food.f+' g · Sugar '+(food.s||0)+' g. Per ONE portion: '+escRecipe(food.portionDescription||'Portion size needs review')+(food.portionGrams?' · '+food.portionGrams+' g':''):'Complete macros and one-portion size before adding to Ahara.'}</p>${food.nutritionSource?`<p class="small">Source / assumptions: ${escRecipe(food.nutritionSource)}</p>`:''}<ul>${(r.ingredients||[]).map(line=>`<li>${escRecipe(line)}</li>`).join('')}</ul>${r.instructions?.length?`<ol>${r.instructions.map(line=>`<li>${escRecipe(line)}</li>`).join('')}</ol>`:''}${r.url?`<a href="${escRecipe(r.url)}" target="_blank" rel="noopener">Recipe source</a>`:''}</div></details><div class="recipe-inline-add"><select aria-label="Meal for ${escRecipe(r.name)}">${recipeMealOptions(meal)}</select><button class="btn secondary sm" onclick="addRecipeFromList('${r.id}',this)" aria-label="Add ${escRecipe(r.name)} to selected day's meal">Add</button><button class="btn ghost sm" onclick="deleteRecipeFromLibrary('${r.id}')" aria-label="Delete ${escRecipe(r.name)}">×</button></div></article>`;
 }
+
 function recipeListForMeal(meal){
 const limit=state.recipeCalLimit;
-return allRecipes().filter(r=>recipeMealTags(r).includes(meal)&&recipeSearchMatches(r,recipeSearch)&&(!limit||recipeKcal(r)===null||recipeKcal(r)<=limit)).sort((a,b)=>recipeSort==='kcal'?(recipeKcal(a)??Infinity)-(recipeKcal(b)??Infinity):a.name.localeCompare(b.name));
+return allRecipes().filter(r=>hasCompleteFoodMacros(recipeFoodNutrition(r))&&recipeMealTags(r).includes(meal)&&recipeSearchMatches(r,recipeSearch)&&(!limit||recipeKcal(r)===null||recipeKcal(r)<=limit)).sort((a,b)=>recipeSort==='kcal'?(recipeKcal(a)??Infinity)-(recipeKcal(b)??Infinity):a.name.localeCompare(b.name));
 }
 function renderRecipeLibrary(){
 const groups=[['breakfast','Morning'],['lunch','Midday'],['snack','Snack'],['dinner','Evening']];
@@ -7466,19 +9651,21 @@ return `<div class="recipe-meal-grid">${groups.map(([key,label])=>{const list=re
 }
 
 function renderRecipes(){
-const available=allRecipes().filter(r=>!r.bookmarkOnly&&r.need?.length&&r.need.every(t=>pantryHasItem(t)));
-return `<details class="card recipe-add-card"><summary>＋ Create recipe</summary><p class="small">Paste recipe text or add a link. The app will split out ingredients and steps where it can, then create editable rough macro estimates. A link alone is saved as a source link; this offline HTML app cannot reliably read recipe pages from other websites.</p>
+const incomplete=allRecipes().filter(r=>!hasCompleteFoodMacros(recipeFoodNutrition(r)));
+const available=allRecipes().filter(r=>hasCompleteFoodMacros(recipeFoodNutrition(r))&&!r.bookmarkOnly&&r.need?.length&&r.need.every(t=>pantryHasItem(t)));
+return `<details class="card recipe-add-card"><summary>＋ Create recipe</summary><p class="small">Paste recipe text or add a link. Ingredients and steps are saved; add macros for one defined portion before logging it. A link alone is saved as a source link; this offline HTML app cannot reliably read recipe pages from other websites.</p>
 <div class="recipe-add-grid"><div><label class="small">Recipe name</label><input id="recipeName" placeholder="e.g. Paneer lunch bowl"></div><div><label class="small">Meal category</label><select id="recipeMeal"><option value="breakfast">Breakfast</option><option value="lunch" selected>Lunch</option><option value="snack">Snacks</option><option value="dinner">Dinner</option></select></div><div class="recipe-url-field"><label class="small">Online recipe link (optional)</label><input id="recipeUrl" type="url" placeholder="https://..."></div><div class="recipe-paste-field"><label class="small">Paste recipe — name, ingredients, method/instructions</label><textarea id="recipePaste" rows="5" placeholder="Recipe name\nIngredients:\n- 1 cup lentils\n- 1 onion\n\nMethod:\n1. Cook lentils…"></textarea></div></div>
-<p class="small">Macro estimates are approximate per recipe, not verified nutrition. You can edit them after adding.</p><button class="btn" onclick="parseRecipeDraft()">Parse & add recipe</button></details>
+<p class="small">A new recipe is saved only after its AI nutrition JSON supplies complete macros and one portion weight. Rice, curry, dal and sambar default to 250 g per portion.</p><button class="btn" onclick="parseRecipeDraft()">Continue to AI macros</button></details>
+${incomplete.length?`<details class="card"><summary>${incomplete.length} saved recipe draft(s) need macros</summary>${incomplete.map(r=>`<div class="row"><span>${escRecipe(r.name)}</span><button class="btn secondary sm" onclick="openNutritionAI({food:{n:${escRecipe(JSON.stringify(r.name))}},recipeId:'${r.id}',addAfter:false})">Get macros with AI</button><button class="btn ghost sm" onclick="deleteRecipeFromLibrary('${r.id}')">×</button></div>`).join('')}</details>`:''}
 <section class="card recipe-library"><div class="recipe-library-head"><h3>${uiIcon("book")} Recipe list</h3><input class="recipe-inline-search" type="search" aria-label="Search recipes and ingredients" placeholder="Search dishes, ingredients or related names…" value="${escRecipe(recipeSearch)}" oninput="updateRecipeSearch(this.value)"><select aria-label="Sort recipes" onchange="setRecipeSort(this.value)"><option value="name" ${recipeSort==='name'?'selected':''}>A–Z</option><option value="kcal" ${recipeSort==='kcal'?'selected':''}>Calories</option></select></div><div id="recipeLibraryResults">${renderRecipeLibrary()}</div></section>
-<div class="recipe-companion-grid"><section class="card pantry-recipe-panel"><h3>🧺 Recipes with available pantry items</h3><p class="small">Matches ingredients currently in your pantry.</p><div class="recipe-scroll">${available.length?available.map(recipeCard).join(''):'<p class="small">No ingredient matches yet. Update your pantry to see recipes here.</p>'}</div></section><aside class="custom-food-panel">${renderCustomFoodsList()||'<section class="card"><h3>📋 Your custom foods</h3><p class="small">Foods you save from Quick-add will appear here.</p></section>'}</aside></div>`;
+<div class="recipe-companion-grid custom-food-layout"><section class="card pantry-recipe-panel"><h3>🧺 Recipes with available pantry items</h3><p class="small">Matches ingredients currently in your pantry.</p><div class="recipe-scroll">${available.length?available.map(recipeCard).join(''):'<p class="small">No ingredient matches yet. Update your pantry to see recipes here.</p>'}</div></section>${renderCustomFoodsList()}</div>`;
 }
 /* ---- dishes: every item from the food list, browsable here too, not just via Quick-add search ---- */
 let dishOpenId = null;
 let dishMealFilter = "";
 function toggleDishOpen(id){ dishOpenId = (dishOpenId===id) ? null : id; render(); }
 function setDishMealFilter(m){ dishMealFilter = m; render(); }
-function allDishes(){ return FOOD_CATALOG.concat(state.customFoods||[]); }
+function allDishes(){return allFoodsForMeal("lunch");}
 function dishCard(f, i){
 const id = "d"+i;
 const open = dishOpenId===id;
@@ -9850,8 +12037,7 @@ saveLocalOnly();
 if(fbReady && stateRef){
 clearTimeout(syncTimer);
 try{
-lastPushedJSON = JSON.stringify(state);
-await stateRef.set(state);
+await writePlannerStateToCloud();
 location.reload();
 }catch(err){
 console.error("Import: cloud save failed:", err);
