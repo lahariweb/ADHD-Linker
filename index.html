@@ -1210,7 +1210,7 @@ const DEFAULT_TEMPLATE = [
   {
     "id": "routine7_24",
     "time": "23:30",
-    "title": "Sleep & Restore",
+    "title": "Night Sanctuary",
     "dur": 0,
     "icon": "neon:moon",
     "cat": "rest",
@@ -2266,7 +2266,7 @@ list.forEach(b=>{ if(b.templateVersion>=2 && !DYNAMIC_SLOT_IDS.has(b.id) && TEMP
 // again" means for an activity that recurs by name.
 if(state.iconOverrides){ list.forEach(b=>{ const key=(b.title||'').trim().toLowerCase(); if(key && state.iconOverrides[key]) b.icon=state.iconOverrides[key]; }); }
 applyDynamicSlots(list, n);
-for(const block of list)if(isRoutineSleep(block)){block.title='Sleep & Restore';block.plannerRole='sleep';}
+for(const block of list)if(isRoutineSleep(block)){block.title='Night Sanctuary';block.plannerRole='sleep';}
 if(careSplit)saveQuiet();
 return list;
 }
@@ -3404,7 +3404,7 @@ const pack=b=>({source_id:b.id,title:b.title,time:b.time,dur:b.dur,icon:String(b
 const roles=new Set(rows.map(b=>b.roundupRole||inferRoutineRoundupRole(b.title)));
 if(/home in harmony|wash & renew|evening ritual/i.test(notes)){if(/home in harmony/i.test(notes))roles.add('chore');if(/wash & renew/i.test(notes))roles.add('beauty');if(/evening ritual/i.test(notes))roles.add('eveningCare');}
 let roundup={};if(roles.has('chore')||roles.has('beauty')||roles.has('eveningCare')){const data=dailyRoundupData(selectedDay);if(roles.has('chore'))roundup['Home in Harmony']=[data.task,...data.choreNotes];if(roles.has('beauty'))roundup['Wash & Renew']=[data.care.title,data.care.note,'After bathing: '+data.morning].filter(Boolean);if(roles.has('eveningCare'))roundup['Evening Ritual']=['Evening face care: '+data.evening,'Prepare tomorrow'];}
-return `Plan ${dateForDay(selectedDay)}. ${scope}\nRequest: ${notes||'Keep the supplied routine; improve only what is requested.'}\nKeep the current icon for every existing activity: copy its exact icon value, including neon: identifiers. Preserve source_id even when renaming or moving it. Never replace current icons with emojis; keep: values are resolved by the app. For genuinely new activities use a matching neon: icon from: ${[...new Set(DEFAULT_TEMPLATE.map(b=>b.icon))].join(',')}.\nKeep unrequested titles/times/durations and locked activities. Wake boundary ${wake?.time||'07:30'}; after-midnight blocks follow evening. No overlaps. Movement Studio, Stretch & Restore, Mindful Movement and Pause & Replenish are non-checkable breaks. Every partial update can start at any time. Return the new remaining-day checklist and finish with Sleep & Restore (dur:0), using the existing bedtime unless later activities require a later bedtime. Earlier activities are retained as skipped and can be restored. Sleep & Restore must be last.${Object.keys(roundup).length?' Use these selected-day steps only for their named activity: '+JSON.stringify(roundup):''}\nActivities (only relevant scope): ${JSON.stringify(rows.map(pack))}\nReply only JSON: {"version":1,"blocks":[{"source_id":"existing id; omit for new","title":"","time":"HH:MM","dur":30,"icon":"neon:...","tasks":[]}]}.`;
+return `Plan ${dateForDay(selectedDay)}. ${scope}\nRequest: ${notes||'Keep the supplied routine; improve only what is requested.'}\nKeep the current icon for every existing activity: copy its exact icon value, including neon: identifiers. Preserve source_id even when renaming or moving it. Never replace current icons with emojis; keep: values are resolved by the app. For genuinely new activities use a matching neon: icon from: ${[...new Set(DEFAULT_TEMPLATE.map(b=>b.icon))].join(',')}.\nKeep unrequested titles/times/durations and locked activities. Wake boundary ${wake?.time||'07:30'}; after-midnight blocks follow evening. No overlaps. Movement Studio, Stretch & Restore, Mindful Movement and Pause & Replenish are non-checkable breaks. Every partial update can start at any time. Return the new remaining-day checklist and finish with Night Sanctuary (dur:0), using the existing bedtime unless later activities require a later bedtime. Earlier activities are retained as skipped and can be restored. Night Sanctuary must be last.${Object.keys(roundup).length?' Use these selected-day steps only for their named activity: '+JSON.stringify(roundup):''}\nActivities (only relevant scope): ${JSON.stringify(rows.map(pack))}\nReply only JSON: {"version":1,"blocks":[{"source_id":"existing id; omit for new","title":"","time":"HH:MM","dur":30,"icon":"neon:...","tasks":[]}]}.`;
 }
 
 async function copyTimetablePrompt(){const draft=getTimetableDraft();if(draft.mode==='from'&&!/^([01]\d|2[0-3]):[0-5]\d$/.test(draft.fromTime||'')){toast('Choose any start time for this partial update.');return;}let prompt;try{prompt=buildTimetablePrompt();}catch(error){toast(error.message);return;}try{await navigator.clipboard.writeText(prompt);toast('Prompt copied. Paste it into your AI chat.');}catch{showPromptFallback(prompt);}}
@@ -3465,7 +3465,7 @@ function partialSleepBlock(existing,incoming,relative,cutoff){
 const supplied=incoming.filter(isRoutineSleep).at(-1),previous=existing.filter(isRoutineSleep).at(-1),source=supplied||previous||{time:'23:30',icon:'neon:moon',tasks:[]};
 const end=incoming.filter(b=>!isRoutineSleep(b)).reduce((last,b)=>Math.max(last,relative(b.time)+Number(b.dur||0)),cutoff);
 const start=Math.max(relative(source.time||'23:30'),end,cutoff);
-return {...source,id:supplied?.id||'ai_sleep_'+Date.now(),title:'Sleep & Restore',time:toHHMM(start),dur:0,plannerRole:'sleep',icon:previous?.icon||source.icon||'neon:moon',done:false,skipped:false,statusReset:true,aiPartialSkipped:false,aiPartialHistory:false,tasks:source.tasks||[]};
+return {...source,id:supplied?.id||'ai_sleep_'+Date.now(),title:'Night Sanctuary',time:toHHMM(start),dur:0,plannerRole:'sleep',icon:previous?.icon||source.icon||'neon:moon',done:false,skipped:false,statusReset:true,aiPartialSkipped:false,aiPartialHistory:false,tasks:source.tasks||[]};
 }
 function mergeTimetableFromTime(existing,incoming,fromTime){
 if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(fromTime||''))throw new Error('Choose a valid update start time.');
