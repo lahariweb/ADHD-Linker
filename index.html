@@ -1210,7 +1210,7 @@ const DEFAULT_TEMPLATE = [
   {
     "id": "routine7_24",
     "time": "23:30",
-    "title": "Night Sanctuary",
+    "title": "Sleep & Restore",
     "dur": 0,
     "icon": "neon:moon",
     "cat": "rest",
@@ -2266,6 +2266,7 @@ list.forEach(b=>{ if(b.templateVersion>=2 && !DYNAMIC_SLOT_IDS.has(b.id) && TEMP
 // again" means for an activity that recurs by name.
 if(state.iconOverrides){ list.forEach(b=>{ const key=(b.title||'').trim().toLowerCase(); if(key && state.iconOverrides[key]) b.icon=state.iconOverrides[key]; }); }
 applyDynamicSlots(list, n);
+for(const block of list)if(isRoutineSleep(block)){block.title='Sleep & Restore';block.plannerRole='sleep';}
 if(careSplit)saveQuiet();
 return list;
 }
@@ -3084,7 +3085,7 @@ const next=(state.days||{})[dayKey(dayNum+1)];
 return findWakeBlock(next)?.time||state.templateOverrides?.t1?.time||DEFAULT_TEMPLATE.find(b=>b.id==='t1').time;
 }
 function routineTimeRange(b,dayNum){
-if(b.plannerRole==='sleep'||/^Night Sanctuary$/i.test(b.title||''))return plannerTimeLabel(b.time,dayNum)+' – '+fmt12(sleepWakeTime(dayNum))+' · next day';
+if(isRoutineSleep(b))return plannerTimeLabel(b.time,dayNum)+' – '+fmt12(sleepWakeTime(dayNum))+' · next day';
 if((isWakeMilestone(b)||b.id==='t24')&&!b.dur)return plannerTimeLabel(b.time,dayNum);
 if(b.id==='t24'&&!b.dur)return plannerTimeLabel(b.time,dayNum)+' – '+fmt12(sleepWakeTime(dayNum))+' · next day';
 return plannerTimeLabel(b.time,dayNum)+((b.dur&&!b.skipped)?' – '+fmt12(toHHMM(planMinute(b.time,dayNum)+b.dur)):'');
@@ -3372,8 +3373,8 @@ with it in an external AI chat, paste the JSON reply back, and it replaces the w
 selected day's schedule (times + icons) in one shot. Icon choices you've overridden via
 setBlockIcon() (see getDayBlocks()) always win over whatever icon the pasted plan suggests,
 so a replacement you've made for an activity name sticks even through a fresh AI rebuild. ---- */
-function getTimetableDraft(){state.timetableDraft={notes:'',mode:'full',fromTime:'',scope:'day',...(state.timetableDraft||{})};return state.timetableDraft;}
-function setTimetableDraft(key,value){ const d=getTimetableDraft(); if(!(key in d)) return; d[key]=value;if(key==='mode'||key==='fromTime'||key==='scope'){timetableImportPreview=null;timetableImportError='';save();}else saveQuiet(); }
+function getTimetableDraft(){state.timetableDraft={notes:'',mode:'full',fromTime:'',scope:'day',activityId:'',...(state.timetableDraft||{})};return state.timetableDraft;}
+function setTimetableDraft(key,value){ const d=getTimetableDraft(); if(!(key in d)) return; d[key]=value;if(key==='mode'||key==='fromTime'||key==='scope'||key==='activityId'){timetableImportPreview=null;timetableImportError='';save();}else saveQuiet(); }
 let timetableImportPreview=null, timetableImportError='';
 function timetableTemplate(){
 const data=dailyRoundupData(selectedDay);
@@ -3386,20 +3387,27 @@ const chores={title:'Home in Harmony',minutes:choreBlock?.dur||30,tasks:[data.ta
 const beauty={title:'Wash & Renew',minutes:45,tasks:[data.care.title,data.care.note,'After bathing: '+data.morning].filter(Boolean),eveningTasks:['Evening face care: '+data.evening]};
 return {date:data.iso,weekday:date.toLocaleDateString('en-AU',{weekday:'long'}),houseChoreRoundup:chores,beautyCareRoundup:beauty,houseChore:chores,bathAndBodyCare:beauty,fixedActivities:blocks.filter(b=>b.locked||b.anchor).map(b=>({title:b.title,time:b.time,minutes:b.dur,tasks:b.tasks||[]})),existingActivities:blocks.map(b=>({title:b.title,time:b.time,minutes:b.dur,tasks:b.tasks||[],completed:!!b.done}))};
 }
+function timetableRelativeTime(existing){const boundary=toMin(findWakeBlock(existing)?.time||state.wakeTargetTime||'07:30');return time=>{const m=toMin(time);return m<boundary?m+1440:m;};}
+function timetableIconFor(block,existing){
+const source=existing.find(b=>b.id===block.source_id)||existing.find(b=>String(b.title).trim().toLowerCase()===block.title.trim().toLowerCase());
+if(source?.icon)return source.icon;
+const preferred=DEFAULT_TEMPLATE.find(b=>b.title.toLowerCase()===block.title.toLowerCase())?.icon;
+return preferred||(block.icon?.startsWith('neon:')&&NEON_SCHEDULE_ICONS[block.icon.slice(5)]?block.icon:'neon:clock');
+}
 function buildTimetablePrompt(){
-const draft=getTimetableDraft(),context=routinePromptContext();
-if(draft.mode==='full'&&draft.scope==='future')context.applicationScope='Use this complete routine as the default for future dates only, starting '+dateForDay(Math.max(selectedDay,todayDayNum())+1)+'. Do not change the selected date. Chore and care slots will rotate by date.';
-if(draft.mode==='from'){
-const existing=getDayBlocks(selectedDay),wake=findWakeBlock(existing),boundary=toMin(wake?.time||state.wakeTargetTime||'07:30'),relative=time=>{const n=toMin(time);return n<boundary?n+1440:n;},cutoff=relative(draft.fromTime);
-return `Act as my daily-schedule planner. Update ONLY the routine from ${draft.fromTime} onward for selected date ${context.date}. Keep every existing block starting before that time in the app; the app will mark those earlier activities skipped, and I can unskip or complete them later. Return ONLY replacement blocks starting at or after the cutoff, through bedtime. Do not return the earlier part of the day. Wake-up defines the planning-day boundary (${wake?.time||state.wakeTargetTime||'07:30'}); after-midnight blocks belong after the evening. Do not add a new wake-up block or change my wake-up target. Earlier activities are retained as skipped and do not block the replacement time window. No overlaps. Include the selected day's actual chore and care tasks only if they belong in the replaced period; preserve supplied fixed activities in that period unless I request a change. Home in Harmony means the selected-day house-chore steps; Wash & Renew means the selected-day bath and self-care steps. Movement Studio, Stretch & Restore, Mindful Movement and Pause & Replenish are non-checkable breaks. Instructions: ${draft.notes||'Replan the remaining day.'}\nExisting day and selected-day context: ${JSON.stringify(context)}\nReturn only JSON with version:1 and blocks:[{title,icon,time (HH:MM),dur (minutes),tasks:[]}]. Reference blocks in the replaced period: ${JSON.stringify(existing.filter(b=>!b.unscheduled&&relative(b.time)>=cutoff).map(b=>({title:b.title,icon:b.icon,time:b.time,dur:b.dur,tasks:b.tasks||[]})))}.`;
+const d=getTimetableDraft(),existing=getDayBlocks(selectedDay),relative=timetableRelativeTime(existing),wake=findWakeBlock(existing),notes=d.notes.trim();
+let rows=existing.filter(b=>!b.unscheduled),scope='Complete selected-day routine';
+if(d.mode==='activity'){const target=existing.find(b=>b.id===d.activityId);if(!target)throw new Error('Choose an activity first.');rows=[target];scope='Update ONLY this activity. Return exactly one block. Other activities stay unchanged.';}
+else if(d.mode==='from'){rows=rows.filter(b=>relative(b.time)>=relative(d.fromTime));scope='Update remaining day from '+d.fromTime+' only. Earlier activities remain skipped/restorable. Return no earlier blocks or new wake-up.';}
+else if(d.scope==='future')scope='Complete future default from '+dateForDay(Math.max(selectedDay,todayDayNum())+1)+'; selected day unchanged.';
+const pack=b=>({source_id:b.id,title:b.title,time:b.time,dur:b.dur,icon:String(b.icon||'').startsWith('data:')?'keep:'+b.id:b.icon,...(b.tasks?.length?{tasks:b.tasks}:{}),...(b.locked?{locked:true}:{})});
+const roles=new Set(rows.map(b=>b.roundupRole||inferRoutineRoundupRole(b.title)));
+if(/home in harmony|wash & renew|evening ritual/i.test(notes)){if(/home in harmony/i.test(notes))roles.add('chore');if(/wash & renew/i.test(notes))roles.add('beauty');if(/evening ritual/i.test(notes))roles.add('eveningCare');}
+let roundup={};if(roles.has('chore')||roles.has('beauty')||roles.has('eveningCare')){const data=dailyRoundupData(selectedDay);if(roles.has('chore'))roundup['Home in Harmony']=[data.task,...data.choreNotes];if(roles.has('beauty'))roundup['Wash & Renew']=[data.care.title,data.care.note,'After bathing: '+data.morning].filter(Boolean);if(roles.has('eveningCare'))roundup['Evening Ritual']=['Evening face care: '+data.evening,'Prepare tomorrow'];}
+return `Plan ${dateForDay(selectedDay)}. ${scope}\nRequest: ${notes||'Keep the supplied routine; improve only what is requested.'}\nKeep the current icon for every existing activity: copy its exact icon value, including neon: identifiers. Preserve source_id even when renaming or moving it. Never replace current icons with emojis; keep: values are resolved by the app. For genuinely new activities use a matching neon: icon from: ${[...new Set(DEFAULT_TEMPLATE.map(b=>b.icon))].join(',')}.\nKeep unrequested titles/times/durations and locked activities. Wake boundary ${wake?.time||'07:30'}; after-midnight blocks follow evening. No overlaps. Movement Studio, Stretch & Restore, Mindful Movement and Pause & Replenish are non-checkable breaks. Every partial update can start at any time. Return the new remaining-day checklist and finish with Sleep & Restore (dur:0), using the existing bedtime unless later activities require a later bedtime. Earlier activities are retained as skipped and can be restored. Sleep & Restore must be last.${Object.keys(roundup).length?' Use these selected-day steps only for their named activity: '+JSON.stringify(roundup):''}\nActivities (only relevant scope): ${JSON.stringify(rows.map(pack))}\nReply only JSON: {"version":1,"blocks":[{"source_id":"existing id; omit for new","title":"","time":"HH:MM","dur":30,"icon":"neon:...","tasks":[]}]}.`;
 }
 
-const template=timetableTemplate();
-return `Act as my daily-schedule planner. Rebuild the routine for selected date ${context.date}. ${draft.notes.trim()?'My instructions: '+draft.notes.trim():''}\nApplication scope and selected-day context: ${JSON.stringify(context,null,2)}\nThe reference template below is my current default. Preserve its activity labels, times and durations unless my instructions explicitly change them. Morning Ritual is the wake boundary at 07:30, lasting 30 minutes; do not add an extra Wake up / Freshen up pair. Wash & Renew is 12:45–13:30; Devotional Pause is 13:30–13:45 for pooja. When my instructions say Home in Harmony, pull the selected day’s house-chore roundup into that activity’s tasks. When they say Wash & Renew, pull the selected day’s bath and self-care steps into that activity’s tasks. Keep evening face care and tomorrow setup in Evening Ritual. Stretch & Restore, Movement Studio, Mindful Movement and Pause & Replenish are non-checkable break rows like Screen Break & Hydration; retain their durations. Use the actual chore and care context instead of generic placeholders. Avoid duplicate tasks. Preserve fixed activities unless I request a change; ask about conflicting constraints. Cover the day through Night Sanctuary from 23:30 to 07:30 next morning (8 hours); encode it as a zero-duration sleep milestone at 23:30 so the next planning day does not overlap. Keep after-midnight activities after evening. No overlaps. Each block needs a title, icon, HH:MM time, duration in minutes and tasks array.\nReturn only JSON with version:1 and blocks. Reference template: ${JSON.stringify(template,null,2)}`;
-
-}
-
-async function copyTimetablePrompt(){const draft=getTimetableDraft();if(draft.mode==='from'&&!/^([01]\d|2[0-3]):[0-5]\d$/.test(draft.fromTime||'')){toast('Choose any start time for this partial update.');return;}const prompt=buildTimetablePrompt();try{await navigator.clipboard.writeText(prompt);toast('Prompt copied. Paste it into your AI chat.');}catch{showPromptFallback(prompt);}}
+async function copyTimetablePrompt(){const draft=getTimetableDraft();if(draft.mode==='from'&&!/^([01]\d|2[0-3]):[0-5]\d$/.test(draft.fromTime||'')){toast('Choose any start time for this partial update.');return;}let prompt;try{prompt=buildTimetablePrompt();}catch(error){toast(error.message);return;}try{await navigator.clipboard.writeText(prompt);toast('Prompt copied. Paste it into your AI chat.');}catch{showPromptFallback(prompt);}}
 function downloadTimetableTemplate(){const blob=new Blob([JSON.stringify(timetableTemplate(),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='timetable-template.json';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);}
 function validateTimetablePlan(raw){
 const text=String(raw||'').trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'');
@@ -3417,59 +3425,86 @@ let icon=String(b.icon||'').trim();
 if(!(icon.startsWith('neon:')&&NEON_SCHEDULE_ICONS[icon.slice(5)])&&(!icon||icon.length>8))icon='📌';
 if(b.tasks!==undefined&&(!Array.isArray(b.tasks)||b.tasks.length>12))throw new Error('Block '+(i+1)+' may have up to 12 task steps.');
 const tasks=(b.tasks||[]).map(task=>{if(typeof task!=='string'||!task.trim()||task.length>400)throw new Error('Use non-empty text task steps of up to 400 characters.');return task.trim();});
-return {title,time:b.time,dur:Math.round(dur),icon,tasks,roundupRole:inferRoutineRoundupRole(title)};
+return {title,time:b.time,dur:Math.round(dur),icon,tasks,source_id:typeof b.source_id==='string'?b.source_id.slice(0,160):'',roundupRole:inferRoutineRoundupRole(title)};
 });
 return {blocks};
 }
 function previewTimetableImport(raw){
 try{
 timetableImportPreview={...validateTimetablePlan(raw),day:selectedDay};
-const draft=getTimetableDraft(),existing=getDayBlocks(selectedDay),wake=findWakeBlock(existing),boundary=toMin(wake?.time||state.wakeTargetTime||'07:30'),relative=time=>{const m=toMin(time);return m<boundary?m+1440:m;};
+const draft=getTimetableDraft(),existing=getDayBlocks(selectedDay),relative=timetableRelativeTime(existing);
 const earliest=timetableImportPreview.blocks.slice().sort((a,b)=>relative(a.time)-relative(b.time))[0];
-if(!findWakeBlock(timetableImportPreview.blocks)&&draft.mode!=='from'){draft.mode='from';draft.fromTime=earliest.time;draft.scope='day';}
-if(draft.mode==='from'){if(!draft.fromTime)draft.fromTime=earliest.time;draft.scope='day';mergeTimetableFromTime(existing,timetableImportPreview.blocks,draft.fromTime);}
+if(draft.mode==='activity'){
+const target=existing.find(b=>b.id===draft.activityId);if(!target)throw new Error('Choose an activity first.');
+if(timetableImportPreview.blocks.length!==1)throw new Error('A single-activity update needs exactly one block.');
+timetableImportPreview.activityId=target.id;timetableImportPreview.blocks[0].source_id=target.id;draft.scope='day';
+mergeTimetableActivity(existing,timetableImportPreview.blocks[0],target.id);
+}else{
+if(!findWakeBlock(timetableImportPreview.blocks)&&draft.mode!=='from'){draft.mode='from';draft.scope='day';}
+if(draft.mode==='from'){
+// Each pasted fragment defines its own start, avoiding a stale cutoff from an earlier update.
+draft.fromTime=earliest.time;draft.scope='day';const merged=mergeTimetableFromTime(existing,timetableImportPreview.blocks,draft.fromTime);timetableImportPreview.blocks=timetableImportPreview.blocks.filter(b=>!isRoutineSleep(b)).concat(merged.at(-1));
+}
+}
+timetableImportPreview.blocks=timetableImportPreview.blocks.map(b=>({...b,icon:timetableIconFor(b,existing)}));
 timetableImportError='';
 }catch(e){timetableImportPreview=null;timetableImportError=e.message;}
 render();return !!timetableImportPreview;
 }
+function mergeTimetableActivity(existing,incoming,id){
+const old=existing.find(b=>b.id===id);if(!old)throw new Error('The activity changed. Select it and preview again.');
+const relative=timetableRelativeTime(existing),start=relative(incoming.time),end=start+Number(incoming.dur||0);
+const conflict=existing.find(b=>b.id!==id&&!b.unscheduled&&!b.skipped&&start<relative(b.time)+Number(b.dur||0)&&end>relative(b.time));
+if(conflict)throw new Error('This activity overlaps "'+conflict.title+'". Adjust its time or duration.');
+return existing.map(b=>b.id===id?{...old,...incoming,id:old.id,icon:old.icon,done:false,skipped:false}:b).sort((a,b)=>a.unscheduled?1:b.unscheduled?-1:relative(a.time)-relative(b.time));
+}
 async function uploadTimetablePlan(event){const file=event.target.files?.[0];if(!file)return;if(file.size>500000){timetableImportPreview=null;timetableImportError='Use a JSON file smaller than 500 KB.';render();return;}try{previewTimetableImport(await file.text());}catch{timetableImportPreview=null;timetableImportError='The file could not be read. Paste its JSON instead.';render();}}
 function previewTimetablePaste(){previewTimetableImport(document.getElementById('timetablePlanPaste').value);}
+function isRoutineSleep(block){return block?.plannerRole==='sleep'||/^(?:Night Sanctuary|Sleep & Restore|Sleep|Bedtime)$/i.test(String(block?.title||'').trim());}
+function partialSleepBlock(existing,incoming,relative,cutoff){
+const supplied=incoming.filter(isRoutineSleep).at(-1),previous=existing.filter(isRoutineSleep).at(-1),source=supplied||previous||{time:'23:30',icon:'neon:moon',tasks:[]};
+const end=incoming.filter(b=>!isRoutineSleep(b)).reduce((last,b)=>Math.max(last,relative(b.time)+Number(b.dur||0)),cutoff);
+const start=Math.max(relative(source.time||'23:30'),end,cutoff);
+return {...source,id:supplied?.id||'ai_sleep_'+Date.now(),title:'Sleep & Restore',time:toHHMM(start),dur:0,plannerRole:'sleep',icon:previous?.icon||source.icon||'neon:moon',done:false,skipped:false,statusReset:true,aiPartialSkipped:false,aiPartialHistory:false,tasks:source.tasks||[]};
+}
 function mergeTimetableFromTime(existing,incoming,fromTime){
 if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(fromTime||''))throw new Error('Choose a valid update start time.');
 const wake=findWakeBlock(existing),boundary=toMin(wake?.time||state.wakeTargetTime||'07:30'),relative=time=>{const n=toMin(time);return n<boundary?n+1440:n;},cutoff=relative(fromTime);
 if(incoming.some(b=>findWakeBlock([b])))throw new Error('A partial update must not include a Wake up block. Use the full-day option to change wake-up.');
 if(incoming.some(b=>relative(b.time)<cutoff))throw new Error('Partial plans must contain only blocks starting at or after '+fromTime+'. Earlier blocks will be kept.');
-const kept=existing.filter(b=>b.unscheduled||relative(b.time)<cutoff).map(b=>b.unscheduled||isSchedulePause(b)?{...b}:{...b,done:false,skipped:true,skipOrigin:'manual',aiPartialSkipped:true,aiPartialHistory:true,statusReset:true}),sorted=incoming.slice().sort((a,b)=>relative(a.time)-relative(b.time));
+const kept=existing.filter(b=>!isRoutineSleep(b)&&(b.unscheduled||relative(b.time)<cutoff)).map(b=>b.unscheduled?{...b}:{...b,done:false,skipped:true,skipOrigin:'manual',aiPartialSkipped:true,aiPartialHistory:true,statusReset:true}),sorted=incoming.filter(b=>!isRoutineSleep(b)).map(b=>({...b,done:false,skipped:false})).sort((a,b)=>relative(a.time)-relative(b.time));
 for(let i=0;i<sorted.length;i++){
 const start=relative(sorted[i].time),end=start+Number(sorted[i].dur||0);
 const conflict=kept.filter(b=>!b.unscheduled&&!b.skipped).concat(sorted.slice(0,i)).find(b=>{const bs=relative(b.time),be=bs+Number(b.dur||0);return start<be&&end>bs;});
 if(conflict)throw new Error('"'+sorted[i].title+'" overlaps "'+conflict.title+'". Keep the earlier block and start the new activity after it ends.');
 }
-return kept.concat(sorted).sort((a,b)=>a.unscheduled?b.unscheduled?0:1:b.unscheduled?-1:relative(a.time)-relative(b.time));
+const terminal=partialSleepBlock(existing,incoming,relative,cutoff);
+return kept.concat(sorted).sort((a,b)=>a.unscheduled?b.unscheduled?0:1:b.unscheduled?-1:relative(a.time)-relative(b.time)).concat(terminal);
 }
 function installTimetablePlan(){
 const plan=timetableImportPreview;if(!plan)return false;
 if(plan.day!==selectedDay){timetableImportError='The selected date changed. Preview your plan again for this date.';timetableImportPreview=null;render();return false;}
-const draft=getTimetableDraft(),partial=draft.mode==='from',future=!partial&&draft.scope==='future',day=selectedDay,from=draft.fromTime,effective=dateForDay(Math.max(day,todayDayNum())+1);
-try{if(partial)mergeTimetableFromTime(getDayBlocks(day),plan.blocks,from);}catch(error){timetableImportError=error.message;render();return false;}
-const label=dateForDay(day),heading=partial?'Update '+label+' from '+from+'?':future?'Set the future default from '+effective+'?':'Replace the schedule for '+label+'?';
-const description=partial?'Earlier activities stay in the list, marked skipped. You can unskip or complete them later. Replace activities from '+from+' onward for this date only.':future?'Save this full routine as the default for every date from '+effective+' onward. The selected date and earlier dates stay unchanged. Reset day will restore this default on future dates.':'Replace the selected date only. Future defaults and other dates stay unchanged.';
+const draft=getTimetableDraft(),partial=draft.mode==='from',single=draft.mode==='activity',future=!partial&&!single&&draft.scope==='future',day=selectedDay,from=draft.fromTime,effective=dateForDay(Math.max(day,todayDayNum())+1);
+try{if(single)mergeTimetableActivity(getDayBlocks(day),plan.blocks[0],plan.activityId);else if(partial)mergeTimetableFromTime(getDayBlocks(day),plan.blocks,from);}catch(error){timetableImportError=error.message;render();return false;}
+const label=dateForDay(day),heading=single?'Update this activity only?':partial?'Update '+label+' from '+from+'?':future?'Set the future default from '+effective+'?':'Replace the schedule for '+label+'?';
+const description=single?'Update only the chosen activity for this date, preserving its icon. All other activities and future defaults stay unchanged.':partial?'Earlier activities stay in the list, marked skipped. You can unskip or complete them later. Replace activities from '+from+' onward for this date only.':future?'Save this full routine as the default for every date from '+effective+' onward. The selected date and earlier dates stay unchanged. Reset day will restore this default on future dates.':'Replace the selected date only. Future defaults and other dates stay unchanged.';
 openAppConfirmation(heading,description,()=>{
 if(selectedDay!==day){toast('The date changed. Preview the plan again.');return;}
-const overrides=state.iconOverrides||{};
-let newList=plan.blocks.map((b,i)=>({id:'ai_'+Date.now()+'_'+i,time:b.time,title:b.title,dur:b.dur,cat:'TT',icon:overrides[b.title.trim().toLowerCase()]||b.icon,tasks:b.tasks||[],roundupRole:b.roundupRole||inferRoutineRoundupRole(b.title),done:false,skipped:false}));
-if(partial){try{newList=mergeTimetableFromTime(getDayBlocks(day),newList,from);}catch(error){timetableImportError=error.message;render();return;}}
-else{const wake=findWakeBlock(newList)||newList[0];wake.plannerRole='wake';splitWakeAndFreshen(newList);splitCombinedLunchCare(newList);applyDynamicSlots(newList,day);const boundary=toMin(wake.time),relative=time=>{const m=toMin(time);return m<boundary?m+1440:m;};newList.sort((a,b)=>relative(a.time)-relative(b.time));}
-snapshotForUndo(partial?'Partial routine updated':future?'Future routine default updated':'Selected-day routine updated');
+const current=getDayBlocks(day);
+let newList=plan.blocks.map((b,i)=>({id:'ai_'+Date.now()+'_'+i,time:b.time,title:b.title,dur:b.dur,cat:'TT',icon:timetableIconFor(b,current),source_id:b.source_id,tasks:b.tasks||[],roundupRole:b.roundupRole||inferRoutineRoundupRole(b.title),done:false,skipped:false}));
+if(single){try{newList=mergeTimetableActivity(current,newList[0],plan.activityId);}catch(error){timetableImportError=error.message;render();return;}}
+else if(partial){try{newList=mergeTimetableFromTime(getDayBlocks(day),newList,from);}catch(error){timetableImportError=error.message;render();return;}}
+else{const wake=findWakeBlock(newList)||newList[0];wake.plannerRole='wake';splitWakeAndFreshen(newList);splitCombinedLunchCare(newList);applyDynamicSlots(newList,day);newList.forEach(b=>{b.icon=timetableIconFor(b,current);});const boundary=toMin(wake.time),relative=time=>{const m=toMin(time);return m<boundary?m+1440:m;};newList.sort((a,b)=>relative(a.time)-relative(b.time));}
+snapshotForUndo(single?'Activity updated':partial?'Partial routine updated':future?'Future routine default updated':'Selected-day routine updated');
 if(future)installFutureRoutine(newList,day);else setDayBlocks(day,newList);
-timetableImportPreview=null;timetableImportError='';save();toast(partial?'Routine updated; earlier activities skipped':future?'Future default saved from '+effective:'Selected-day routine updated');
-},partial?'Update this day':future?'Save future default':'Replace selected day');return true;
+if(partial)getTimetableDraft().fromTime='';timetableImportPreview=null;timetableImportError='';save();toast(single?'Activity updated':partial?'Routine updated; earlier activities skipped':future?'Future default saved from '+effective:'Selected-day routine updated');
+},single?'Update activity':partial?'Update this day':future?'Save future default':'Replace selected day');return true;
 }
 let timetableBuilderOpen=false;
 function toggleTimetableBuilderOpen(){ timetableBuilderOpen=!timetableBuilderOpen; render(); }
 function renderTimetableAIBuilder(){
 const plan=timetableImportPreview,draft=getTimetableDraft();
-const body = `<div class="recipe-meta-grid"><label>Apply AI plan<select aria-label="AI routine update scope" onchange="setTimetableDraft('mode',this.value)"><option value="full" ${draft.mode==='full'?'selected':''}>Replace whole selected day</option><option value="from" ${draft.mode==='from'?'selected':''}>Update from this time onward</option></select></label>${draft.mode==='full'?`<label>Apply to<select aria-label="AI routine date scope" onchange="setTimetableDraft('scope',this.value)"><option value="day" ${draft.scope==='day'?'selected':''}>Selected day only</option><option value="future" ${draft.scope==='future'?'selected':''}>All future days — change default</option></select></label>`:''}${draft.mode==='from'?`<label>Start time<input type="time" aria-label="Routine update start time" value="${escapeHtml(draft.fromTime)}" onchange="setTimetableDraft('fromTime',this.value)"></label>`:''}</div><p class="small">Selected date: ${escapeHtml(dateForDay(selectedDay))}. ${draft.mode==='from'?'Earlier activities are kept and marked skipped; you can unskip or complete them. Partial updates apply only to the selected date.':draft.scope==='future'?'The new default starts '+dateForDay(Math.max(selectedDay,todayDayNum())+1)+'. Reset day restores the default for that date.':'The selected day is replaced; future defaults stay unchanged.'}</p><label class="timetable-instructions-label" for="timetableInstructions">Routine instructions</label><textarea class="timetable-instructions" id="timetableInstructions" aria-label="Routine instructions" placeholder="Home in Harmony, Wash & Renew, or describe what you want to change…" oninput="setTimetableDraft('notes',this.value)">${escapeHtml(getTimetableDraft().notes)}</textarea><p class="small">“Home in Harmony” pulls the selected day’s house-chore round up. “Wash & Renew” pulls its bath and self-care steps. Copy the prompt, then paste the AI’s JSON below.</p><div class="learning-json-paste"><textarea id="timetablePlanPaste" aria-label="AI timetable plan JSON" placeholder="[ Paste JSON here ]"></textarea></div><div class="learning-ai-actions"><button class="btn secondary" onclick="copyTimetablePrompt()">Copy Prompt</button><label class="btn secondary learning-file-label">Upload<input type="file" accept=".json,application/json" aria-label="Upload AI timetable plan" onchange="uploadTimetablePlan(event)"></label><button class="btn" onclick="previewTimetablePaste()">Preview</button></div>${timetableImportError?`<p class="learning-import-error" role="alert">${escapeHtml(timetableImportError)}</p>`:''}${plan?`<div class="learning-import-preview"><h4>Review · ${plan.blocks.length} blocks</h4><details><summary>See the blocks</summary><ul>${plan.blocks.map(b=>`<li>${iconHTML(b.icon,16)} ${escapeHtml(b.title)} — ${b.time} · ${b.dur} min${b.tasks?.length?`<ul>${b.tasks.map(task=>`<li>${escapeHtml(task)}</li>`).join('')}</ul>`:''}</li>`).join('')}</ul></details><button class="btn" onclick="installTimetablePlan()">${draft.mode==='from'?'Update from '+escapeHtml(draft.fromTime):draft.scope==='future'?'Save future default':'Replace selected day'}</button><small>${draft.mode==='from'?'Earlier activities stay in the list as skipped. This date only.':draft.scope==='future'?'Changes future defaults only; the selected day stays unchanged.':'Replaces this date only; future defaults stay unchanged.'}</small></div>`:''}`;
+const body = `<div class="recipe-meta-grid"><label>Apply AI plan<select aria-label="AI routine update scope" onchange="setTimetableDraft('mode',this.value)"><option value="full" ${draft.mode==='full'?'selected':''}>Replace whole selected day</option><option value="from" ${draft.mode==='from'?'selected':''}>Update from this time onward</option><option value="activity" ${draft.mode==='activity'?'selected':''}>Update one activity</option></select></label>${draft.mode==='full'?`<label>Apply to<select aria-label="AI routine date scope" onchange="setTimetableDraft('scope',this.value)"><option value="day" ${draft.scope==='day'?'selected':''}>Selected day only</option><option value="future" ${draft.scope==='future'?'selected':''}>All future days — change default</option></select></label>`:''}${draft.mode==='activity'?`<label>Activity<select aria-label="Activity to update with AI" onchange="setTimetableDraft('activityId',this.value)"><option value="">Choose an activity</option>${getDayBlocks(selectedDay).map(b=>`<option value="${escapeHtml(b.id)}" ${draft.activityId===b.id?'selected':''}>${escapeHtml(b.time+' · '+b.title)}</option>`).join('')}</select></label>`:''}${draft.mode==='from'?`<label>Start time<input type="time" aria-label="Routine update start time" value="${escapeHtml(draft.fromTime)}" onchange="setTimetableDraft('fromTime',this.value)"></label>`:''}</div><p class="small">Selected date: ${escapeHtml(dateForDay(selectedDay))}. ${draft.mode==='activity'?'Only the chosen activity changes. The prompt includes just that activity.':draft.mode==='from'?'Earlier activities are kept and marked skipped; you can unskip or complete them. Partial updates apply only to the selected date.':draft.scope==='future'?'The new default starts '+dateForDay(Math.max(selectedDay,todayDayNum())+1)+'. Reset day restores the default for that date.':'The selected day is replaced; future defaults stay unchanged.'}</p><label class="timetable-instructions-label" for="timetableInstructions">Routine instructions</label><textarea class="timetable-instructions" id="timetableInstructions" aria-label="Routine instructions" placeholder="Home in Harmony, Wash & Renew, or describe what you want to change…" oninput="setTimetableDraft('notes',this.value)">${escapeHtml(getTimetableDraft().notes)}</textarea><p class="small">“Home in Harmony” pulls the selected day’s house-chore round up. “Wash & Renew” pulls its bath and self-care steps. Current icons are preserved automatically. Copy the compact prompt, then paste the AI’s JSON below.</p><div class="learning-json-paste"><textarea id="timetablePlanPaste" aria-label="AI timetable plan JSON" placeholder="[ Paste JSON here ]"></textarea></div><div class="learning-ai-actions"><button class="btn secondary" onclick="copyTimetablePrompt()">Copy Prompt</button><label class="btn secondary learning-file-label">Upload<input type="file" accept=".json,application/json" aria-label="Upload AI timetable plan" onchange="uploadTimetablePlan(event)"></label><button class="btn" onclick="previewTimetablePaste()">Preview</button></div>${timetableImportError?`<p class="learning-import-error" role="alert">${escapeHtml(timetableImportError)}</p>`:''}${plan?`<div class="learning-import-preview"><h4>Review · ${plan.blocks.length} blocks</h4><details><summary>See the blocks</summary><ul>${plan.blocks.map(b=>`<li>${iconHTML(b.icon,16)} ${escapeHtml(b.title)} — ${b.time} · ${b.dur} min${b.tasks?.length?`<ul>${b.tasks.map(task=>`<li>${escapeHtml(task)}</li>`).join('')}</ul>`:''}</li>`).join('')}</ul></details><button class="btn" onclick="installTimetablePlan()">${draft.mode==='activity'?'Update activity':draft.mode==='from'?'Update from '+escapeHtml(draft.fromTime):draft.scope==='future'?'Save future default':'Replace selected day'}</button><small>${draft.mode==='activity'?'Only this activity changes. This date only.':draft.mode==='from'?'Start time follows the first pasted block. Earlier activities stay skipped. This date only.':draft.scope==='future'?'Changes future defaults only; the selected day stays unchanged.':'Replaces this date only; future defaults stay unchanged.'}</small></div>`:''}`;
 return `<div class="card learning-ai-builder timetable-ai-builder"><div class="section-title" style="cursor:pointer" onclick="toggleTimetableBuilderOpen()"><h3>${uiIcon('lotus')} Rebuild My Routine with AI</h3><span class="lab-caret">${timetableBuilderOpen?'▴':'▾'}</span></div>${timetableBuilderOpen?body:''}</div>`;
 }
 function toggleBlockLock(id){
